@@ -284,11 +284,16 @@ struct pthread
   /* Bit set if thread terminated and TCB is freed.  */
 #define TERMINATED_BIT		5
 #define TERMINATED_BITMASK	(0x01 << TERMINATED_BIT)
+#ifndef NO_SETXID_SUPPORT
   /* Bit set if thread is supposed to change XID.  */
 #define SETXID_BIT		6
 #define SETXID_BITMASK		(0x01 << SETXID_BIT)
   /* Mask for the rest.  Helps the compiler to optimize.  */
 #define CANCEL_RESTMASK		0xffffff80
+#else /* NO_SETXID_SUPPORT */
+  /* Mask for the rest.  Helps the compiler to optimize.  */
+#define CANCEL_RESTMASK		0xffffffc0
+#endif /* NO_SETXID_SUPPORT */
 
 #define CANCEL_ENABLED_AND_CANCELED(value) \
   (((value) & (CANCELSTATE_BITMASK | CANCELED_BITMASK | EXITING_BITMASK	      \

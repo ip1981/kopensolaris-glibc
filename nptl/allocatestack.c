@@ -25,6 +25,7 @@
 #include <sys/mman.h>
 #include <sys/param.h>
 #include <dl-sysdep.h>
+#include <pthreadP.h>
 #include <dl-tls.h>
 #include <tls.h>
 #include <list.h>
@@ -32,7 +33,7 @@
 #include <kernel-features.h>
 
 
-#ifndef NEED_SEPARATE_REGISTER_STACK
+#if defined(NEED_SEPARATE_REGISTER_STACK) && !defined(NEED_STACK_SIZE)
 
 /* Most architectures have exactly one stack pointer.  Some have more.  */
 # define STACK_VARIABLES void *stackaddr = NULL

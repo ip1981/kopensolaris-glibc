@@ -478,8 +478,13 @@ __pthread_initialize_minimal_internal (void)
      keep the lock count from the ld.so implementation.  */
   GL(dl_rtld_lock_recursive) = (void *) __pthread_mutex_lock;
   GL(dl_rtld_unlock_recursive) = (void *) __pthread_mutex_unlock;
+#ifndef __rtld_lock_recursive_reinitialize
   unsigned int rtld_lock_count = GL(dl_load_lock).mutex.__data.__count;
   GL(dl_load_lock).mutex.__data.__count = 0;
+#else
+  unsigned int rtld_lock_count =
+      __rtld_lock_recursive_reinitialize (GL(dl_load_lock));
+#endif
   while (rtld_lock_count-- > 0)
     __pthread_mutex_lock (&GL(dl_load_lock).mutex);
 

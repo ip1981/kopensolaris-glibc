@@ -118,19 +118,23 @@ __ttyname_r (int fd, char *buf, size_t buflen)
       return ERANGE;
     }
 
+#ifndef __TTYNAME_NO_CHECKS
   /* isatty check, tcgetattr is used because it sets the correct
      errno (EBADF resp. ENOTTY) on error.  */
   struct termios term;
   if (__builtin_expect (__tcgetattr (fd, &term) < 0, 0))
     return errno;
+#endif
 
   if (__fxstat64 (_STAT_VER, fd, &st) < 0)
     return errno;
 
+#ifndef __ASSUME_PROC_SELF_FD_NOT_SYMLINK
   /* We try using the /proc filesystem.  */
   *_fitoa_word (fd, __stpcpy (procname, "/proc/self/fd/"), 10, 0) = '\0';
 
   ssize_t ret = __readlink (procname, buf, buflen - 1);
+  ret = __readlink (procname, buf, buflen - 1);
   if (__builtin_expect (ret == -1 && errno == ENOENT, 0))
     {
       __set_errno (EBADF);

@@ -1243,7 +1243,7 @@ case $basic_machine in
 	w89k-*)
 		basic_machine=hppa1.1-winbond
 		os=-proelf
-		;;
+        ;;
 	xbox)
 		basic_machine=i686-pc
 		os=-mingw32
@@ -1401,7 +1401,7 @@ case $os in
 	      | -os2* | -vos* | -palmos* | -uclinux* | -nucleus* \
 	      | -morphos* | -superux* | -rtmk* | -rtmk-nova* | -windiss* \
 	      | -powermax* | -dnix* | -nx6 | -nx7 | -sei* | -dragonfly* \
-	      | -skyos* | -haiku* | -rdos* | -toppers* | -drops* | -es*)
+	      | -skyos* | -haiku* | -rdos* | -toppers* | -drops* | -es* | -kopensolaris*-gnu*)
 	# Remember, each alternative MUST END IN *, to match a version number.
 		;;
 	-qnx*)

@@ -322,6 +322,7 @@ sem_open (const char *name, int oflag, ...)
 	struct new_sem newsem;
       } sem;
 
+#ifndef OPAQUE_STRUCTS
       sem.newsem.value = value;
       sem.newsem.private = 0;
       sem.newsem.nwaiters = 0;

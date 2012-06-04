@@ -134,16 +134,28 @@ while read file srcfile caller syscall args strong weak; do
   case x"$syscall" in
   x-) callnum=_ ;;
   *)
+  set `echo $syscall | sed -e 's/^\(.*\):\(.*\)/\1 \2/'`
+  syscall=$1; subcall=$2
   # Figure out if $syscall is defined with a number in syscall.h.
-  callnum=-
+  callnum=-; subcallnum=
   eval `{ echo "#include <sysdep.h>";
 	echo "callnum=SYS_ify ($syscall)"; } |
 	  $asm_CPP -D__OPTIMIZE__ - |
 	  sed -n -e "/^callnum=.*$syscall/d" \
 		 -e "/^\(callnum=\)[ 	]*\(.*\)/s//\1'\2'/p"`
+    if test ! -z "$subcall" ; then
+      # Figure out if $subcall is defined with a number in syscall.h.
+        subcallnum=
+      eval `{ echo "#include <sysdep.h>";
+      echo "subcallnum=SYS_ify (SUB_$subcall)"; } |
+        $asm_CPP -D__OPTIMIZE__ - |
+        sed -n -e "/^subcallnum=.*$subcall/d" \
+          -e "/^\(subcallnum=\)[  ]*\(.*\)/s//\1'\2'/p"`
+    fi
   ;;
   esac
 
+  restart=0
   cancellable=0
   noerrno=0
   errval=0
@@ -151,6 +163,7 @@ while read file srcfile caller syscall args strong weak; do
   C*) cancellable=1; args=`echo $args | sed 's/C:\?//'`;;
   E*) noerrno=1; args=`echo $args | sed 's/E:\?//'`;;
   V*) errval=1; args=`echo $args | sed 's/V:\?//'`;;
+  R*) restart=1; args=`echo $args | sed 's/R//'`;;
   esac
 
   # Derive the number of arguments from the argument signature
@@ -225,11 +238,25 @@ while read file srcfile caller syscall args strong weak; do
 	(echo '/* Dummy module requested by syscalls.list */'; \\"
   ;;
   x*)
+  if [ $noerrno = 0 ]; then
+      noerrno_s=''
+  else
+      noerrno_s='_NOERRNO'
+  fi
+  case x"$subcallnum" in
+    x) pseudo_line="PSEUDO$noerrno_s ($strong, $syscall, $nargs)";;
+    *) pseudo_line="PSEUDO_SUBCALL$noerrno_s ($strong, $syscall, $subcall, `expr $nargs + 1`)";;
+    esac
+
   echo "\
 	\$(make-target-directory)
 	(echo '#define SYSCALL_NAME $syscall'; \\
 	 echo '#define SYSCALL_NARGS $nargs'; \\
 	 echo '#define SYSCALL_SYMBOL $strong'; \\"
+  [ x"$subcallnum" = x ] || echo "\
+	 echo '#define SYSCALL_SUBCALL_NUM $subcallnum'; \\"
+  [ $restart = 0 ] || echo "\
+	 echo '#define SYSCALL_RESTARTABLE 1'; \\"
   [ $cancellable = 0 ] || echo "\
 	 echo '#define SYSCALL_CANCELLABLE 1'; \\"
   [ $noerrno = 0 ] || echo "\

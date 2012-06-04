@@ -33,7 +33,10 @@ typedef __uid_t uid_t;
 #endif
 
 typedef __t_scalar_t t_scalar_t;
+#ifndef __t_uscalar_t_defined
 typedef __t_uscalar_t t_uscalar_t;
+# define __t_uscalar_t_defined
+#endif
 
 /* Get system specific contants.  */
 #include <bits/stropts.h>

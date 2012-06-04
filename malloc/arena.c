@@ -572,7 +572,7 @@ new_heap(size_t size, size_t top_pad)
       }
     }
   }
-  if(__mprotect(p2, size, PROT_READ|PROT_WRITE) != 0) {
+  if(__mprotect(p2, size, PROT_READ|PROT_WRITE|MALLOC_PROT_EXEC) != 0) {
     __munmap(p2, HEAP_MAX_SIZE);
     return 0;
   }

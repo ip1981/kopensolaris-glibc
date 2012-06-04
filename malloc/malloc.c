@@ -2299,7 +2299,7 @@ static void* sysmalloc(INTERNAL_SIZE_T nb, mstate av)
     /* Don't try if size wraps around 0 */
     if ((unsigned long)(size) > (unsigned long)(nb)) {
 
-      mm = (char*)(MMAP(0, size, PROT_READ|PROT_WRITE, 0));
+      mm = (char*)(MMAP(0, size, PROT_READ|PROT_WRITE|MALLOC_PROT_EXEC, 0));
 
       if (mm != MAP_FAILED) {
 
@@ -2478,7 +2478,7 @@ static void* sysmalloc(INTERNAL_SIZE_T nb, mstate av)
     /* Don't try if size wraps around 0 */
     if ((unsigned long)(size) > (unsigned long)(nb)) {
 
-      char *mbrk = (char*)(MMAP(0, size, PROT_READ|PROT_WRITE, 0));
+      char *mbrk = (char*)(MMAP(0, size, PROT_READ|PROT_WRITE|MALLOC_PROT_EXEC, 0));
 
       if (mbrk != MAP_FAILED) {
 

@@ -261,8 +261,10 @@ start_thread (void *arg)
   THREAD_SETMEM (pd, cpuclock_offset, now);
 #endif
 
+#if USE___THREAD
   /* Initialize resolver state pointer.  */
   __resp = &pd->res;
+#endif
 
   /* Initialize pointers to locale data.  */
   __ctype_init ();
@@ -271,6 +273,7 @@ start_thread (void *arg)
   if (__builtin_expect (atomic_exchange_acq (&pd->setxid_futex, 0) == -2, 0))
     lll_futex_wake (&pd->setxid_futex, 1, LLL_PRIVATE);
 
+#ifndef NO_ROBUST_LIST_SUPPORT
 #ifdef __NR_set_robust_list
 # ifndef __ASSUME_SET_ROBUST_LIST
   if (__set_robust_list_avail >= 0)
@@ -416,6 +419,7 @@ PLATFORM_THREAD_START
       while (robust != (void *) &pd->robust_head);
     }
 #endif
+#endif /* NO_ROBUST_LIST_SUPPORT */
 
   /* Mark the memory of the stack as usable to the kernel.  We free
      everything except for the space used for the TCB itself.  */
@@ -434,6 +438,7 @@ PLATFORM_THREAD_START
   if (IS_DETACHED (pd))
     /* Free the TCB.  */
     __free_tcb (pd);
+#ifndef NO_SETXID_SUPPORT
   else if (__builtin_expect (pd->cancelhandling & SETXID_BITMASK, 0))
     {
       /* Some other thread might call any of the setXid functions and expect
@@ -597,8 +602,13 @@ __pthread_create_2_1 (newthread, attr, start_routine, arg)
 	}
     }
 
+#ifndef PTHREAD_T_IS_TID
   /* Pass the descriptor to the caller.  */
   *newthread = (pthread_t) pd;
+#else
+  /* Pass the tid to the caller.  */
+  *newthread = (pthread_t) pd->tid;
+#endif
 
   LIBC_PROBE (pthread_create, 4, newthread, attr, start_routine, arg);
 
