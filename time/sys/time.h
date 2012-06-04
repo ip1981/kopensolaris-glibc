@@ -105,6 +105,7 @@ enum __itimer_which
 
 /* Type of the second argument to `getitimer' and
    the second and third arguments `setitimer'.  */
+#ifndef __itimerval_defined
 struct itimerval
   {
     /* Value to put into `it_value' when the timer expires.  */
@@ -112,6 +113,8 @@ struct itimerval
     /* Time to the next timer expiration.  */
     struct timeval it_value;
   };
+# define __itimerval_defined
+#endif
 
 #if defined __USE_GNU && !defined __cplusplus
 /* Use the nicer parameter type only in GNU mode and not for C++ since the

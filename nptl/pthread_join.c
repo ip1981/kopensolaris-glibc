@@ -20,7 +20,7 @@
 #include <stdlib.h>
 
 #include <atomic.h>
-#include "pthreadP.h"
+#include <pthreadP.h>
 
 #include <stap-probe.h>
 
@@ -41,7 +41,11 @@ pthread_join (threadid, thread_return)
      pthread_t threadid;
      void **thread_return;
 {
+#ifndef PTHREAD_T_IS_TID
   struct pthread *pd = (struct pthread *) threadid;
+#else
+  struct pthread *pd = __find_in_stack_list (threadid);
+#endif
 
   /* Make sure the descriptor is valid.  */
   if (INVALID_NOT_TERMINATED_TD_P (pd))

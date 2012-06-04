@@ -160,6 +160,7 @@ weak_alias (__opendir, opendir)
 #ifdef __ASSUME_O_CLOEXEC
 # define check_have_o_cloexec(fd) 1
 #else
+#ifdef O_CLOEXEC
 static int
 check_have_o_cloexec (int fd)
 {
@@ -167,6 +168,7 @@ check_have_o_cloexec (int fd)
     __have_o_cloexec = (__fcntl (fd, F_GETFD, 0) & FD_CLOEXEC) == 0 ? -1 : 1;
   return __have_o_cloexec > 0;
 }
+#endif
 #endif
 
 

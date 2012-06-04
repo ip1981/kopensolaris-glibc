@@ -1,0 +1,57 @@
+libc {
+  GLIBC_2.3.2 {
+    __register_atfork;
+  }
+  GLIBC_2.7 {
+    thr_stksegment; thr_main;
+  }
+  GLIBC_PRIVATE {
+    __libc_pthread_init;
+    __libc_current_sigrtmin_private; __libc_current_sigrtmax_private;
+    __libc_allocate_rtsig_private;
+    __resp;
+  }
+}
+libpthread {
+  GLIBC_2.0 {
+    fork; __fork;
+  }
+  GLIBC_2.7 {
+    # c
+    cond_init; cond_destroy; cond_wait; cond_timedwait; cond_reltimedwait;
+    cond_signal; cond_broadcast;
+
+    # l
+    _lwp_cond_broadcast; _lwp_cond_timedwait; _lwp_cond_reltimedwait;
+    _lwp_cond_signal; _lwp_cond_wait; _lwp_continue; _lwp_info; _lwp_kill;
+    _lwp_mutex_lock; _lwp_mutex_trylock; _lwp_mutex_unlock; _lwp_self;
+    _lwp_sema_init; _lwp_sema_post; _lwp_sema_trywait; _lwp_sema_wait;
+    _lwp_suspend;
+
+    # m
+    mutex_init; mutex_destroy; mutex_consistent; mutex_lock; mutex_trylock;
+    mutex_unlock; _mutex_held;
+
+    # n
+    __nthreads;
+
+    # p
+    pthread_cond_reltimedwait_np; pthread_mutex_reltimedlock_np;
+    pthread_rwlock_reltimedrdlock_np; pthread_rwlock_reltimedwrlock_np;
+    pthread_key_create_once_np;
+
+    # r
+    rwlock_init; rwlock_destroy; rw_rdlock; rw_wrlock; rw_unlock; rw_tryrdlock;
+    rw_trywrlock; _rw_read_held; _rw_write_held;
+
+    # s
+    sema_init; sema_destroy; sema_wait; sema_timedwait; sema_reltimedwait;
+    sema_post; sema_trywait; _sema_held;
+
+    # t
+    thr_create; thr_join; thr_exit; thr_suspend; thr_continue; thr_self;
+    thr_setconcurrency; thr_getconcurrency; thr_main; thr_kill; thr_yield;
+    thr_setprio; thr_getprio; thr_keycreate; thr_keycreate_once; thr_min_stack;
+    thr_getspecific; thr_setspecific; thr_sigsetmask;
+  }
+}

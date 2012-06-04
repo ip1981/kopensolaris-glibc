@@ -105,7 +105,11 @@ static size_t stack_cache_maxsize = 40 * 1024 * 1024; /* 40MiBi by default.  */
 static size_t stack_cache_actsize;
 
 /* Mutex protecting this variable.  */
+#ifndef lll_define_initialized
 static int stack_cache_lock = LLL_LOCK_INITIALIZER;
+#else
+lll_define_initialized (static, stack_cache_lock);
+#endif
 
 /* List of queued stack frames.  */
 static LIST_HEAD (stack_cache);
@@ -130,7 +134,9 @@ static unsigned int nptl_ncreated;
 
 
 /* Check whether the stack is still used or not.  */
+#ifndef FREE_P
 #define FREE_P(descr) ((descr)->tid <= 0)
+#endif
 
 
 static void
@@ -412,10 +418,12 @@ allocate_stack (const struct pthread_attr *attr, struct pthread **pdp,
       __pthread_multiple_threads = *__libc_multiple_threads_ptr = 1;
 #endif
 
+#ifndef NO_FUTEX_SUPPORT
 #ifndef __ASSUME_PRIVATE_FUTEX
       /* The thread must know when private futexes are supported.  */
       pd->header.private_futex = THREAD_GETMEM (THREAD_SELF,
 						header.private_futex);
+#endif
 #endif
 
 #ifdef NEED_DL_SYSINFO
@@ -549,10 +557,12 @@ allocate_stack (const struct pthread_attr *attr, struct pthread **pdp,
 	  __pthread_multiple_threads = *__libc_multiple_threads_ptr = 1;
 #endif
 
+#ifndef NO_FUTEX_SUPPORT
 #ifndef __ASSUME_PRIVATE_FUTEX
 	  /* The thread must know when private futexes are supported.  */
 	  pd->header.private_futex = THREAD_GETMEM (THREAD_SELF,
 						    header.private_futex);
+#endif
 #endif
 
 #ifdef NEED_DL_SYSINFO
@@ -690,8 +700,13 @@ allocate_stack (const struct pthread_attr *attr, struct pthread **pdp,
 
   /* Initialize the lock.  We have to do this unconditionally since the
      stillborn thread could be canceled while the lock is taken.  */
+#ifndef lll_init
   pd->lock = LLL_LOCK_INITIALIZER;
+#else
+  lll_init (pd->lock);
+#endif
 
+#ifndef NO_ROBUST_LIST_SUPPORT
   /* The robust mutex lists also need to be initialized
      unconditionally because the cleanup for the previous stack owner
      might have happened in the kernel.  */
@@ -703,6 +718,7 @@ allocate_stack (const struct pthread_attr *attr, struct pthread **pdp,
   pd->robust_prev = &pd->robust_head;
 #endif
   pd->robust_head.list = &pd->robust_head;
+#endif /* NO_ROBUST_LIST_SUPPORT */
 
   /* We place the thread descriptor at the end of the stack.  */
   *pdp = pd;
@@ -917,7 +933,11 @@ __reclaim_stacks (void)
   in_flight_stack = 0;
 
   /* Initialize the lock.  */
+#ifndef lll_init
   stack_cache_lock = LLL_LOCK_INITIALIZER;
+#else
+  lll_init (stack_cache_lock);
+#endif
 }
 
 
@@ -969,6 +989,7 @@ __find_thread_by_id (pid_t tid)
 #endif
 
 
+#ifndef NO_SETXID_SUPPORT
 static void
 internal_function
 setxid_mark_thread (struct xid_command *cmdp, struct pthread *t)
@@ -1163,6 +1184,7 @@ __nptl_setxid (struct xid_command *cmdp)
   lll_unlock (stack_cache_lock, LLL_PRIVATE);
   return result;
 }
+#endif /* NO_SETXID_SUPPORT */
 
 static inline void __attribute__((always_inline))
 init_one_static_tls (struct pthread *curp, struct link_map *map)

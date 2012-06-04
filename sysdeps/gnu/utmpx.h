@@ -30,7 +30,7 @@ typedef __pid_t pid_t;
 /* Get system dependent values and data structures.  */
 #include <bits/utmpx.h>
 
-#ifdef __USE_GNU
+#ifdef __USE_MISC
 /* Compatibility names for the strings of the canonical file names.  */
 # define UTMPX_FILE	_PATH_UTMPX
 # define UTMPX_FILENAME	_PATH_UTMPX
@@ -39,7 +39,7 @@ typedef __pid_t pid_t;
 #endif
 
 /* For the getutmp{,x} functions we need the `struct utmp'.  */
-#ifdef __USE_GNU
+#ifdef __USE_MISC
 struct utmp;
 #endif
 
@@ -83,7 +83,7 @@ extern struct utmpx *getutxline (const struct utmpx *__line);
 extern struct utmpx *pututxline (const struct utmpx *__utmpx);
 
 
-#ifdef __USE_GNU
+#ifdef __USE_MISC
 /* Change name of the utmpx file to be examined.
 
    This function is not part of POSIX and therefore no official

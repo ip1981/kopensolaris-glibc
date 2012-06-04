@@ -35,7 +35,7 @@
 
 #ifdef RPC_HDR
 %#define LM_MAXSTRLEN	1024
-%#define MAXNAMELEN	LM_MAXSTRLEN+1
+%#define LM_MAXNAMELEN	LM_MAXSTRLEN+1
 #endif
 
 /*
@@ -156,7 +156,7 @@ struct	nlm_shareres {
 };
 
 struct	nlm_notify {
-	string name<MAXNAMELEN>;
+	string name<LM_MAXNAMELEN>;
 	long state;
 };
 

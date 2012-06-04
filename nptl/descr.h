@@ -30,7 +30,7 @@
 #include <lowlevellock.h>
 #include <pthreaddef.h>
 #include <dl-sysdep.h>
-#include "../nptl_db/thread_db.h"
+#include <thread_db.h>
 #include <tls.h>
 #ifdef HAVE_FORCED_UNWIND
 # include <unwind.h>
@@ -103,6 +103,7 @@ struct xid_command
 };
 
 
+#ifndef NO_ROBUST_LIST_SUPPORT
 /* Data structure used by the kernel to find robust futexes.  */
 struct robust_list_head
 {
@@ -110,6 +111,7 @@ struct robust_list_head
   long int futex_offset;
   void *list_op_pending;
 };
+#endif
 
 
 /* Data strcture used to handle thread priority protection.  */
@@ -148,8 +150,10 @@ struct pthread
 	 looks to cancel itself and is hence going to end anyway.  */
       int multiple_threads;
       int gscope_flag;
+# ifndef NO_FUTEX_SUPPORT
 # ifndef __ASSUME_PRIVATE_FUTEX
       int private_futex;
+# endif
 # endif
     } header;
 #endif
@@ -166,11 +170,16 @@ struct pthread
 
   /* Thread ID - which is also a 'is this thread descriptor (and
      therefore stack) used' flag.  */
+#ifndef PTHREAD_T_IS_TID
   pid_t tid;
+#else
+  pthread_t tid;
+#endif
 
   /* Process ID - thread group ID in kernel speak.  */
   pid_t pid;
 
+#ifndef NO_ROBUST_LIST_SUPPORT
   /* List of robust mutexes the thread is holding.  */
 #ifdef __PTHREAD_MUTEX_HAVE_PREV
   void *robust_prev;
@@ -246,6 +255,7 @@ struct pthread
 #endif
 #define ENQUEUE_MUTEX(mutex) ENQUEUE_MUTEX_BOTH (mutex, 0)
 #define ENQUEUE_MUTEX_PI(mutex) ENQUEUE_MUTEX_BOTH (mutex, 1)
+#endif /* NO_ROBUST_LIST_SUPPORT */
 
   /* List of cleanup buffers.  */
   struct _pthread_cleanup_buffer *cleanup;
@@ -324,10 +334,16 @@ struct pthread
   int parent_cancelhandling;
 
   /* Lock to synchronize access to the descriptor.  */
+#ifndef lll_define
   int lock;
+#else
+  lll_define (, lock);
+#endif
 
+#ifndef NO_SETXID_SUPPORT
   /* Lock for synchronizing setxid calls.  */
   int setxid_futex;
+#endif
 
 #if HP_TIMING_AVAIL
   /* Offset of the CPU clock at start thread start time.  */
@@ -380,6 +396,10 @@ struct pthread
 
   /* Resolver state.  */
   struct __res_state res;
+
+#ifdef PLATFORM_DESCR_FIELDS
+PLATFORM_DESCR_FIELDS
+#endif
 
   /* This member must be last.  */
   char end_padding[];

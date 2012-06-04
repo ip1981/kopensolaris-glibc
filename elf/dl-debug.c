@@ -18,6 +18,9 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include <ldsodefs.h>
+#ifdef ENABLE_RTLD_DB
+# include "dl-rtld_db.h"
+#endif
 
 
 /* These are the members in the public `struct link_map' type.
@@ -75,3 +78,22 @@ _dl_debug_state (void)
 {
 }
 rtld_hidden_def (_dl_debug_state)
+
+#ifdef ENABLE_RTLD_DB
+void
+rtld_db_preinit (void *arg)
+{
+}
+
+void
+rtld_db_postinit (void *arg)
+{
+}
+
+void
+rtld_db_ldactivity (void *arg)
+{
+}
+
+rd_event_msg_t rtld_db_event_msg;
+#endif

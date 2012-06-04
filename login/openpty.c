@@ -26,6 +26,10 @@
 #include <unistd.h>
 #include <sys/types.h>
 
+#ifndef __OPENPTY_INIT_SLAVE
+# define __OPENPTY_INIT_SLAVE(slave)
+#endif
+
 
 /* Return the result of ptsname_r in the buffer pointed to by PTS,
    which should be of length BUF_LEN.  If it is too long to fit in
@@ -121,6 +125,8 @@ openpty (int *amaster, int *aslave, char *name,
     tcsetattr (slave, TCSAFLUSH, termp);
   if (winp)
     ioctl (slave, TIOCSWINSZ, winp);
+
+  __OPENPTY_INIT_SLAVE(slave)
 
   *amaster = master;
   *aslave = slave;

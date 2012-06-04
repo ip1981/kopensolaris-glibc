@@ -1,4 +1,4 @@
-/* Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+/* Copyright (C) 2002, 2003, 2008 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@redhat.com>, 2002.
 
@@ -17,7 +17,7 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include <errno.h>
-#include "pthreadP.h"
+#include <pthreadP.h>
 #include <atomic.h>
 
 
@@ -25,7 +25,11 @@ int
 pthread_detach (th)
      pthread_t th;
 {
+#ifndef PTHREAD_T_IS_TID
   struct pthread *pd = (struct pthread *) th;
+#else
+  struct pthread *pd = __find_in_stack_list (th);
+#endif
 
   /* Make sure the descriptor is valid.  */
   if (INVALID_NOT_TERMINATED_TD_P (pd))
@@ -51,6 +55,13 @@ pthread_detach (th)
       /* Note that the code in __free_tcb makes sure each thread
 	 control block is freed only once.  */
       __free_tcb (pd);
+#ifdef NEED_TDETACH
+    else
+      {
+        INTERNAL_SYSCALL_DECL (err);
+        result = INTERNAL_SYSCALL (tdetach, err, 1, th);
+      }
+#endif
 
   return result;
 }

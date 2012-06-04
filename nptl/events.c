@@ -18,7 +18,7 @@
 
 /* The functions contained here do nothing, they just return.  */
 
-#include "pthreadP.h"
+#include <pthreadP.h>
 
 void
 __nptl_create_event (void)

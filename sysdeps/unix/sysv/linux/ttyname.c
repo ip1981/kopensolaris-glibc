@@ -108,8 +108,10 @@ getttyname (const char *dev, dev_t mydev, ino64_t myino, int save, int *dostat)
 }
 
 
+#ifndef __ASSUME_PROC_SELF_FD_NOT_SYMLINK
 /* Static buffer in `ttyname'.  */
 libc_freeres_ptr (static char *ttyname_buf);
+#endif
 
 
 /* Return the pathname of the terminal FD is open on, or NULL on errors.
@@ -167,6 +169,7 @@ ttyname (int fd)
 		   len - UNREACHABLE_LEN);
 	  len -= UNREACHABLE_LEN;
 	}
+#endif /* __ASSUME_PROC_SELF_FD_NOT_SYMLINK */
 
       /* readlink need not terminate the string.  */
       ttyname_buf[len] = '\0';

@@ -1,5 +1,5 @@
 #ifndef _SYS_WAIT_H
-#include <posix/sys/wait.h>
+#include_next <sys/wait.h>
 
 #ifndef _ISOMAC
 /* Now define the internal interfaces.  */

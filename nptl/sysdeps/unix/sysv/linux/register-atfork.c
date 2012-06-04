@@ -1,4 +1,4 @@
-/* Copyright (C) 2002, 2003, 2005, 2007 Free Software Foundation, Inc.
+/* Copyright (C) 2002, 2003, 2005, 2008 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@redhat.com>, 2002.
 
@@ -24,7 +24,11 @@
 
 
 /* Lock to protect allocation and deallocation of fork handlers.  */
+#ifndef lll_define_initialized
 int __fork_lock = LLL_LOCK_INITIALIZER;
+#else
+lll_define_initialized (, __fork_lock);
+#endif
 
 
 /* Number of pre-allocated handler entries.  */

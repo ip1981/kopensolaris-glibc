@@ -82,7 +82,8 @@ ifeq (yesyes,$(have-fpie)$(build-shared))
 nscd-cflags += $(pie-ccflag)
 endif
 ifeq (yes,$(have-ssp))
-nscd-cflags += -fstack-protector
+#TODO
+#nscd-cflags += -fstack-protector
 endif
 
 CFLAGS-nscd.c += $(nscd-cflags)

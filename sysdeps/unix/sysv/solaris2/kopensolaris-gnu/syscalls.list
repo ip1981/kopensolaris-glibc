@@ -1,0 +1,240 @@
+# File name Caller Syscall name Args Strong name Weak names
+
+# Important: see NOTES.opensolaris about syscalls that return a 64-bit integer.
+
+#
+# these implement libc functions directly
+#
+
+autofssys           - autofssys             iip         _autofssys
+acct                - acct                  i:s         acct
+acctctl             - acctctl               i:ipi       acctctl
+acl                 - acl                   i:siip      acl
+cladm               - cladm                 i:iip       cladm
+clock_getres        - clock_getres          i:ip        clock_getres
+creat               - creat                 Ci:si       __libc_creat        creat
+facl                - facl                  i:iiip      facl
+fpathconf           - fpathconf             i:ii        __fpathcon          fpathconf
+fstatvfs            - fstatvfs              i:ip        __fstatvfs          fstatvfs
+fstatvfs64          - fstatvfs64            i:ip        __fstatvfs64        fstatvfs64
+getcpuid            - getcpuid              i:          getcpuid
+getpflags           - privsys:getpflags     i:i         getpflags
+getmsg              - getmsg                Ri:ppp      getmsg
+getpmsg             - getpmsg               i:pppp      getpmsg
+getpagesizes        - getpagesizes:getpagesizes2  i:pi  __getpagesizes      getpagesizes getpagesizes2
+getpgid             - pgrpsys:getpgid       i:i         __getpgid           getpgid
+getpgrp             - pgrpsys:getpgrp       i:          __getpgrp           getpgrp
+getprojid           - tasksys:getprojid     i:          getprojid
+getrlimit64         - getrlimit64           i:ip        getrlimit64
+getsid              - pgrpsys:getsid        i:i         __getsid            getsid
+gettaskid           - tasksys:gettaskid     i:          gettaskid
+getustack           - context:getustack     i:p         getustack
+getvmusage          - rusagesys:getvmusage  i:iipp      getvmusage
+gtty                - gtty                  i:ip        gtty
+idmap_reg           - sidsys:idmap_reg      i:i         idmap_reg
+idmap_unreg         - sidsys:idmap_unreg    i:i         idmap_unreg
+inst_sync           - inst_sync             i:si        inst_sync
+ioctl               - ioctl                 Ri:iiI      __ioctl             ioctl
+issetugid           - privsys:issetugid     Ei:         issetugid
+lchown              - lchown                i:sii       __lchown            lchown
+lgrpsys             - lgrpsys               i:iip       _lgrpsys
+memcntl             - memcntl               i:piiiii    memcntl
+mincore             - mincore               i:anV       mincore
+modctl              - modctl                i:ip        modctl
+mmap64              - mmap64                i:piiiii    __mmap64            mmap64
+mount               - mount                 i:ppippipi  __mount             mount
+nanosleep           - nanosleep             Ci:pP       __libc_nanosleep    __nanosleep nanosleep
+pathconf            - pathconf              i:pi        __pathconf          pathconf
+pcsample            - pcsample              i:pi        pcsample
+ppoll               - pollsys               RCi:pipp    ppoll
+pread               - pread                 RCi:iPii    __libc_pread        __pread pread
+pread64             - pread64               Ci:iPii     __libc_pread64      __pread64 pread64
+profil              - profil                :piii       __profil            profil
+pwrite              - pwrite                RCi:iPii    __libc_pwrite       __pwrite pwrite
+pwrite64            - pwrite64              RCi:iPii    __libc_pwrite64     __pwrite64 pwrite64
+read                - read                  RCi:ibn     __libc_read         __read read
+readv               - readv                 RCi:ipi     __readv             readv
+resolvepath         - resolvepath           i:spi       resolvepath
+sched_yield         - yield                 i:          __sched_yield       sched_yield
+setcontext          - context:setcontext    i:p         __setcontext        setcontext
+setpgid             - pgrpsys:setpgid       i:ii        __setpgid           setpgid
+setpgrp             - pgrpsys:setpgrp       i:          __setpgrp           setpgrp
+setpflags           - privsys:setpflags     i:ii        setpflags
+setrlimit64         - setrlimit64           i:ip        setrlimit64
+setsid              - pgrpsys:setsid        i:          __setsid            setsid
+setustack           - context:setustack     i:p         setustack
+shmat               - shmsys:shmat          p:ipi       shmat
+shmctl              - shmsys:shmctl         i:iip       shmctl
+shmdt               - shmsys:shmdt          i:p         shmdt
+shmget              - shmsys:shmget         i:iii       shmget
+sigaltstack         - sigaltstack           i:PP        __sigaltstack       sigaltstack
+sigfillset          - sigpending:sigfillset i:P         __sigfillset        sigfillset
+sigpending          - sigpending:sigpending i:p         sigpending
+sigsendset          - sigsendsys            i:pi        sigsendset
+sockconfig          - sockconfig            i:iiis      _sockconfig         sockconfig
+statvfs             - statvfs               i:sp        __statvfs           statvfs
+statvfs64           - statvfs64             i:sp        __statvfs64         statvfs64
+stty                - stty                  i:ip        stty
+sysfs               - sysfs                 i:iii       sysfs
+systeminfo          - systeminfo            i:ipi       sysinfo
+swapctl             - uadmin:swapctl        i:ip        swapctl
+uadmin              - uadmin                i:iii       __uadmin            uadmin
+umount2             - umount2               i:si        umount2
+utssys              - utssys                i:piip      utssys
+uucopy              - uucopy                i:ppi       uucopy
+uucopystr           - uucopystr             i:ppi       uucopystr
+vhangup             - vhangup               i:          vhangup
+waitid              - waitid                RCi:iipi    __waitid            waitid
+write               - write                 RCi:ibn     __libc_write        __write write
+writev              - writev                RCi:ipi     __writev            writev
+
+# msg
+msgctl              - msgsys:msgctl         i:iip       __msgctl            msgctl
+msgget              - msgsys:msgget         i:ii        __msgget            msgget
+msgrcv              - msgsys:msgrcv         Ci:ipiii    __libc_msgrcv       msgrcv
+msgsnd              - msgsys:msgsnd         Ci:ipii     __msgsnd            msgsnd
+
+# exacctsys
+getacct             - exacctsys:getacct     i:iipi      getacct
+putacct             - exacctsys:putacct     i:iipii     putacct
+wracct              - exacctsys:wracct      i:iii       wracct
+
+# *at
+fchownat            - fsat:fchownat         i:isiii     fchownat
+futimesat           - fsat:futimesat        i:isi       futimesat
+renameat            - fsat:renameat         i:isis      renameat
+unlinkat            - fsat:unlinkat         i:isi       unlinkat
+
+# ntp
+ntp_adjtime         - ntp_adjtime           i:p         __adjtimex          adjtimex ntp_adjtime __adjtimex_internal
+ntp_gettime         - ntp_gettime           i:p         ntp_gettime
+
+# sem
+semctl              - semsys:semctl         i:iiiv      semctl
+semget              - semsys:semget         i:iii       semget
+semop               - semsys:semop          i:ipi       semop
+semtimedop          - semsys:semtimedop     i:ipip      semtimedop
+
+# corectl
+core_get_default_content    - corectl:core_get_default_content  i:p core_get_default_content
+core_get_default_path   - corectl:core_get_default_path i:pi    core_get_default_path
+core_get_global_content - corectl:core_get_global_content   i:p     core_get_global_content
+core_get_global_path    - corectl:core_get_global_path  i:pi    core_get_global_path
+core_get_options    - corectl:core_get_options  i:      core_get_options
+core_get_process_content    - corectl:core_get_process_content  i:pi    core_get_process_content
+core_get_process_path   - corectl:core_get_process_path i:pii   core_get_process_path
+core_set_default_content    - corectl:core_set_default_content  i:p core_set_default_content
+core_set_default_path   - corectl:core_set_default_path i:pi    core_set_default_path
+core_set_global_content - corectl:core_set_global_content   i:p core_set_global_content
+core_set_global_path    - corectl:core_set_global_path  i:pi    core_set_global_path
+core_set_options    - corectl:core_set_options  i:i     core_set_options
+core_set_process_content    - corectl:core_set_process_content  i:pi    core_set_process_content
+core_set_process_path   - corectl:core_set_process_path i:pii   core_set_process_path
+
+# zones
+zone_add_datalink   - zone:zone_add_datalink i:is       zone_add_datalink
+zone_boot           - zone:zone_boot        i:i         zone_boot
+zone_check_datalink - zone:zone_check_datalink  i:ps    zone_check_datalink
+zone_destroy        - zone:zone_destroy     i:i         zone_destroy
+zone_enter          - zone:zone_enter       i:i         zone_enter
+zone_getattr        - zone:zone_getattr     i:iipi      zone_getattr
+zone_list           - zone:zone_list        i:pp        zone_list
+zone_list_datalink  - zone:zone_list_datalink   i:ipp   zone_list_datalink
+zone_remove_datalink - zone:zone_del_datalink i:s       zone_remove_datalink
+zone_setattr        - zone:zone_setattr     i:iipi      zone_setattr
+zone_shutdown       - zone:zone_shutdown    i:i         zone_shutdown
+zone_version        - zone:zone_version     i:p         zone_version
+
+# processor
+p_online            - p_online              i:ii        p_online
+processor_bind      - processor_bind        i:iiip      processor_bind
+processor_info      - processor_info        i:ip        processor_info
+pset_create         - pset:pset_create      i:p         pset_create
+pset_destroy        - pset:pset_destroy     i:i         pset_destroy
+pset_assign         - pset:pset_assign      i:iip       pset_assign
+pset_info           - pset:pset_info        i:ippp      pset_info
+pset_bind           - pset:pset_bind        i:iiip      pset_bind
+pset_list           - pset:pset_list        i:pp        pset_list
+pset_setattr        - pset:pset_setattr     i:ii        pset_setattr
+pset_getattr        - pset:pset_getattr     i:ip        pset_getattr
+
+# sockets
+_so_accept          - accept                Ci:iBN      _so_accept
+_so_bind            - bind                  i:ipii      _so_bind
+_so_connect         - connect               Ci:ipi      _so_connect
+_so_getpeername     - getpeername           i:ibNi      _so_getpeername
+_so_getsockname     - getsockname           i:ibNi      _so_getsockname
+_so_getsockopt      - getsockopt            i:iiiBNi    _so_getsockopt
+_so_listen          - listen                i:iii       _so_listen
+recv                - recv                  RCi:ibni    __libc_recv         __recv recv _so_recv
+recvfrom            - recvfrom              RCi:ibniBN  __libc_recvfrom     __recvfrom recvfrom _so_recvfrom
+_so_recvmsg         - recvmsg               RCi:ipi     _so_recvmsg
+_so_send            - send                  RCi:ibni    _so_send
+_so_sendmsg         - sendmsg               RCi:ipi     _so_sendmsg
+_so_sendto          - sendto                RCi:ibnibn  _so_sendto
+_so_setsockopt      - setsockopt            i:iiibn     _so_setsockopt
+_so_shutdown        - shutdown              i:iii       _so_shutdown
+_so_socket          - so_socket             i:iiipi     _so_socket
+_so_socketpair      - so_socketpair         i:p         _so_socketpair
+
+# misc
+_sysconfig          - sysconfig             i:i         _sysconfig
+is_system_labeled   - labelsys:syslabeling  i:          is_system_labeled
+
+#
+# implement these in helper files
+#
+
+sys_access          - access                i:si        __syscall_access
+sys_accessat        - fsat:accessat         i:isi       __syscall_accessat
+sys_allocids        - sidsys:allocids       i:iii       __syscall_allocids
+sys_brk             - brk                   i:p         __syscall_brk
+sys_fcntl           - fcntl                 Ri:iiF      __syscall_fcntl
+sys_fdsync          - fdsync                Ci:ii       __syscall_fdsync
+sys_forkx           - forksys:forkx         i:i         __syscall_forkx
+sys_fstat           - fstat                 i:ip        __syscall_fstat
+sys_fstat64         - fstat64               i:ip        __syscall_fstat64
+sys_fstatat         - fsat:fstatat          i:ispi      __syscall_fstatat
+sys_fstatat64       - fsat:fstatat64        i:ispi      __syscall_fstatat64
+sys_door            - door                  i:iiiiii    __syscall_door
+sys_getcontext      - context:getcontext    i:p         __syscall_getcontext
+sys_getcwd          - getcwd                i:pi        __syscall_getcwd
+sys_getdents        - getdents              i:ipi       __syscall_getdents
+sys_getdents64      - getdents64            i:ipi       __syscall_getdents64
+sys_getloadavg      - getloadavg            i:pi        __syscall_getloadavg
+sys_getpeerucred    - ucredsys:getpeerucred i:ip        __syscall_getpeerucred
+sys_lstat           - lstat                 i:sp        __syscall_lstat
+sys_lstat64         - lstat64               i:sp        __syscall_lstat64
+sys_lwp_private     - lwp_private           i:iii       __syscall_lwp_private
+sys_lwp_sigmask     - lwp_sigmask           Ei:iii      __syscall_lwp_sigmask
+sys_meminfo         - meminfosys:meminfo    i:ip        __syscall_meminfo
+sys_mknod           - mknod                 i:sii       __syscall_mknod
+sys_open            - open                  i:siv       __syscall_open
+sys_open64          - open64                i:pii       __syscall_open64
+sys_openat          - fsat:openat           i:isiv      __syscall_openat
+sys_openat64        - fsat:openat64         i:isiv      __syscall_openat64
+sys_pipe            - pipe                  i:          __syscall_pipe
+sys_port            - port                  i:i         __syscall_port
+sys_priocntlsys     - priocntlsys           i:ipiv      __syscall_priocntlsys
+sys_privsys         - privsys               i:iipii     __syscall_privsys
+sys_pset_getloadavg - pset:pset_getloadavg  i:ipi       __syscall_pset_getloadavg
+sys_putmsg          - putmsg                Ri:ippi     __syscall_putmsg
+sys_putpmsg         - putpmsg               i:ippii     __syscall_putpmsg
+sys_rctlsys         - rctlsys               i:ipppii    __syscall_rctlsys
+sys_rusagesys       - rusagesys             i:ip        __syscall_rusagesys
+sys_sendfilev       - sendfilev:sendfilev   i:ipip      __syscall_sendfilev
+sys_sendfilev64     - sendfilev:sendfilev64 i:ipip      __syscall_sendfilev64
+sys_settaskid       - tasksys:settaskid     i:ii        __syscall_settaskid
+sys_sigaction       - sigaction             i:iPP       __syscall_sigaction
+sys_sigqueue        - sigqueue              i:iiPii     __syscall_sigqueue
+sys_sigtimedwait    - sigtimedwait          Ci:pPP      __syscall_sigtimedwait
+sys_stat            - stat                  i:sp        __syscall_stat
+sys_stat64          - stat64                i:sp        __syscall_stat64
+sys_stime           - stime                 i:i         __syscall_stime
+sys_time            - time                  i:          __syscall_time
+sys_ucred_get       - ucredsys:ucred_get    i:ip        __syscall_ucred_get
+sys_uname           - uname                 i:p         __syscall_uname
+sys_utimes          - utimes                i:sp        __syscall_utimes
+sys_utssys          - utssys                i:piiP      __syscall_utssys
+sys_zone_create     - zone:zone_create      i:p         __syscall_zone_create
+sys_zone_lookup     - zone:zone_lookup      i:p         __syscall_zone_lookup

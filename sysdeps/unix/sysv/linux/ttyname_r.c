@@ -96,10 +96,13 @@ getttyname_r (char *buf, size_t buflen, dev_t mydev, ino64_t myino,
 int
 __ttyname_r (int fd, char *buf, size_t buflen)
 {
+#ifndef __ASSUME_PROC_SELF_FD_NOT_SYMLINK
   char procname[30];
+#endif
   struct stat64 st, st1;
   int dostat = 0;
   int save = errno;
+  ssize_t ret;
 
   /* Test for the absolute minimal size.  This makes life easier inside
      the loop.  */
@@ -149,6 +152,7 @@ __ttyname_r (int fd, char *buf, size_t buflen)
 	  memmove (buf, buf + UNREACHABLE_LEN, ret - UNREACHABLE_LEN);
 	  ret -= UNREACHABLE_LEN;
 	}
+#endif /* __ASSUME_PROC_SELF_FD_NOT_SYMLINK */
 
       /* readlink need not terminate the string.  */
       buf[ret] = '\0';

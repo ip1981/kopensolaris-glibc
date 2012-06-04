@@ -78,6 +78,7 @@ typedef struct
 
 /* The old way: using LDT.  */
 
+#ifndef NO_SET_THREAD_AREA
 /* Structure passed to `modify_ldt', 'set_thread_area', and 'clone' calls.  */
 struct user_desc
 {
@@ -99,6 +100,7 @@ union user_desc_init
   struct user_desc desc;
   unsigned int vals[4];
 };
+#endif /* NO_SET_THREAD_AREA */
 
 
 /* Get the thread descriptor definition.  */
@@ -188,6 +190,7 @@ union user_desc_init
 # endif
 #endif
 
+#ifndef NO_SET_THREAD_AREA
 /* Code to initially initialize the thread pointer.  This might need
    special attention since 'errno' is not yet available and if the
    operation can cause a failure 'errno' must not be touched.  */
@@ -242,6 +245,7 @@ union user_desc_init
 									      \
      _result == 0 ? NULL						      \
      : "set_thread_area failed when setting up thread-local storage\n"; })
+#endif /* NO_SET_THREAD_AREA */
 
 
 /* Return the address of the dtv for the current thread.  */

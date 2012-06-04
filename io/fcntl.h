@@ -124,6 +124,7 @@ typedef __pid_t pid_t;
 #endif	/* XPG */
 
 #ifdef __USE_ATFILE
+# ifndef __AT_DEFINED
 # define AT_FDCWD		-100	/* Special value used to indicate
 					   the *at functions should use the
 					   current working directory. */
@@ -138,6 +139,7 @@ typedef __pid_t pid_t;
 # endif
 # define AT_EACCESS		0x200	/* Test access permitted for
 					   effective IDs, not real IDs.  */
+# endif
 #endif
 
 /* Do the file control operation described by CMD on FD.

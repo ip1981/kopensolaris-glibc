@@ -229,3 +229,5 @@
 #undef HAVE_ARM_PCS_VFP
 
 #endif
+
+#undef	ALLOW_NULL_STRFTIME_FORMAT

@@ -856,6 +856,10 @@ EOF
 	# the GNU system
 	echo `echo ${UNAME_MACHINE}|sed -e 's,[-/].*$,,'`-unknown-gnu`echo ${UNAME_RELEASE}|sed -e 's,/.*$,,'`
 	exit ;;
+    *:GNU/kOpenSolaris:*:*)
+	# other systems with GNU libc and userland
+	echo ${UNAME_MACHINE}-unknown-`echo ${UNAME_SYSTEM} | sed 's,^[^/]*/,,' | tr '[A-Z]' '[a-z]'`-gnu
+	exit ;;
     *:GNU/*:*:*)
 	# other systems with GNU libc and userland
 	echo ${UNAME_MACHINE}-unknown-`echo ${UNAME_SYSTEM} | sed 's,^[^/]*/,,' | tr '[A-Z]' '[a-z]'``echo ${UNAME_RELEASE}|sed -e 's/[-(].*//'`-gnu
@@ -907,6 +911,9 @@ EOF
 	exit ;;
     hexagon:Linux:*:*)
 	echo ${UNAME_MACHINE}-unknown-linux-gnu
+	exit ;;
+    xtensa*:Linux:*:*)
+    	echo ${UNAME_MACHINE}-unknown-linux-gnu
 	exit ;;
     i*86:Linux:*:*)
 	LIBC=gnu
@@ -1204,6 +1211,15 @@ EOF
 	exit ;;
     SX-6:SUPER-UX:*:*)
 	echo sx6-nec-superux${UNAME_RELEASE}
+	exit ;;
+    SX-7:SUPER-UX:*:*)
+	echo sx7-nec-superux${UNAME_RELEASE}
+	exit ;;
+    SX-8:SUPER-UX:*:*)
+	echo sx8-nec-superux${UNAME_RELEASE}
+	exit ;;
+    SX-8R:SUPER-UX:*:*)
+	echo sx8r-nec-superux${UNAME_RELEASE}
 	exit ;;
     SX-7:SUPER-UX:*:*)
 	echo sx7-nec-superux${UNAME_RELEASE}

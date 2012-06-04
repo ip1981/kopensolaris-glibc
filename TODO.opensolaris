@@ -1,0 +1,48 @@
+/usr/include/gnu/stubs-32.h
+
+ptrace details:
+  /proc/PID/{as,ctl,status,sigact,psinfo}
+  PTRACE_PEEK, PTRACE_PEEKDATA: pread(as)
+  PTRACE_PEEKUSR: user_t
+  PTRACE_POKETEXT, PTRACE_POKEDATA: pwrite(as)
+  PTRACE_POKEUSR: user_t
+  PTRACE_CONT:
+  PTRACE_KILL:
+
+  ctl is managed via PC* constants (e.g. PCSTRACE)
+    write command (long) followed by struct
+
+These are solaris extensions that we should implement:
+  _sharefs (share.h)
+  exportfs, nfs_getfh, nfssvc [SYS_nfssys] (sys/nfssec.h) [maybe not]
+  pthread_rwlock_reltimedrdlock_np
+  pthread_rwlock_reltimedwrlock_np
+  fgetattr, fsetattr, getattrat, setattrat
+
+Insert into headers:
+  resolvpath (unistd.h)
+  issetugid (unistd.h)
+  getvmusage (sys/vm_usage.h)
+  str2sig, sig2str (signal.h)
+  sigsend, sigsendset (signal.h)
+  getexecname (stdlib.h)
+  lltostr, ulltostr (stdlib.h)
+  fdwalk, closefrom (stdlib.h)
+
+INVALID_NOT_TERMINATED_TD_P expects to succeed on terminated threads
+
+More __builtin_expect's
+
+More clocks in pthread_condattr_setclock
+
+Use timer_* syscalls
+
+Fix forward.c to include mutex_* and thr_main
+  thr_main should return -1 when libpthread.so is not linked in
+
+Bypass the local PLT
+
+Implement semaphores using a mutex and condition variable
+
+Implement [python] some scripts:
+  Compiler/linker wrapper to translate sun -> gnu compiler/linker options

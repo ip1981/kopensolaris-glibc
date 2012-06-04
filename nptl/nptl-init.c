@@ -41,6 +41,7 @@
 size_t __static_tls_size;
 size_t __static_tls_align_m1;
 
+#ifndef NO_ROBUST_LIST_SUPPORT
 #ifndef __ASSUME_SET_ROBUST_LIST
 /* Negative if we do not have the system call and we can use it.  */
 int __set_robust_list_avail;
@@ -48,6 +49,7 @@ int __set_robust_list_avail;
   __set_robust_list_avail = -1
 #else
 # define set_robust_list_not_avail() do { } while (0)
+#endif
 #endif
 
 #ifndef __ASSUME_FUTEX_CLOCK_REALTIME
@@ -135,7 +137,9 @@ static const struct pthread_functions pthread_functions =
     .ptr_nthreads = &__nptl_nthreads,
     .ptr___pthread_unwind = &__pthread_unwind,
     .ptr__nptl_deallocate_tsd = __nptl_deallocate_tsd,
+#ifndef NO_SETXID_SUPPORT
     .ptr__nptl_setxid = __nptl_setxid,
+#endif
     /* For now only the stack cache needs to be freed.  */
     .ptr_freeres = nptl_freeres,
     .ptr_set_robust = __nptl_set_robust
@@ -168,6 +172,7 @@ __nptl_set_robust (struct pthread *self)
 }
 
 
+
 /* For asynchronous cancellation we use a signal.  This is the handler.  */
 static void
 sigcancel_handler (int sig, siginfo_t *si, void *ctx)
@@ -191,7 +196,9 @@ sigcancel_handler (int sig, siginfo_t *si, void *ctx)
       || si->si_pid != pid
 #endif
       || si->si_code != SI_TKILL)
+{
     return;
+}
 
   struct pthread *self = THREAD_SELF;
 
@@ -215,9 +222,10 @@ sigcancel_handler (int sig, siginfo_t *si, void *ctx)
 	  THREAD_SETMEM (self, result, PTHREAD_CANCELED);
 
 	  /* Make sure asynchronous cancellation is still enabled.  */
-	  if ((newval & CANCELTYPE_BITMASK) != 0)
+	  if ((newval & CANCELTYPE_BITMASK) != 0) {
 	    /* Run the registered destructors and terminate the thread.  */
 	    __do_cancel ();
+      }
 
 	  break;
 	}
@@ -227,18 +235,21 @@ sigcancel_handler (int sig, siginfo_t *si, void *ctx)
 }
 
 
+#ifndef NO_SETXID_SUPPORT
 struct xid_command *__xidcmd attribute_hidden;
 
 /* For asynchronous cancellation we use a signal.  This is the handler.  */
 static void
 sighandler_setxid (int sig, siginfo_t *si, void *ctx)
 {
+#ifndef PTHREAD_T_IS_TID
 #ifdef __ASSUME_CORRECT_SI_PID
   /* Determine the process ID.  It might be negative if the thread is
      in the middle of a fork() call.  */
   pid_t pid = THREAD_GETMEM (THREAD_SELF, pid);
   if (__builtin_expect (pid < 0, 0))
     pid = -pid;
+#endif
 #endif
 
   /* Safety check.  It would be possible to call this function for
@@ -276,6 +287,7 @@ sighandler_setxid (int sig, siginfo_t *si, void *ctx)
   if (atomic_decrement_val (&__xidcmd->cntr) == 0)
     lll_futex_wake (&__xidcmd->cntr, 1, LLL_PRIVATE);
 }
+#endif /* NO_SETXID_SUPPORT */
 
 
 /* When using __thread for this, we do it in libc so as not
@@ -304,15 +316,25 @@ __pthread_initialize_minimal_internal (void)
   /* Minimal initialization of the thread descriptor.  */
   struct pthread *pd = THREAD_SELF;
   INTERNAL_SYSCALL_DECL (err);
-  pd->pid = pd->tid = INTERNAL_SYSCALL (set_tid_address, err, 1, &pd->tid);
+  pd->tid = INTERNAL_SYSCALL (set_tid_address, err, 1, &pd->tid);
+#ifndef PTHREAD_T_IS_TID
+  pd->pid = pd->tid;
+#else
+  pd->pid = getpid();
+#endif
   THREAD_SETMEM (pd, specific[0], &pd->specific_1stblock[0]);
   THREAD_SETMEM (pd, user_stack, true);
+#ifndef lll_init
   if (LLL_LOCK_INITIALIZER != 0)
     THREAD_SETMEM (pd, lock, LLL_LOCK_INITIALIZER);
+#else
+  lll_init (pd->lock);
+#endif
 #if HP_TIMING_AVAIL
   THREAD_SETMEM (pd, cpuclock_offset, GL(dl_cpuclock_offset));
 #endif
 
+#ifndef NO_ROBUST_LIST_SUPPORT
   /* Initialize the robust mutex data.  */
 #ifdef __PTHREAD_MUTEX_HAVE_PREV
   pd->robust_prev = &pd->robust_head;
@@ -327,7 +349,9 @@ __pthread_initialize_minimal_internal (void)
   if (INTERNAL_SYSCALL_ERROR_P (res, err))
 #endif
     set_robust_list_not_avail ();
+#endif
 
+#ifndef NO_FUTEX_SUPPORT
 #ifndef __ASSUME_PRIVATE_FUTEX
   /* Private futexes are always used (at least internally) so that
      doing the test once this early is beneficial.  */
@@ -361,6 +385,7 @@ __pthread_initialize_minimal_internal (void)
 	__set_futex_clock_realtime ();
     }
 #endif
+#endif
 
   /* Set initial thread's stack block from 0 up to __libc_stack_end.
      It will be bigger than it actually is, but for unwind.c/pt-longjmp.c
@@ -385,17 +410,21 @@ __pthread_initialize_minimal_internal (void)
 
   (void) __libc_sigaction (SIGCANCEL, &sa, NULL);
 
+#ifndef NO_SETXID_SUPPORT
   /* Install the handle to change the threads' uid/gid.  */
   sa.sa_sigaction = sighandler_setxid;
   sa.sa_flags = SA_SIGINFO | SA_RESTART;
 
   (void) __libc_sigaction (SIGSETXID, &sa, NULL);
+#endif
 
   /* The parent process might have left the signals blocked.  Just in
      case, unblock it.  We reuse the signal mask in the sigaction
      structure.  It is already cleared.  */
   __sigaddset (&sa.sa_mask, SIGCANCEL);
+#ifndef NO_SETXID_SUPPORT
   __sigaddset (&sa.sa_mask, SIGSETXID);
+#endif
   (void) INTERNAL_SYSCALL (rt_sigprocmask, err, 4, SIG_UNBLOCK, &sa.sa_mask,
 			   NULL, _NSIG / 8);
 
@@ -411,6 +440,7 @@ __pthread_initialize_minimal_internal (void)
 
   __static_tls_size = roundup (__static_tls_size, static_tls_align);
 
+#ifndef PTHREAD_USE_ARCH_STACK_DEFAULT_SIZE
   /* Determine the default allowed stack size.  This is the size used
      in case the user does not specify one.  */
   struct rlimit limit;
@@ -434,6 +464,10 @@ __pthread_initialize_minimal_internal (void)
   /* Round the resource limit up to page size.  */
   limit.rlim_cur = (limit.rlim_cur + pagesz - 1) & -pagesz;
   __default_stacksize = limit.rlim_cur;
+#else
+  /* Don't dynamically compute stack size.  */
+  __default_stacksize = ARCH_STACK_DEFAULT_SIZE;
+#endif /* PTHREAD_USE_ARCH_STACK_DEFAULT_SIZE */
 
 #ifdef SHARED
   /* Transfer the old value from the dynamic linker's internal location.  */
@@ -465,6 +499,10 @@ __pthread_initialize_minimal_internal (void)
 
   /* Determine whether the machine is SMP or not.  */
   __is_smp = is_smp_system ();
+
+#ifdef PLATFORM_PTHREAD_INIT
+PLATFORM_PTHREAD_INIT
+#endif
 }
 strong_alias (__pthread_initialize_minimal_internal,
 	      __pthread_initialize_minimal)

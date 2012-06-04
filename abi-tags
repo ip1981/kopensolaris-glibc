@@ -28,5 +28,7 @@
 
 .*-.*-syllable.*	5	2.0.0	# just an arbitrary value
 
+.*-.*-kopensolaris.*-gnu.*	2	2.0.0	# same as the solaris2 one
+
 # There is no catch-all default here because every supported OS that uses
 # ELF must have its own unique ABI tag.

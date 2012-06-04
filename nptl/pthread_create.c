@@ -21,7 +21,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include "pthreadP.h"
+#include <pthreadP.h>
 #include <hp-timing.h>
 #include <ldsodefs.h>
 #include <atomic.h>
@@ -60,8 +60,13 @@ unsigned int __nptl_nthreads = 1;
 
 struct pthread *
 internal_function
+#ifndef PTHREAD_T_IS_TID
 __find_in_stack_list (pd)
      struct pthread *pd;
+#else
+__find_in_stack_list (tid)
+     pthread_t tid;
+#endif
 {
   list_t *entry;
   struct pthread *result = NULL;
@@ -73,7 +78,11 @@ __find_in_stack_list (pd)
       struct pthread *curp;
 
       curp = list_entry (entry, struct pthread, list);
+#ifndef PTHREAD_T_IS_TID
       if (curp == pd)
+#else
+      if (curp->tid == tid)
+#endif
 	{
 	  result = curp;
 	  break;
@@ -86,7 +95,11 @@ __find_in_stack_list (pd)
 	struct pthread *curp;
 
 	curp = list_entry (entry, struct pthread, list);
+#ifndef PTHREAD_T_IS_TID
 	if (curp == pd)
+#else
+	if (curp->tid == tid)
+#endif
 	  {
 	    result = curp;
 	    break;
@@ -204,10 +217,12 @@ __free_tcb (struct pthread *pd)
 					     TERMINATED_BIT) == 0, 1))
     {
       /* Remove the descriptor from the list.  */
+#ifndef PTHREAD_T_IS_TID
       if (DEBUGGING_P && __find_in_stack_list (pd) == NULL)
 	/* Something is really wrong.  The descriptor for a still
 	   running thread is gone.  */
 	abort ();
+#endif
 
       /* Free TPP data.  */
       if (__builtin_expect (pd->tpp != NULL, 0))
@@ -230,6 +245,14 @@ static int
 start_thread (void *arg)
 {
   struct pthread *pd = (struct pthread *) arg;
+
+#ifdef ATTR_FLAG_CREATE_FAILED
+  if ((pd->flags & ATTR_FLAG_CREATE_FAILED) && IS_DETACHED (pd))
+    {
+      __free_tcb (pd);
+      __exit_thread_inline (0);
+    }
+#endif
 
 #if HP_TIMING_AVAIL
   /* Remember the time when the thread was started.  */
@@ -259,6 +282,11 @@ start_thread (void *arg)
       INTERNAL_SYSCALL (set_robust_list, err, 2, &pd->robust_head,
 			sizeof (struct robust_list_head));
     }
+#endif
+#endif
+
+#ifdef PLATFORM_THREAD_START
+PLATFORM_THREAD_START
 #endif
 
   /* If the parent was running cancellation handlers while creating
@@ -357,6 +385,7 @@ start_thread (void *arg)
      the breakpoint reports TD_THR_RUN state rather than TD_THR_ZOMBIE.  */
   atomic_bit_set (&pd->cancelhandling, EXITING_BIT);
 
+#ifndef NO_ROBUST_LIST_SUPPORT
 #ifndef __ASSUME_SET_ROBUST_LIST
   /* If this thread has any robust mutexes locked, handle them now.  */
 # ifdef __PTHREAD_MUTEX_HAVE_PREV
@@ -416,6 +445,7 @@ start_thread (void *arg)
       /* Reset the value so that the stack can be reused.  */
       pd->setxid_futex = 0;
     }
+#endif
 
   /* We cannot call '_exit' here.  '_exit' will terminate the process.
 
@@ -524,7 +554,12 @@ __pthread_create_2_1 (newthread, attr, start_routine, arg)
 	pd->schedpolicy = iattr->schedpolicy;
       else if ((pd->flags & ATTR_FLAG_POLICY_SET) == 0)
 	{
+#ifndef TPP_PTHREAD_SCHED
 	  pd->schedpolicy = INTERNAL_SYSCALL (sched_getscheduler, scerr, 1, 0);
+#else
+      struct sched_param _param;
+      pthread_getschedparam (pthread_self (), &pd->schedpolicy, &_param);
+#endif
 	  pd->flags |= ATTR_FLAG_POLICY_SET;
 	}
 
@@ -533,7 +568,12 @@ __pthread_create_2_1 (newthread, attr, start_routine, arg)
 		sizeof (struct sched_param));
       else if ((pd->flags & ATTR_FLAG_SCHED_SET) == 0)
 	{
+#ifndef TPP_PTHREAD_SCHED
 	  INTERNAL_SYSCALL (sched_getparam, scerr, 2, 0, &pd->schedparam);
+#else
+      int _policy;
+      pthread_getschedparam (pthread_self (), &_policy, &pd->schedparam);
+#endif
 	  pd->flags |= ATTR_FLAG_SCHED_SET;
 	}
 

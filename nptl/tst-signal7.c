@@ -39,6 +39,7 @@ do_test (void)
       result = 1;
     }
 
+#ifdef SIGSETXID
   errno = 0;
   if (sigaction (SIGSETXID, NULL, NULL) == 0)
     {
@@ -50,6 +51,7 @@ do_test (void)
       puts ("sigaction(SIGSETXID) did not set errno to EINVAL");
       result = 1;
     }
+#endif
 
   return result;
 }

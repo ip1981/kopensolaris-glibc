@@ -57,6 +57,10 @@ __BEGIN_DECLS
 # define D_PTR(map, i) (map)->i->d_un.d_ptr
 #endif
 
+#ifndef TLS_STATIC_EXTRA_SURPLUS
+# define TLS_STATIC_EXTRA_SURPLUS 0
+#endif
+
 /* Result of the lookup functions and how to retrieve the base address.  */
 typedef struct link_map *lookup_t;
 #define LOOKUP_VALUE(map) map
@@ -606,6 +610,11 @@ struct rtld_global_ro
 # define PROCINFO_CLASS EXTERN
 #endif
 #include <dl-procinfo.c>
+
+  /* Platform-specific definitions.  */
+#ifdef PLATFORM_RTLD_GLOBAL_RO_FIELDS
+PLATFORM_RTLD_GLOBAL_RO_FIELDS
+#endif
 
   /* Names of shared object for which the RPATH should be ignored.  */
   EXTERN const char *_dl_inhibit_rpath;

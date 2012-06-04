@@ -531,6 +531,14 @@ case $basic_machine in
 	c6x-*)
 		basic_machine=tic6x-`echo $basic_machine | sed 's/^[^-]*-//'`
 		;;
+	blackfin)
+		basic_machine=bfin-unknown
+		os=-linux
+		;;
+	blackfin-*)
+		basic_machine=bfin-`echo $basic_machine | sed 's/^[^-]*-//'`
+		os=-linux
+		;;
 	c90)
 		basic_machine=c90-cray
 		os=-unicos
@@ -771,6 +779,14 @@ case $basic_machine in
 		basic_machine=m68k-`echo $basic_machine | sed 's/^[^-]*-//'`
 		os=-linux
 		;;
+	m68knommu)
+		basic_machine=m68k-unknown
+		os=-linux
+		;;
+	m68knommu-*)
+		basic_machine=m68k-`echo $basic_machine | sed 's/^[^-]*-//'`
+		os=-linux
+		;;
 	m88k-omron*)
 		basic_machine=m88k-omron
 		;;
@@ -788,6 +804,10 @@ case $basic_machine in
 	mingw32)
 		basic_machine=i386-pc
 		os=-mingw32
+		;;
+	mingw32ce)
+		basic_machine=arm-unknown
+		os=-mingw32ce
 		;;
 	mingw32ce)
 		basic_machine=arm-unknown
@@ -941,6 +961,14 @@ case $basic_machine in
 		basic_machine=hppa-`echo $basic_machine | sed 's/^[^-]*-//'`
 		os=-linux
 		;;
+	parisc)
+		basic_machine=hppa-unknown
+		os=-linux
+		;;
+	parisc-*)
+		basic_machine=hppa-`echo $basic_machine | sed 's/^[^-]*-//'`
+		os=-linux
+		;;
 	pbd)
 		basic_machine=sparc-tti
 		;;
@@ -1047,6 +1075,10 @@ case $basic_machine in
 		basic_machine=mipsisa32-sde
 		os=-elf
 		;;
+	sde)
+		basic_machine=mipsisa32-sde
+		os=-elf
+		;;
 	sei)
 		basic_machine=mips-sei
 		os=-seiux
@@ -1057,6 +1089,9 @@ case $basic_machine in
 	sh)
 		basic_machine=sh-hitachi
 		os=-hms
+		;;
+	sh5el)
+		basic_machine=sh5le-unknown
 		;;
 	sh5el)
 		basic_machine=sh5le-unknown
@@ -1143,6 +1178,10 @@ case $basic_machine in
 		;;
 	tile*)
 		basic_machine=$basic_machine-unknown
+		os=-linux-gnu
+		;;
+	tile*)
+		basic_machine=tile-unknown
 		os=-linux-gnu
 		;;
 	tx39)
@@ -1569,6 +1608,9 @@ case $basic_machine in
 		os=-aout
 		;;
 	mep-*)
+		os=-elf
+		;;
+        mep-*)
 		os=-elf
 		;;
 	mips*-cisco)

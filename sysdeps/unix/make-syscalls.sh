@@ -171,7 +171,7 @@ while read file srcfile caller syscall args strong weak; do
   # Make sure only the first syscall rule is used, if multiple dirs
   # define the same syscall.
   echo ''
-  echo "#### CALL=$file NUMBER=$callnum ARGS=$args SOURCE=$srcfile"
+  echo "#### CALL=$file NUMBER=$callnum SUBNUMBER=$subcallnum ARGS=$args SOURCE=$srcfile"
 
   # If there are versioned aliases the entry is only generated for the
   # shared library, unless it is a default version.

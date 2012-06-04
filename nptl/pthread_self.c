@@ -16,13 +16,17 @@
    License along with the GNU C Library; if not, see
    <http://www.gnu.org/licenses/>.  */
 
-#include "pthreadP.h"
+#include <pthreadP.h>
 #include <tls.h>
 
 
 pthread_t
 __pthread_self (void)
 {
+#ifndef PTHREAD_T_IS_TID
   return (pthread_t) THREAD_SELF;
+#else
+  return THREAD_GETMEM (THREAD_SELF, tid);
+#endif
 }
 strong_alias (__pthread_self, pthread_self)

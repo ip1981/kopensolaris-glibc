@@ -21,7 +21,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include "pthreadP.h"
+#include <pthreadP.h>
 #include <jmpbuf-unwind.h>
 
 #ifdef HAVE_FORCED_UNWIND
