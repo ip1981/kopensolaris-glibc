@@ -1,6 +1,5 @@
 /* bits/types.h -- definitions of __*_t types underlying *_t types.
-   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008
-    Free Software Foundation, Inc.
+   Copyright (C) 2002-2012 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -14,9 +13,8 @@
    Lesser General Public License for more details.
 
    You should have received a copy of the GNU Lesser General Public
-   License along with the GNU C Library; if not, write to the Free
-   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307 USA.  */
+   License along with the GNU C Library; if not, see
+   <http://www.gnu.org/licenses/>.  */
 
 /*
  * Never include this file directly; use <sys/types.h> instead.
@@ -178,6 +176,11 @@ __STD_TYPE __FSFILCNT_T_TYPE __fsfilcnt_t;
 __STD_TYPE __FSFILCNT64_T_TYPE __fsfilcnt64_t;
 
 __STD_TYPE __SSIZE_T_TYPE __ssize_t; /* Type of a byte count, or error.  */
+
+/* Signed long type used in system calls.  */
+__STD_TYPE __SYSCALL_SLONG_TYPE __syscall_slong_t;
+/* Unsigned long type used in system calls.  */
+__STD_TYPE __SYSCALL_ULONG_TYPE __syscall_ulong_t;
 
 /* These few don't really vary by system, they always correspond
    to one of the other defined types.  */
