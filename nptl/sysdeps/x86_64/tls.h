@@ -20,7 +20,11 @@
 #define _TLS_H	1
 
 #ifndef __ASSEMBLER__
-# include <asm/prctl.h>	/* For ARCH_SET_FS.  */
+
+# if defined(__linux__)
+#  include <asm/prctl.h>	/* For ARCH_SET_FS.  */
+# endif /* __linux__ */
+
 # include <stdbool.h>
 # include <stddef.h>
 # include <stdint.h>
@@ -127,7 +131,7 @@ typedef struct
 # define GET_DTV(descr) \
   (((tcbhead_t *) (descr))->dtv)
 
-
+# if defined(__linux__)
 /* Code to initially initialize the thread pointer.  This might need
    special attention since 'errno' is not yet available and if the
    operation can cause a failure 'errno' must not be touched.
@@ -153,7 +157,7 @@ typedef struct
 									      \
     _result ? "cannot set %fs base address for thread-local storage" : 0;     \
   })
-
+# endif /* __linux__ */
 
 /* Return the address of the dtv for the current thread.  */
 # define THREAD_DTV() \
