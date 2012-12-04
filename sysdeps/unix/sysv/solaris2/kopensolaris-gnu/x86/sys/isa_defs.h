@@ -45,7 +45,9 @@
 # define _POINTER_ALIGNMENT	8
 # define _MAX_ALIGNMENT		16
 # define _ALIGNMENT_REQUIRED	1
-# define _LP64
+# ifndef _LP64
+#  define _LP64
+# endif
 # define _MULTI_DATAMODEL
 # define __i386_COMPAT
 #else /* __i386__ */
