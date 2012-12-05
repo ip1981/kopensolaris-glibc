@@ -1,9 +1,11 @@
-/* Copyright (C) 1992,1993,1995-2000,2002-2006,2007,2008
+/* Copyright (C) 1992,1993,1995-2000,2002-2006,2007-2012
 	Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper, <drepper@gnu.org>, August 1995.
    OpenSolaris bits contributed by David Bartley
     <dtbartle@csclub.uwaterloo.ca>, 2008.
+   OpenSolaris bits for amd64 contributed by Igor Pashev
+    <pashev.igor@gmail.com>, 2012.
 
    The GNU C Library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -20,14 +22,14 @@
    Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
    02111-1307 USA.  */
 
-#ifndef _OPENSOLARIS_I386_SYSDEP_H
-#define _OPENSOLARIS_I386_SYSDEP_H 1
+#ifndef _OPENSOLARIS_X86_64_SYSDEP_H
+#define _OPENSOLARIS_X86_64_SYSDEP_H 1
 
 #define DECLARE_INLINE_SYSCALL(ret, name, args...) \
     extern ret __syscall_##name (args)
 
 /* There is some commonality.  */
-#include <sysdeps/unix/i386/sysdep.h>
+#include <sysdeps/unix/x86_64/sysdep.h>
 #include <bp-sym.h>
 #include <bp-asm.h>
 #include <syscallP.h>
@@ -321,4 +323,4 @@
 
 #endif /* __ASSEMBLER__ */
 
-#endif /* _OPENSOLARIS_I386_SYSDEP_H */
+#endif /* _OPENSOLARIS_X86_64_SYSDEP_H */
