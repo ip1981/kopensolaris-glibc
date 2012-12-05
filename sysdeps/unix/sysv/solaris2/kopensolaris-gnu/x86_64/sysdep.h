@@ -43,19 +43,19 @@
    is too complicated here since we have no PC-relative addressing mode.  */
 #else
 # ifdef __ASSEMBLER__
-#  define PTR_MANGLE(reg)   xorl %gs:POINTER_GUARD, reg;              \
-                roll $9, reg
-#  define PTR_DEMANGLE(reg) rorl $9, reg;                     \
-                xorl %gs:POINTER_GUARD, reg
+#  define PTR_MANGLE(reg)   xorq %fs:POINTER_GUARD, reg;              \
+                rolq $17, reg
+#  define PTR_DEMANGLE(reg) rorq $17, reg;                     \
+                xorq %fs:POINTER_GUARD, reg
 # else
-#  define PTR_MANGLE(var)   asm ("xorl %%gs:%c2, %0\n"            \
-                     "roll $9, %0"                \
+#  define PTR_MANGLE(var)   asm ("xorq %%fs:%c2, %0\n"            \
+                     "rolq $17, %0"                \
                      : "=r" (var)                 \
                      : "0" (var),                 \
                        "i" (offsetof (tcbhead_t,          \
                               pointer_guard)))
-#  define PTR_DEMANGLE(var) asm ("rorl $9, %0\n"                  \
-                     "xorl %%gs:%c2, %0"              \
+#  define PTR_DEMANGLE(var) asm ("rorq $17, %0\n"                  \
+                     "xorq %%fs:%c2, %0"              \
                      : "=r" (var)                 \
                      : "0" (var),                 \
                        "i" (offsetof (tcbhead_t,          \
