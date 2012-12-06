@@ -281,11 +281,23 @@
 # endif /* _LIBC_REENTRANT */
 #endif  /* PIC */
 
-/* TODO: use sysenter instead of int */
+/*
+ * See nice comment in sysdeps/unix/sysv/linux/x86_64/sysdep.h
+ * about registers usage in function calls and in syscalls.
+ */
 #undef  DO_CALL
 #define DO_CALL(syscall_name, args)                           \
+    DOARGS_##args                                             \
     movl $SYS_ify (syscall_name), %eax;                       \
-    int $0x91
+    syscall
+
+# define DOARGS_0 /* nothing */
+# define DOARGS_1 /* nothing */
+# define DOARGS_2 /* nothing */
+# define DOARGS_3 /* nothing */
+# define DOARGS_4 movq %rcx, %r10;
+# define DOARGS_5 DOARGS_4
+# define DOARGS_6 DOARGS_5
 
 #else   /* !__ASSEMBLER__ */
 
