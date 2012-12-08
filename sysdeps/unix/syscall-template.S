@@ -39,7 +39,22 @@
    functions in libc are plain stubs and which have nontrivial C wrappers.
    Some versions of the "plain" stub generation macros are more than a few
    instructions long and the untrained eye might not distinguish them from
-   some compiled code that inexplicably lacks source line information.  */
+   some compiled code that inexplicably lacks source line information.
+
+
+   illumos/solaris specific:
+
+      SYSCALL_SUBCALL_NAME, if defined, specifies a "subcall" name - symbolic
+   name of the first argument to the real system call. E. g. zone_list(a, b)
+   is not a real syscall, but the syscall zone(4, a, b); zone_setattr(...) is
+   zone(9, ...).  Iff this macro is defined, we use PSEUDO_SUBCALL() instead
+   of plain PSEUDO().  Also note that SYSCALL_NARGS is a number of arguments
+   for a real syscall (see sysdeps/unix/make-syscalls.sh).
+
+      SYSCALL_NAME is the name of the real syscall if SYSCALL_SUBCALL_NAME
+   is defined.  For example, SYSCALL_NAME=zone for SYSCALL_SYMBOL=zone_list.
+
+*/
 
 #if SYSCALL_CANCELLABLE
 # include <sysdep-cancel.h>
@@ -52,14 +67,27 @@
 #define T_PSEUDO_ERRVAL(SYMBOL, NAME, N)	PSEUDO_ERRVAL (SYMBOL, NAME, N)
 #define T_PSEUDO_END(SYMBOL)			PSEUDO_END (SYMBOL)
 #define T_PSEUDO_END_NOERRNO(SYMBOL)		PSEUDO_END_NOERRNO (SYMBOL)
-#define T_PSEUDO_END_ERRVAL(SYMBOL)		PSEUDO_END_ERRVAL (SYMBOL)
+#define T_PSEUDO_END_ERRVAL(SYMBOL)		 PSEUDO_END_ERRVAL (SYMBOL)
+
+#define T_PSEUDO_SUBCALL(SYMBOL, NAME, SUB, N) \
+    PSEUDO_SUBCALL (SYMBOL, NAME, SUB, N)
+
+#define T_PSEUDO_SUBCALL_NOERRNO(SYMBOL, NAME, SUB, N) \
+    PSEUDO_SUBCALL_NOERRNO (SYMBOL, NAME, SUB, N)
+
+#define T_PSEUDO_SUBCALL_ERRVAL(SYMBOL, NAME, SUB, N) \
+    PSEUDO_SUBCALL_ERRVAL (SYMBOL, NAME, SUB, N)
 
 #if SYSCALL_NOERRNO
 
 /* This kind of system call stub never returns an error.
    We return the return value register to the caller unexamined.  */
 
+#ifdef SYSCALL_SUBCALL_NAME
+T_PSEUDO_SUBCALL_NOERRNO (SYSCALL_SYMBOL, SYSCALL_NAME, SYSCALL_SUBCALL_NAME, SYSCALL_NARGS)
+#else
 T_PSEUDO_NOERRNO (SYSCALL_SYMBOL, SYSCALL_NAME, SYSCALL_NARGS)
+#endif
 	ret_NOERRNO
 T_PSEUDO_END_NOERRNO (SYSCALL_SYMBOL)
 
@@ -69,7 +97,11 @@ T_PSEUDO_END_NOERRNO (SYSCALL_SYMBOL)
    value, or zero for success.  We may massage the kernel's return value
    to meet that ABI, but we never set errno here.  */
 
+#ifdef SYSCALL_SUBCALL_NAME
+T_PSEUDO_SUBCALL_ERRVAL (SYSCALL_SYMBOL, SYSCALL_NAME, SYSCALL_SUBCALL_NAME, SYSCALL_NARGS)
+#else
 T_PSEUDO_ERRVAL (SYSCALL_SYMBOL, SYSCALL_NAME, SYSCALL_NARGS)
+#endif
 	ret_ERRVAL
 T_PSEUDO_END_ERRVAL (SYSCALL_SYMBOL)
 
@@ -78,7 +110,11 @@ T_PSEUDO_END_ERRVAL (SYSCALL_SYMBOL)
 /* This is a "normal" system call stub: if there is an error,
    it returns -1 and sets errno.  */
 
+#ifdef SYSCALL_SUBCALL_NAME
+T_PSEUDO_SUBCALL (SYSCALL_SYMBOL, SYSCALL_NAME, SYSCALL_SUBCALL_NAME, SYSCALL_NARGS)
+#else
 T_PSEUDO (SYSCALL_SYMBOL, SYSCALL_NAME, SYSCALL_NARGS)
+#endif
 	ret
 T_PSEUDO_END (SYSCALL_SYMBOL)
 

@@ -238,23 +238,19 @@ while read file srcfile caller syscall args strong weak; do
 	(echo '/* Dummy module requested by syscalls.list */'; \\"
   ;;
   x*)
-  if [ $noerrno = 0 ]; then
-      noerrno_s=''
-  else
-      noerrno_s='_NOERRNO'
-  fi
-  case x"$subcallnum" in
-    x) pseudo_line="PSEUDO$noerrno_s ($strong, $syscall, $nargs)";;
-    *) pseudo_line="PSEUDO_SUBCALL$noerrno_s ($strong, $syscall, $subcall, `expr $nargs + 1`)";;
-    esac
 
   echo "\
 	\$(make-target-directory)
 	(echo '#define SYSCALL_NAME $syscall'; \\
-	 echo '#define SYSCALL_NARGS $nargs'; \\
 	 echo '#define SYSCALL_SYMBOL $strong'; \\"
-  [ x"$subcallnum" = x ] || echo "\
-	 echo '#define SYSCALL_SUBCALL_NUM $subcallnum'; \\"
+  if [ x"$subcallnum" != x ]; then
+     echo "\
+	 echo '#define SYSCALL_SUBCALL_NAME $subcall'; \\
+	 echo '#define SYSCALL_NARGS `expr $nargs + 1`'; \\"
+  else
+     echo "\
+	 echo '#define SYSCALL_NARGS $nargs'; \\"
+  fi
   [ $restart = 0 ] || echo "\
 	 echo '#define SYSCALL_RESTARTABLE 1'; \\"
   [ $cancellable = 0 ] || echo "\

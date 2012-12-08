@@ -97,6 +97,13 @@
 # define SYSCALL_ERROR_LABEL syscall_error
 #endif
 
+/*
+ * Arguments for syscalls of OpenSolaris kernel on i386
+ * are passed in the stack, so when libc's syscall stub
+ * is called, arguments are already at proper places.
+ * At least if we use int $0x91.
+ */
+
 #undef  PSEUDO
 #define PSEUDO(name, syscall_name, args)                      \
   .text;                                      \
@@ -109,6 +116,11 @@
 2:                                              \
   L(pseudo_end):
 
+/*
+ * In case of a "subcall" we have to put subcall number
+ * before actual arguments, and thus we need to save
+ * return address before syscall, and restore after.
+ */
 #define	PSEUDO_SUBCALL(name, syscall_name, subcall_name, args)				      \
   .text;                                      \
   ENTRY (name)                                    \
