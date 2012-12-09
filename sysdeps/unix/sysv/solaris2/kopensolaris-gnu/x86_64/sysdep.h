@@ -111,23 +111,31 @@
 2:                                              \
   L(pseudo_end):
 
+/* To "subcall" we have to move arguments for freeing the first
+ * position for a "subcall" number. E. g. for zone_list(a, b):
+ *
+ * zone_list(a, b):     rdi=a, rsi=b          _ zone_list
+ * |                                         /
+ * \_ zone(4, a, b):    rax=<syscall#>, rdi=4, rsi=a, rdx=b
+ *
+ * In general:
+ * syscall -> eax
+ * subcall -> rdi -> rsi -> rdx -> rcx -> r8 -> r9
+ * But before syscall itself we have to move rcx -> r10,
+ * so we copy rdx directly into r10 (rdx -> r10) and
+ * use DO_SYSCALL instead of DO_CALL.
+*/
 #define	PSEUDO_SUBCALL(name, syscall_name, subcall_name, args)				      \
   .text;                                      \
   ENTRY (name)                                    \
-    movl 0(%esp), %ecx;                               \
-    movl %ecx, -4(%esp);							\
-    addl $-4, %esp; \
-    movl $SYS_ify (SUB_##subcall_name), 4(%esp);							\
+    SUBCALL_MOVE_ARGS_##args                       \
+    movq $SYS_ify (SUB_##subcall_name), %rdi;							\
   L(restart):                                       \
-    DO_CALL (syscall_name, args);                         \
+    DO_SYSCALL (syscall_name);                         \
     jnb 2f;										\
     DO_RESTART                             \
-    movl %ecx, 4(%esp);							\
-    addl $4, %esp; \
     jmp SYSCALL_ERROR_LABEL;                           \
 2:											\
-    movl %ecx, 4(%esp);							\
-    addl $4, %esp; \
   L(pseudo_end):
 
 #undef  PSEUDO_END
@@ -144,13 +152,9 @@
 #define	PSEUDO_SUBCALL_NOERRNO(name, syscall_name, subcall_name, args)	      \
   .text;                                      \
   ENTRY (name)                                    \
-    movl 0(%esp), %ecx;                               \
-    movl %ecx, -4(%esp);							\
-    addl $-4, %esp; \
-    movl $SYS_ify (SUB_##subcall_name), 4(%esp);							\
-    DO_CALL (syscall_name, args);                         \
-    movl %ecx, 4(%esp);							\
-    addl $4, %esp;
+    SUBCALL_MOVE_ARGS_##args                       \
+    movq $SYS_ify (SUB_##subcall_name), %rdi;							\
+    DO_SYSCALL (syscall_name);                         \
 
 #undef  PSEUDO_END_NOERRNO
 #define PSEUDO_END_NOERRNO(name)                          \
@@ -175,12 +179,10 @@
 #define PSEUDO_SUBCALL_ERRVAL(name, syscall_name, subcall_name, args)         \
   .text;                                      \
   ENTRY (name)                                    \
-    movl 0(%esp), %ecx;                               \
-    movl %ecx, -4(%esp);							\
-    addl $-4, %esp; \
-    movl $SYS_ify (SUB_##subcall_name), 4(%esp);							\
+    SUBCALL_MOVE_ARGS_##args                       \
+    movq $SYS_ify (SUB_##subcall_name), %rdi;							\
   L(restart):                                       \
-    DO_CALL (syscall_name, args);                         \
+    DO_SYSCALL (syscall_name);                         \
     jnb 1f;										\
     cmpl $ERESTART, %eax;                   \
     jne 2f;                                      \
@@ -188,8 +190,20 @@
     jmp 2f;                             \
 1:  xorl %eax, %eax;                        \
 2:											\
-    movl %ecx, 4(%esp);                 \
-    addl $4, %esp;
+
+
+#define SUBCALL_MOVE_ARGS_0 /* cannot happen */
+#define SUBCALL_MOVE_ARGS_1 /* nothing */
+#define SUBCALL_MOVE_ARGS_2 movq %rdi, %rsi;
+#define SUBCALL_MOVE_ARGS_3 movq %rsi, %rdx; SUBCALL_MOVE_ARGS_2
+
+/* Copy directly into r10 skipping rcx.
+ * See comment before PSEUDO_SUBCALL: */
+#define SUBCALL_MOVE_ARGS_4 movq %rdx, %r10; SUBCALL_MOVE_ARGS_3
+
+#define SUBCALL_MOVE_ARGS_5 movq %rcx, %r8; SUBCALL_MOVE_ARGS_4
+#define SUBCALL_MOVE_ARGS_6 movq %r8, %r9; SUBCALL_MOVE_ARGS_5
+
 
 
 #undef  PSEUDO_END_ERRVAL
@@ -281,16 +295,26 @@
 # endif /* _LIBC_REENTRANT */
 #endif  /* PIC */
 
+
+
 /*
- * See nice comment in sysdeps/unix/sysv/linux/x86_64/sysdep.h
- * about registers usage in function calls and in syscalls.
+ * We define "pure" syscall for using in PSEUDO_SUBCALL* macros
+ * to avoid overhead rdx -> rcx -> r10, and just use rdx -> r10
  */
-#undef  DO_CALL
-#define DO_CALL(syscall_name, args)                           \
-    DOARGS_##args                                             \
+#define DO_SYSCALL(syscall_name)                              \
     movl $SYS_ify (syscall_name), %eax;                       \
     syscall
 
+#undef  DO_CALL
+#define DO_CALL(syscall_name, args)                           \
+    DOARGS_##args                                             \
+    DO_SYSCALL(syscall_name)
+
+/*
+ * See nice comment in sysdeps/unix/sysv/linux/x86_64/sysdep.h
+ * about registers usage in function calls and in syscalls.
+ * kOpenSolaris/x86_64 uses the same syscall convention as linux.
+ */
 # define DOARGS_0 /* nothing */
 # define DOARGS_1 /* nothing */
 # define DOARGS_2 /* nothing */
