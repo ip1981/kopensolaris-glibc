@@ -21,6 +21,9 @@
 # error "Never include <bits/stat.h> directly; use <sys/stat.h> instead."
 #endif
 
+#ifndef _SYS_BITS_H
+#define _SYS_BITS_H 1
+
 #include <bits/wordsize.h>
 
 /* Length of array allocated for file system type name.  */
@@ -228,3 +231,5 @@ struct stat64_32
 
 #define S_ISDOOR(mode)  (((mode) & 0xF000) == S_IFDOOR)
 #define S_ISPORT(mode)  (((mode) & 0xF000) == S_IFPORT)
+
+#endif /* _SYS_BITS_H */
