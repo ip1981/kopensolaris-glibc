@@ -44,7 +44,6 @@
 #define	O_NOCTTY	0x800
 #define	O_PRIV		0x1000
 #define	O_XATTR		0x4000
-#define	O_NOFOLLOW	0x20000
 #define	O_NOLINKS	0x40000
 
 #if defined __USE_POSIX199309 || defined __USE_UNIX98
@@ -53,9 +52,14 @@
 #endif
 #define O_FSYNC		O_SYNC
 
+#ifdef __USE_XOPEN2K8
+# define O_DIRECTORY    0x10000 /* Must be a directory.  */
+# define O_NOFOLLOW     0x20000 /* Do not follow links.  */
+# define O_CLOEXEC      0x80000 /* Set close_on_exec.  */
+#endif
+
 #ifdef __USE_GNU
 #define O_DIRECT	0x1000000
-#define O_DIRECTORY	0x2000000
 #endif
 
 #ifdef __USE_LARGEFILE64
