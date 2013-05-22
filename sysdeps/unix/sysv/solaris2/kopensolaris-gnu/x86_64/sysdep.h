@@ -325,29 +325,6 @@
 
 #else   /* !__ASSEMBLER__ */
 
-/* Consistency check for position-independent code.  */
-#ifdef __PIC__
-# define check_consistency()                              \
-  ({ int __res;                                   \
-     __asm__ __volatile__                             \
-       ("call __i686.get_pc_thunk.cx;"                        \
-    "addl $_GLOBAL_OFFSET_TABLE_, %%ecx;"                     \
-    "subl %%ebx, %%ecx;"                              \
-    "je 1f;"                                  \
-    "ud2;"                                    \
-    "1:\n"                                    \
-    ".section .gnu.linkonce.t.__i686.get_pc_thunk.cx,\"ax\",@progbits;"   \
-    ".globl __i686.get_pc_thunk.cx;"                      \
-    ".hidden __i686.get_pc_thunk.cx;"                     \
-    ".type __i686.get_pc_thunk.cx,@function;"                 \
-    "__i686.get_pc_thunk.cx:"                         \
-    "movl (%%esp), %%ecx;"                            \
-    "ret;"                                    \
-    ".previous"                               \
-    : "=c" (__res));                              \
-     __res; })
-#endif
-
 /* TODO: This is a terrible implementation of INTERNAL_SYSCALL.  */
 
 /* Some NPTL code calls these macros.  */
