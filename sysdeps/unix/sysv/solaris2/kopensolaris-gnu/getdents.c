@@ -17,7 +17,7 @@
    Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
    02111-1307 USA.  */
 
-#include <sys/types,h>
+#include <sys/types.h>
 
 #define __KERNEL_DIRENT
 struct kernel_dirent
@@ -27,6 +27,5 @@ struct kernel_dirent
     unsigned short d_reclen;
     char d_name[1];
   };
-#endif
 
 #include <sysdeps/unix/sysv/linux/getdents.c>
