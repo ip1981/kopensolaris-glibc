@@ -22,29 +22,29 @@
 ENTRY (__vfork)
 
     /* Save the return address */
-    popl scratch; cfi_adjust_cfa_offset (-8);
+    popq scratch; cfi_adjust_cfa_offset (-8);
 
     /* Call vforkx(0) */
-    pushl $0
-    pushl $SYS_SUB_vforkx
-    pushl scratch
+    pushq $0
+    pushq $SYS_SUB_vforkx
+    pushq scratch
 	cfi_adjust_cfa_offset (24);
     DO_CALL (forksys, 1)
     jb 2f
-    addl $24, %rsp; cfi_adjust_cfa_offset (-24);
+    addq $24, %rsp; cfi_adjust_cfa_offset (-24);
 
     /* In the parent process, %rdx == 0, %rax == child pid.
        In the child process, %rdx == 1, %rax == parent pid. */
-    decl %rdx
-    andl %rdx, %rax
+    decq %rdx
+    andq %rdx, %rax
 
     /* Jump to the old return address */
     jmp *scratch
 
 2:
     /* Restore the return address and jump to the syscall error label */
-    addl $24, %rsp; cfi_adjust_cfa_offset (-24);
-    pushl scratch; cfi_adjust_cfa_offset (8);
+    addq $24, %rsp; cfi_adjust_cfa_offset (-24);
+    pushq scratch; cfi_adjust_cfa_offset (8);
     jmp SYSCALL_ERROR_LABEL
 
 L(pseudo_end):
