@@ -108,10 +108,8 @@ getttyname (const char *dev, dev_t mydev, ino64_t myino, int save, int *dostat)
 }
 
 
-#ifndef __ASSUME_PROC_SELF_FD_NOT_SYMLINK
 /* Static buffer in `ttyname'.  */
 libc_freeres_ptr (static char *ttyname_buf);
-#endif
 
 
 /* Return the pathname of the terminal FD is open on, or NULL on errors.
@@ -119,27 +117,22 @@ libc_freeres_ptr (static char *ttyname_buf);
 char *
 ttyname (int fd)
 {
-#ifndef __ASSUME_PROC_SELF_FD_NOT_SYMLINK
   static size_t buflen;
   char procname[30];
-#endif
   struct stat64 st, st1;
   int dostat = 0;
   char *name;
   int save = errno;
-#ifndef __TTYNAME_NO_CHECKS
   struct termios term;
 
   /* isatty check, tcgetattr is used because it sets the correct
      errno (EBADF resp. ENOTTY) on error.  */
   if (__builtin_expect (__tcgetattr (fd, &term) < 0, 0))
     return NULL;
-#endif
 
   if (__fxstat64 (_STAT_VER, fd, &st) < 0)
     return NULL;
 
-#ifndef __ASSUME_PROC_SELF_FD_NOT_SYMLINK
   /* We try using the /proc filesystem.  */
   *_fitoa_word (fd, __stpcpy (procname, "/proc/self/fd/"), 10, 0) = '\0';
 
@@ -174,7 +167,6 @@ ttyname (int fd)
 		   len - UNREACHABLE_LEN);
 	  len -= UNREACHABLE_LEN;
 	}
-#endif /* __ASSUME_PROC_SELF_FD_NOT_SYMLINK */
 
       /* readlink need not terminate the string.  */
       ttyname_buf[len] = '\0';
