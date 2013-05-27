@@ -23,7 +23,7 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include <string.h>
-#include <stdio-common/_itoa.h>
+#include <_itoa.h>
 #include <errno.h>
 #include <sys/ptms.h>
 #include <streams/stropts.h>

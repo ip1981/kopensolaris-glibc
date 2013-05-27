@@ -26,7 +26,7 @@
 #include <time.h>
 #include <utime.h>
 #include <sys/time.h>
-#include <stdio-common/_itoa.h>
+#include <_itoa.h>
 #include <fcntl.h>
 
 /* Change the access time of the file associated with FD to TVP[0] and
