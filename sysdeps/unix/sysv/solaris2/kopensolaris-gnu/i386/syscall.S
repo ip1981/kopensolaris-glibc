@@ -48,4 +48,4 @@ ENTRY (__systemcall)
 	xorl %eax, %eax		/* Set return to 0.  */
 1:
 	ret
-PSEUDO_END (__syscall)
+PSEUDO_END (__systemcall)
