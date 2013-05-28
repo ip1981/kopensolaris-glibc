@@ -19,13 +19,44 @@
 
 #include <sysdep.h>
 
+/* Usage: long syscall(syscall_number, arg1, arg2, arg3, arg4, arg5, arg6, ...)
+   We need to do some arg shifting, the syscall_number will be in rax.  */
+
 	  .text;
 ENTRY (__syscall)
-	popl %rcx	/* Pop return address into %rcx.  */
-	popl %eax	/* Pop syscall number into %eax. */
-	pushl %rcx	/* Push back return adderss.  */
-	syscall	/* Do the system call.  */
-	pushl %rcx	/* Push back return address.  */
+    /* We move args in stack, so cannot use rsp - use rbp.  */
+    pushq  %rbp; cfi_adjust_cfa_offset(8)
+    movq   %rsp, %rbp
+
+    /* Move arguments, just like in subcalls, but in reverse direction.  */
+    movq   %rdi, %rax      /* syscall num.  */
+    movq   %rsi, %rdi      /* arg #1.  */
+    movq   %rdx, %rsi      /* arg #2.  */
+    movq   %rcx, %rdx      /* arg #3.  */
+    movq   %r8, %r10       /* arg #4.  */
+    movq   %r9, %r8        /* arg #5.  */
+
+    /* Arg #6 is on the stack.  */
+    movq   16(%rbp), %r9   /* arg #6.  */
+
+    /* First 6 args are in registers, others - in stack.  */
+    /* Construct a new call stack frame.  */
+    /* XXX Only "mount" has more than 6 args - 8.  */
+    movq   32(%rbp), %rcx
+    pushq  %rcx; cfi_adjust_cfa_offset(8)  /* arg #7.  */
+
+    movq   24(%rbp), %rcx
+    pushq  %rcx; cfi_adjust_cfa_offset(8)  /* arg #8.  */
+
+//    movq   8(%rbp), %rcx
+//    pushq  %rcx;
+    subq $8, %rsp; cfi_adjust_cfa_offset(8)  /* return addr (intentionally ignored by syscall).  */
+
+    syscall
+
+    /* Restore the stack frame. */
+    leave; cfi_adjust_cfa_offset(-32) /* Watch out, we have 4 cfi_adjust_cfa_offset above!  */
+
 	jb SYSCALL_ERROR_LABEL;	/* Jump to error handler if error.  */
 
 L(pseudo_end):
