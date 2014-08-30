@@ -1,4 +1,4 @@
-/* Copyright (C) 1999, 2001-2002, 2006, 2012 Free Software Foundation, Inc.
+/* Copyright (C) 1999-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -15,11 +15,11 @@
    License along with the GNU C Library; if not, see
    <http://www.gnu.org/licenses/>.  */
 
-/* 
- * Powerpc Feature masks for the Aux Vector Hardware Capabilities (AT_HWCAP). 
+/*
+ * Powerpc Feature masks for the Aux Vector Hardware Capabilities (AT_HWCAP).
  * This entry is copied to _dl_hwcap or rtld_global._dl_hwcap during startup.
  */
-#define _SYS_AUXV_H
+#define _SYS_AUXV_H 1
 #include <bits/hwcap.h>
 
 #define PPC_FEATURE_970 (PPC_FEATURE_POWER4 + PPC_FEATURE_HAS_ALTIVEC)
@@ -144,11 +144,24 @@
 
 #define VRSAVE	256
 
+/* The 32-bit words of a 64-bit dword are at these offsets in memory.  */
+#if defined __LITTLE_ENDIAN__ || defined _LITTLE_ENDIAN
+# define LOWORD 0
+# define HIWORD 4
+#else
+# define LOWORD 4
+# define HIWORD 0
+#endif
+
+/* The high 16-bit word of a 64-bit dword is at this offset in memory.  */
+#if defined __LITTLE_ENDIAN__ || defined _LITTLE_ENDIAN
+# define HISHORT 6
+#else
+# define HISHORT 0
+#endif
 
 /* This seems to always be the case on PPC.  */
 #define ALIGNARG(log2) log2
-/* For ELF we need the `.type' directive to make shared libs work right.  */
-#define ASM_TYPE_DIRECTIVE(name,typearg) .type name,typearg;
 #define ASM_SIZE_DIRECTIVE(name) .size name,.-name
 
 #endif	/* __ASSEMBLER__ */

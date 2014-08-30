@@ -1,5 +1,5 @@
 /* Optimized memset implementation for PowerPC32/POWER7.
-   Copyright (C) 2010 Free Software Foundation, Inc.
+   Copyright (C) 2010-2014 Free Software Foundation, Inc.
    Contributed by Luis Machado <luisgpm@br.ibm.com>.
    This file is part of the GNU C Library.
 
@@ -18,14 +18,12 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include <sysdep.h>
-#include <bp-sym.h>
-#include <bp-asm.h>
 
 /* __ptr_t [r3] memset (__ptr_t s [r3], int c [r4], size_t n [r5]));
    Returns 's'.  */
 
 	.machine  power7
-EALIGN (BP_SYM (memset), 5, 0)
+EALIGN (memset, 5, 0)
 	CALL_MCOUNT
 
 	.align	4
@@ -37,8 +35,8 @@ L(_memset):
 	cfi_offset(31,-8)
 
 	/* Replicate byte to word.  */
-	rlwimi	4,4,8,16,23
-	rlwimi	4,4,16,0,15
+	insrdi	4,4,8,48
+	insrdi	4,4,16,32
 
 	ble	cr6,L(small)	/* If length <= 8, use short copy code.  */
 
@@ -429,5 +427,5 @@ L(small):
 	stw	4,4(10)
 	blr
 
-END (BP_SYM (memset))
+END (memset)
 libc_hidden_builtin_def (memset)

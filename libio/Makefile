@@ -1,4 +1,4 @@
-# Copyright (C) 1995-2004,2006-2009,2011,2012 Free Software Foundation, Inc.
+# Copyright (C) 1995-2014 Free Software Foundation, Inc.
 # This file is part of the GNU C Library.
 
 # The GNU C Library is free software; you can redistribute it and/or
@@ -46,8 +46,10 @@ routines	:=							      \
 									      \
 	libc_fatal fmemopen
 
+include ../Makeconfig
+
 tests = tst_swprintf tst_wprintf tst_swscanf tst_wscanf tst_getwc tst_putwc   \
-	tst_wprintf2 tst-widetext test-fmemopen tst-ext tst-ext2 tst-fopenloc \
+	tst_wprintf2 tst-widetext test-fmemopen tst-ext tst-ext2 \
 	tst-fgetws tst-ungetwc1 tst-ungetwc2 tst-swscanf tst-sscanf	      \
 	tst-mmap-setvbuf bug-ungetwc1 bug-ungetwc2 tst-atime tst-eof          \
 	tst-freopen bug-rewind bug-rewind2 bug-ungetc bug-fseek \
@@ -57,26 +59,30 @@ tests = tst_swprintf tst_wprintf tst_swscanf tst_wscanf tst_getwc tst_putwc   \
 	tst-memstream1 tst-memstream2 \
 	tst-wmemstream1 tst-wmemstream2 \
 	bug-memstream1 bug-wmemstream1 \
-	tst-setvbuf1 tst-popen1 tst-fgetwc bug-wsetpos bug-fclose1
+	tst-setvbuf1 tst-popen1 tst-fgetwc bug-wsetpos tst-fseek \
+	tst-fwrite-error tst-ftell-partial-wide
+ifeq (yes,$(build-shared))
+# Add test-fopenloc only if shared library is enabled since it depends on
+# shared localedata objects.
+tests += tst-fopenloc
+endif
 test-srcs = test-freopen
 
 all: # Make this the default target; it will be defined in Rules.
 
-include ../Makeconfig
-
-ifeq ($(versioning),yes)
+ifeq ($(build-shared),yes)
 routines += oldiofopen oldiofdopen oldiofclose oldiopopen oldpclose \
 	    oldtmpfile oldiofgetpos oldiofgetpos64 oldiofsetpos	    \
 	    oldiofsetpos64
 endif
 
-ifneq (,$(filter %REENTRANT, $(defines)))
+ifeq (yes,$(libc-reentrant))
 routines += clearerr_u feof_u ferror_u fputc_u getc_u getchar_u		      \
 	    iofflush_u putc_u putchar_u peekc iofread_u iofwrite_u iofgets_u  \
 	    iofputs_u
-
-CPPFLAGS += -D_IO_MTSAFE_IO
 endif
+
+CPPFLAGS += $(libio-mtsafe)
 
 # Support for exception handling.
 CFLAGS-fileops.c = $(exceptions)
@@ -153,12 +159,13 @@ bug-ungetwc2-ENV = LOCPATH=$(common-objpfx)localedata
 tst-swscanf-ENV = LOCPATH=$(common-objpfx)localedata
 bug-ftell-ENV = LOCPATH=$(common-objpfx)localedata
 tst-fgetwc-ENV = LOCPATH=$(common-objpfx)localedata
+tst-fseek-ENV = LOCPATH=$(common-objpfx)localedata
 
 generated = tst-fopenloc.mtrace tst-fopenloc.check
 
 aux	:= fileops genops stdfiles stdio strops
 
-ifeq ($(versioning),yes)
+ifeq ($(build-shared),yes)
 aux	+= oldfileops oldstdfiles
 endif
 
@@ -169,12 +176,17 @@ shared-only-routines = oldiofopen oldiofdopen oldiofclose oldfileops	\
 
 include ../Rules
 
-ifeq (no,$(cross-compiling))
-tests: $(objpfx)test-freopen.out $(objpfx)tst-fopenloc.check
+ifeq ($(run-built-tests),yes)
+tests: $(objpfx)test-freopen.out
+ifeq (yes,$(build-shared))
+# Run tst-fopenloc.check only if shared library is enabled since it
+# depends on tst-fopenloc.out.
+tests: $(objpfx)tst-fopenloc.check
+endif
 endif
 
 $(objpfx)test-freopen.out: test-freopen.sh $(objpfx)test-freopen
-	$(SHELL) -e $< $(common-objpfx) '$(run-program-prefix)'	\
+	$(SHELL) $< $(common-objpfx) '$(test-program-prefix)'	\
 	$(common-objpfx)libio/
 
 $(objpfx)tst-fopenloc.check: $(objpfx)tst-fopenloc.out

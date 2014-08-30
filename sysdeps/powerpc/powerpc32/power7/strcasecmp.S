@@ -1,5 +1,5 @@
 /* Optimized strcasecmp implementation for PowerPC32.
-   Copyright (C) 2011 Free Software Foundation, Inc.
+   Copyright (C) 2011-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -17,8 +17,6 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include <sysdep.h>
-#include <bp-sym.h>
-#include <bp-asm.h>
 #include <locale-defines.h>
 
 /* int [r3] strcasecmp (const char *s1 [r3], const char *s2 [r4] )
@@ -33,14 +31,14 @@
 # define STRCMP   strcasecmp
 #endif
 
-ENTRY (BP_SYM (__STRCMP))
+ENTRY (__STRCMP)
 
 #define rRTN	r3	/* Return value */
 #define rSTR1	r5	/* 1st string */
 #define rSTR2	r4	/* 2nd string */
 #define rLOCARG	r5	/* 3rd argument: locale_t */
-#define rCHAR1	r6	/* Byte readed from 1st string */
-#define rCHAR2	r7	/* Byte readed from 2nd string */
+#define rCHAR1	r6	/* Byte read from 1st string */
+#define rCHAR2	r7	/* Byte read from 2nd string */
 #define rADDR1	r8	/* Address of tolower(rCHAR1) */
 #define rADDR2	r12	/* Address of tolower(rCHAR2) */
 #define rLWR1	r8	/* Byte tolower(rCHAR1) */
@@ -125,7 +123,7 @@ L(loop):
 	bnelr
 	bne	cr7,L(loop)
 	blr
-END (BP_SYM (__STRCMP))
+END (__STRCMP)
 
-weak_alias (BP_SYM (__STRCMP), BP_SYM (STRCMP))
+weak_alias (__STRCMP, STRCMP)
 libc_hidden_builtin_def (__STRCMP)

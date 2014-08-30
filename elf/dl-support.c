@@ -1,5 +1,5 @@
 /* Support for dynamic linking code in static libc.
-   Copyright (C) 1996-2012 Free Software Foundation, Inc.
+   Copyright (C) 1996-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/param.h>
+#include <stdint.h>
 #include <ldsodefs.h>
 #include <dl-machine.h>
 #include <bits/libc-lock.h>
@@ -69,17 +70,53 @@ const char *_dl_origin_path;
 /* Nonzero if runtime lookup should not update the .got/.plt.  */
 int _dl_bind_not;
 
+/* A dummy link map for the executable, used by dlopen to access the global
+   scope.  We don't export any symbols ourselves, so this can be minimal.  */
+static struct link_map _dl_main_map =
+  {
+    .l_name = (char *) "",
+    .l_real = &_dl_main_map,
+    .l_ns = LM_ID_BASE,
+    .l_libname = &(struct libname_list) { .name = "", .dont_free = 1 },
+    .l_searchlist =
+      {
+	.r_list = &(struct link_map *) { &_dl_main_map },
+	.r_nlist = 1,
+      },
+    .l_symbolic_searchlist = { .r_list = &(struct link_map *) { NULL } },
+    .l_type = lt_executable,
+    .l_scope_mem = { &_dl_main_map.l_searchlist },
+    .l_scope_max = (sizeof (_dl_main_map.l_scope_mem)
+		    / sizeof (_dl_main_map.l_scope_mem[0])),
+    .l_scope = _dl_main_map.l_scope_mem,
+    .l_local_scope = { &_dl_main_map.l_searchlist },
+    .l_used = 1,
+    .l_flags_1 = DF_1_NODEFLIB,
+    .l_tls_offset = NO_TLS_OFFSET,
+    .l_serial = 1,
+  };
+
 /* Namespace information.  */
-struct link_namespaces _dl_ns[DL_NNS];
-size_t _dl_nns;
+struct link_namespaces _dl_ns[DL_NNS] =
+  {
+    [LM_ID_BASE] =
+      {
+	._ns_loaded = &_dl_main_map,
+	._ns_nloaded = 1,
+	._ns_main_searchlist = &_dl_main_map.l_searchlist,
+      }
+  };
+size_t _dl_nns = 1;
 
 /* Incremented whenever something may have been added to dl_loaded. */
-unsigned long long _dl_load_adds;
+unsigned long long _dl_load_adds = 1;
 
-/* Fake scope.  In dynamically linked binaries this is the scope of the
-   main application but here we don't have something like this.  So
-   create a fake scope containing nothing.  */
-struct r_scope_elem _dl_initial_searchlist;
+/* Fake scope of the main application.  */
+struct r_scope_elem _dl_initial_searchlist =
+  {
+    .r_list = &(struct link_map *) { &_dl_main_map },
+    .r_nlist = 1,
+  };
 
 #ifndef HAVE_INLINED_SYSCALLS
 /* Nonzero during startup.  */
@@ -126,9 +163,13 @@ int _dl_debug_fd = STDERR_FILENO;
 int _dl_correct_cache_id = _DL_CACHE_DEFAULT_ID;
 
 ElfW(auxv_t) *_dl_auxv;
-ElfW(Phdr) *_dl_phdr;
+const ElfW(Phdr) *_dl_phdr;
 size_t _dl_phnum;
 uint64_t _dl_hwcap __attribute__ ((nocommon));
+uint64_t _dl_hwcap2 __attribute__ ((nocommon));
+
+/* The value of the FPU control word the kernel will preset in hardware.  */
+fpu_control_t _dl_fpu_control = _FPU_DEFAULT;
 
 /* This is not initialized to HWCAP_IMPORTANT, matching the definition
    of _dl_important_hwcaps, below, where no hwcap strings are ever
@@ -158,10 +199,15 @@ struct dl_scope_free_list *_dl_scope_free_list;
 /* Needed for improved syscall handling on at least x86/Linux.  */
 uintptr_t _dl_sysinfo = DL_SYSINFO_DEFAULT;
 #endif
-#if defined NEED_DL_SYSINFO || defined NEED_DL_SYSINFO_DSO
+#ifdef NEED_DL_SYSINFO_DSO
 /* Address of the ELF headers in the vsyscall page.  */
 const ElfW(Ehdr) *_dl_sysinfo_dso;
+
+struct link_map *_dl_sysinfo_map;
+
+# include "get-dynamic-info.h"
 #endif
+#include "setup-vdso.h"
 
 /* During the program run we must not modify the global data of
    loaded shared object simultanously in two threads.  Therefore we
@@ -193,13 +239,14 @@ _dl_aux_init (ElfW(auxv_t) *av)
     switch (av->a_type)
       {
       case AT_PAGESZ:
-	GLRO(dl_pagesize) = av->a_un.a_val;
+	if (av->a_un.a_val != 0)
+	  GLRO(dl_pagesize) = av->a_un.a_val;
 	break;
       case AT_CLKTCK:
 	GLRO(dl_clktck) = av->a_un.a_val;
 	break;
       case AT_PHDR:
-	GL(dl_phdr) = (void *) av->a_un.a_val;
+	GL(dl_phdr) = (const void *) av->a_un.a_val;
 	break;
       case AT_PHNUM:
 	GL(dl_phnum) = av->a_un.a_val;
@@ -207,12 +254,18 @@ _dl_aux_init (ElfW(auxv_t) *av)
       case AT_HWCAP:
 	GLRO(dl_hwcap) = (unsigned long int) av->a_un.a_val;
 	break;
+      case AT_HWCAP2:
+	GLRO(dl_hwcap2) = (unsigned long int) av->a_un.a_val;
+	break;
+      case AT_FPUCW:
+	GLRO(dl_fpu_control) = av->a_un.a_val;
+	break;
 #ifdef NEED_DL_SYSINFO
       case AT_SYSINFO:
 	GL(dl_sysinfo) = av->a_un.a_val;
 	break;
 #endif
-#if defined NEED_DL_SYSINFO || defined NEED_DL_SYSINFO_DSO
+#ifdef NEED_DL_SYSINFO_DSO
       case AT_SYSINFO_EHDR:
 	GL(dl_sysinfo_dso) = (void *) av->a_un.a_val;
 	break;
@@ -258,13 +311,18 @@ void
 internal_function
 _dl_non_dynamic_init (void)
 {
+  _dl_main_map.l_origin = _dl_get_origin ();
+  _dl_main_map.l_phdr = GL(dl_phdr);
+  _dl_main_map.l_phnum = GL(dl_phnum);
+
   if (HP_TIMING_AVAIL)
     HP_TIMING_NOW (_dl_cpuclock_offset);
 
-  if (!_dl_pagesize)
-    _dl_pagesize = __getpagesize ();
-
   _dl_verbose = *(getenv ("LD_WARN") ?: "") == '\0' ? 0 : 1;
+
+  /* Set up the data structures for the system-supplied DSO early,
+     so they can influence _dl_init_paths.  */
+  setup_vdso (NULL, NULL);
 
   /* Initialize the data structures for the search paths for shared
      objects.  */
@@ -325,23 +383,6 @@ _dl_non_dynamic_init (void)
 	  break;
 	}
 }
-
-
-const struct r_strlenpair *
-internal_function
-_dl_important_hwcaps (const char *platform, size_t platform_len, size_t *sz,
-		      size_t *max_capstrlen)
-{
-  static struct r_strlenpair result;
-  static char buf[1];
-
-  result.str = buf;	/* Does not really matter.  */
-  result.len = 0;
-
-  *sz = 1;
-  return &result;
-}
-
 
 #ifdef DL_SYSINFO_IMPLEMENTATION
 DL_SYSINFO_IMPLEMENTATION

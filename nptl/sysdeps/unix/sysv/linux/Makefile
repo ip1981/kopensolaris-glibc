@@ -1,4 +1,4 @@
-# Copyright (C) 2002,2003,2004,2005,2006,2007 Free Software Foundation, Inc.
+# Copyright (C) 2002-2014 Free Software Foundation, Inc.
 # This file is part of the GNU C Library.
 # Contributed by Ulrich Drepper <drepper@redhat.com>, 2002.
 
@@ -26,10 +26,11 @@ gen-as-const-headers += lowlevelcond.sym lowlevelrwlock.sym \
 			lowlevelbarrier.sym unwindbuf.sym \
 			lowlevelrobustlock.sym pthread-pi-defines.sym \
 			structsem.sym
+tests += tst-setgetname
 endif
 
 ifeq ($(subdir),posix)
-CFLAGS-fork.c = -D_IO_MTSAFE_IO
+CFLAGS-fork.c = $(libio-mtsafe)
 CFLAGS-getpid.o = -fomit-frame-pointer
 CFLAGS-getpid.os = -fomit-frame-pointer
 endif

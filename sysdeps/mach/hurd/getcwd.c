@@ -1,5 +1,4 @@
-/* Copyright (C) 1991,92,93,94,95,96,97,98,2002,2004,2009
-	Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -46,7 +45,7 @@ _hurd_canonicalize_directory_name_internal (file_t thisdir,
   mach_port_t rootid, thisid, rootdevid, thisdevid;
   ino64_t rootino, thisino;
   char *file_name;
-  register char *file_namep;
+  char *file_namep;
   file_t parent;
   char *dirbuf = NULL;
   unsigned int dirbufsize = 0;

@@ -1,4 +1,4 @@
-/* Copyright (C) 2002, 2003, 2006 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@redhat.com>, 2002.
 
@@ -39,8 +39,9 @@ __pthread_attr_setstack (attr, stackaddr, stacksize)
   iattr = (struct pthread_attr *) attr;
 
   /* Catch invalid sizes.  */
-  if (stacksize < PTHREAD_STACK_MIN)
-    return EINVAL;
+  int ret = check_stacksize_attr (stacksize);
+  if (ret)
+    return ret;
 
 #ifdef EXTRA_PARAM_CHECKS
   EXTRA_PARAM_CHECKS;

@@ -1,5 +1,5 @@
 /* Complex square root of double value.
-   Copyright (C) 1997-2012 Free Software Foundation, Inc.
+   Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Based on an algorithm by Stephen L. Moshier <moshier@world.std.com>.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997.
@@ -75,7 +75,11 @@ __csqrt (__complex__ double x)
 	}
       else if (__builtin_expect (rcls == FP_ZERO, 0))
 	{
-	  double r = __ieee754_sqrt (0.5 * fabs (__imag__ x));
+	  double r;
+	  if (fabs (__imag__ x) >= 2.0 * DBL_MIN)
+	    r = __ieee754_sqrt (0.5 * fabs (__imag__ x));
+	  else
+	    r = 0.5 * __ieee754_sqrt (2.0 * fabs (__imag__ x));
 
 	  __real__ res = r;
 	  __imag__ res = __copysign (r, __imag__ x);
@@ -85,11 +89,19 @@ __csqrt (__complex__ double x)
 	  double d, r, s;
 	  int scale = 0;
 
-	  if (fabs (__real__ x) > DBL_MAX / 2.0
-	      || fabs (__imag__ x) > DBL_MAX / 2.0)
+	  if (fabs (__real__ x) > DBL_MAX / 4.0)
 	    {
 	      scale = 1;
 	      __real__ x = __scalbn (__real__ x, -2 * scale);
+	      __imag__ x = __scalbn (__imag__ x, -2 * scale);
+	    }
+	  else if (fabs (__imag__ x) > DBL_MAX / 4.0)
+	    {
+	      scale = 1;
+	      if (fabs (__real__ x) >= 4.0 * DBL_MIN)
+		__real__ x = __scalbn (__real__ x, -2 * scale);
+	      else
+		__real__ x = 0.0;
 	      __imag__ x = __scalbn (__imag__ x, -2 * scale);
 	    }
 	  else if (fabs (__real__ x) < DBL_MIN
@@ -105,13 +117,13 @@ __csqrt (__complex__ double x)
 	     to avoid cancellation error in  d +/- Re x.  */
 	  if (__real__ x > 0)
 	    {
-	      r = __ieee754_sqrt (0.5 * d + 0.5 * __real__ x);
-	      s = (0.5 * __imag__ x) / r;
+	      r = __ieee754_sqrt (0.5 * (d + __real__ x));
+	      s = 0.5 * (__imag__ x / r);
 	    }
 	  else
 	    {
-	      s = __ieee754_sqrt (0.5 * d - 0.5 * __real__ x);
-	      r = fabs ((0.5 * __imag__ x) / s);
+	      s = __ieee754_sqrt (0.5 * (d - __real__ x));
+	      r = fabs (0.5 * (__imag__ x / s));
 	    }
 
 	  if (scale)

@@ -1,4 +1,4 @@
-/* Copyright (C) 1994-2012 Free Software Foundation, Inc.
+/* Copyright (C) 1994-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -75,7 +75,7 @@ __recvfrom (fd, buf, n, flags, addrarg, addr_len)
 	  __mach_port_deallocate (__mach_task_self (), addrport);
 	  return __hurd_sockfail (fd, flags, err);
 	}
-      
+
       if (*addr_len > buflen)
 	*addr_len = buflen;
 

@@ -1,5 +1,5 @@
 /* arch_prctl call for Linux/x32.
-   Copyright (C) 2012 Free Software Foundation, Inc.
+   Copyright (C) 2012-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -20,6 +20,7 @@
 #include <sys/prctl.h>
 #include <sys/syscall.h>
 #include <sysdep.h>
+#include <stdint.h>
 
 /* Since x32 arch_prctl stores 32-bit base address of segment registers
    %fs and %gs as unsigned 64-bit value via ARCH_GET_FS and ARCH_GET_GS,

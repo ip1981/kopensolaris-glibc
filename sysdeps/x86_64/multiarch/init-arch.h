@@ -1,5 +1,5 @@
 /* This file is part of the GNU C Library.
-   Copyright (C) 2008-2012 Free Software Foundation, Inc.
+   Copyright (C) 2008-2014 Free Software Foundation, Inc.
 
    The GNU C Library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -18,13 +18,16 @@
 #define bit_Fast_Rep_String		(1 << 0)
 #define bit_Fast_Copy_Backward		(1 << 1)
 #define bit_Slow_BSF			(1 << 2)
-#define bit_Prefer_SSE_for_memop	(1 << 3)
 #define bit_Fast_Unaligned_Load		(1 << 4)
 #define bit_Prefer_PMINUB_for_stringop	(1 << 5)
 #define bit_AVX_Usable			(1 << 6)
-#define bit_FMA4_Usable			(1 << 7)
+#define bit_FMA_Usable			(1 << 7)
+#define bit_FMA4_Usable			(1 << 8)
+#define bit_Slow_SSE4_2			(1 << 9)
 
 /* CPUID Feature flags.  */
+
+/* COMMON_CPUID_INDEX_1.  */
 #define bit_SSE2	(1 << 26)
 #define bit_SSSE3	(1 << 9)
 #define bit_SSE4_1	(1 << 19)
@@ -34,6 +37,9 @@
 #define bit_POPCOUNT	(1 << 23)
 #define bit_FMA		(1 << 12)
 #define bit_FMA4	(1 << 16)
+
+/* COMMON_CPUID_INDEX_7.  */
+#define bit_RTM		(1 << 11)
 
 /* XCR0 Feature flags.  */
 #define bit_XMM_state  (1 << 1)
@@ -52,11 +58,12 @@
 # define index_Fast_Rep_String		FEATURE_INDEX_1*FEATURE_SIZE
 # define index_Fast_Copy_Backward	FEATURE_INDEX_1*FEATURE_SIZE
 # define index_Slow_BSF			FEATURE_INDEX_1*FEATURE_SIZE
-# define index_Prefer_SSE_for_memop	FEATURE_INDEX_1*FEATURE_SIZE
 # define index_Fast_Unaligned_Load	FEATURE_INDEX_1*FEATURE_SIZE
 # define index_Prefer_PMINUB_for_stringop FEATURE_INDEX_1*FEATURE_SIZE
 # define index_AVX_Usable		FEATURE_INDEX_1*FEATURE_SIZE
+# define index_FMA_Usable		FEATURE_INDEX_1*FEATURE_SIZE
 # define index_FMA4_Usable		FEATURE_INDEX_1*FEATURE_SIZE
+# define index_Slow_SSE4_2		FEATURE_INDEX_1*FEATURE_SIZE
 
 #else	/* __ASSEMBLER__ */
 
@@ -65,6 +72,7 @@
 enum
   {
     COMMON_CPUID_INDEX_1 = 0,
+    COMMON_CPUID_INDEX_7,
     COMMON_CPUID_INDEX_80000001,	/* for AMD */
     /* Keep the following line at the end.  */
     COMMON_CPUID_INDEX_MAX
@@ -131,8 +139,12 @@ extern const struct cpu_features *__get_cpu_features (void)
   HAS_CPUID_FLAG (COMMON_CPUID_INDEX_1, ecx, bit_OSXSAVE)
 # define CPUID_AVX \
   HAS_CPUID_FLAG (COMMON_CPUID_INDEX_1, ecx, bit_AVX)
+# define CPUID_FMA \
+  HAS_CPUID_FLAG (COMMON_CPUID_INDEX_1, ecx, bit_FMA)
 # define CPUID_FMA4 \
   HAS_CPUID_FLAG (COMMON_CPUID_INDEX_80000001, ecx, bit_FMA4)
+# define CPUID_RTM \
+  HAS_CPUID_FLAG (COMMON_CPUID_INDEX_7, ebx, bit_RTM)
 
 /* HAS_* evaluates to true if we may use the feature at runtime.  */
 # define HAS_SSE2	HAS_CPU_FEATURE (COMMON_CPUID_INDEX_1, edx, bit_SSE2)
@@ -140,15 +152,17 @@ extern const struct cpu_features *__get_cpu_features (void)
 # define HAS_SSSE3	HAS_CPU_FEATURE (COMMON_CPUID_INDEX_1, ecx, bit_SSSE3)
 # define HAS_SSE4_1	HAS_CPU_FEATURE (COMMON_CPUID_INDEX_1, ecx, bit_SSE4_1)
 # define HAS_SSE4_2	HAS_CPU_FEATURE (COMMON_CPUID_INDEX_1, ecx, bit_SSE4_2)
-# define HAS_FMA	HAS_CPU_FEATURE (COMMON_CPUID_INDEX_1, ecx, bit_FMA)
+# define HAS_RTM	HAS_CPU_FEATURE (COMMON_CPUID_INDEX_7, ebx, bit_RTM)
 
 # define index_Fast_Rep_String		FEATURE_INDEX_1
 # define index_Fast_Copy_Backward	FEATURE_INDEX_1
 # define index_Slow_BSF			FEATURE_INDEX_1
-# define index_Prefer_SSE_for_memop	FEATURE_INDEX_1
 # define index_Fast_Unaligned_Load	FEATURE_INDEX_1
+# define index_Prefer_PMINUB_for_stringop FEATURE_INDEX_1
 # define index_AVX_Usable		FEATURE_INDEX_1
+# define index_FMA_Usable		FEATURE_INDEX_1
 # define index_FMA4_Usable		FEATURE_INDEX_1
+# define index_Slow_SSE4_2		FEATURE_INDEX_1
 
 # define HAS_ARCH_FEATURE(name) \
   ((__get_cpu_features ()->feature[index_##name] & (bit_##name)) != 0)
@@ -156,9 +170,9 @@ extern const struct cpu_features *__get_cpu_features (void)
 # define HAS_FAST_REP_STRING		HAS_ARCH_FEATURE (Fast_Rep_String)
 # define HAS_FAST_COPY_BACKWARD		HAS_ARCH_FEATURE (Fast_Copy_Backward)
 # define HAS_SLOW_BSF			HAS_ARCH_FEATURE (Slow_BSF)
-# define HAS_PREFER_SSE_FOR_MEMOP	HAS_ARCH_FEATURE (Prefer_SSE_for_memop)
 # define HAS_FAST_UNALIGNED_LOAD	HAS_ARCH_FEATURE (Fast_Unaligned_Load)
 # define HAS_AVX			HAS_ARCH_FEATURE (AVX_Usable)
+# define HAS_FMA			HAS_ARCH_FEATURE (FMA_Usable)
 # define HAS_FMA4			HAS_ARCH_FEATURE (FMA4_Usable)
 
 #endif	/* __ASSEMBLER__ */

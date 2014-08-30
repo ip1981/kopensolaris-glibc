@@ -1,5 +1,5 @@
 /* Synchronize I/O in given file descriptor.  Stub version.
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -47,4 +47,3 @@ weak_alias (aio_fsync, aio_fsync64)
 
 stub_warning (aio_fsync)
 stub_warning (aio_fsync64)
-#include <stub-tag.h>

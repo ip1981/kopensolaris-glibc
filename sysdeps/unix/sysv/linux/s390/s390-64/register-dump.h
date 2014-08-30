@@ -1,5 +1,5 @@
 /* Dump registers.  64 bit S/390 version.
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001-2014 Free Software Foundation, Inc.
    Contributed by Martin Schwidefsky (schwidefsky@de.ibm.com).
    This file is part of the GNU C Library.
 
@@ -82,7 +82,7 @@ register_dump (int fd, struct sigcontext *ctx)
   hexvalue (ctx->sregs->regs.gprs[15], regs[15], 16);
   hexvalue (ctx->sregs->regs.psw.mask, regs[16], 16);
   hexvalue (ctx->sregs->regs.psw.addr, regs[17], 16);
-   
+
   /* Generate the output.  */
   ADD_STRING ("Register dump:\n\n GPR0: ");
   ADD_MEM (regs[0], 16);

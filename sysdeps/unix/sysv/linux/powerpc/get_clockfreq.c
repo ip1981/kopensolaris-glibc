@@ -1,5 +1,5 @@
 /* Get frequency of the system processor.  powerpc/Linux version.
-   Copyright (C) 2000, 2001, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2000-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -41,12 +41,13 @@ __get_clockfreq (void)
   /* If we can use the vDSO to obtain the timebase even better.  */
 #ifdef SHARED
   INTERNAL_SYSCALL_DECL (err);
-  timebase_freq = INTERNAL_VSYSCALL_NO_SYSCALL_FALLBACK (get_tbfreq, err, 0);
+  timebase_freq =
+    INTERNAL_VSYSCALL_NO_SYSCALL_FALLBACK (get_tbfreq, err, hp_timing_t, 0);
   if (INTERNAL_SYSCALL_ERROR_P (timebase_freq, err)
       && INTERNAL_SYSCALL_ERRNO (timebase_freq, err) == ENOSYS)
 #endif
     {
-      int fd = open ("/proc/cpuinfo", O_RDONLY);
+      int fd = __open ("/proc/cpuinfo", O_RDONLY);
 
       if (__builtin_expect (fd != -1, 1))
 	{
@@ -58,7 +59,7 @@ __get_clockfreq (void)
 	  char buf[1024];
 	  ssize_t n;
 
-	  n = read (fd, buf, sizeof (buf));
+	  n = __read (fd, buf, sizeof (buf));
 	  if (n == sizeof (buf))
 	    {
 	      /* We are here because the 1st read returned exactly sizeof
@@ -76,7 +77,7 @@ __get_clockfreq (void)
 	      while (n >= half_buf)
 		{
 		  memcpy (buf, buf + half_buf, half_buf);
-		  n = read (fd, buf + half_buf, half_buf);
+		  n = __read (fd, buf + half_buf, half_buf);
 		}
 	      if (n >= 0)
 		n += half_buf;
@@ -108,7 +109,7 @@ __get_clockfreq (void)
 		}
 	      timebase_freq = result;
 	    }
-	  close (fd);
+	  __close (fd);
 	}
     }
 

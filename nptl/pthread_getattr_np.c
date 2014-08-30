@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2012 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@redhat.com>, 2002.
 
@@ -128,8 +128,15 @@ pthread_getattr_np (thread_id, attr)
 		      && (uintptr_t) __libc_stack_end < to)
 		    {
 		      /* Found the entry.  Now we have the info we need.  */
-		      iattr->stacksize = rl.rlim_cur;
 		      iattr->stackaddr = stack_end;
+		      iattr->stacksize =
+		        rl.rlim_cur - (size_t) (to - (uintptr_t) stack_end);
+
+		      /* Cut it down to align it to page size since otherwise we
+		         risk going beyond rlimit when the kernel rounds up the
+		         stack extension request.  */
+		      iattr->stacksize = (iattr->stacksize
+					  & -(intptr_t) GLRO(dl_pagesize));
 
 		      /* The limit might be too high.  */
 		      if ((size_t) iattr->stacksize

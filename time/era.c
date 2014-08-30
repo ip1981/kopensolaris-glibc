@@ -1,5 +1,5 @@
 /* Helper functions used by strftime/strptime to handle locale-specific "eras".
-   Copyright (C) 1995-2002, 2008, 2010 Free Software Foundation, Inc.
+   Copyright (C) 1995-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <wchar.h>
 #include <string.h>
+#include <stdint.h>
 
 /* Some of the functions here must not be used while setlocale is called.  */
 __libc_rwlock_define (extern, __libc_setlocale_lock attribute_hidden)

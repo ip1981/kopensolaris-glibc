@@ -1,4 +1,4 @@
-/* Copyright (C) 1995, 1996, 1999 Free Software Foundation, Inc.
+/* Copyright (C) 1995-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -24,8 +24,8 @@
 
 wchar_t *
 wcschr (wcs, wc)
-     register const wchar_t *wcs;
-     register const wchar_t wc;
+     const wchar_t *wcs;
+     const wchar_t wc;
 {
   do
     if (*wcs == wc)

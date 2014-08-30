@@ -1,4 +1,4 @@
-/* Copyright (C) 1996, 1997 Free Software Foundation, Inc.
+/* Copyright (C) 1996-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -30,4 +30,3 @@ __sched_rr_get_interval (pid_t pid, struct timespec *t)
 stub_warning (sched_rr_get_interval)
 
 weak_alias (__sched_rr_get_interval, sched_rr_get_interval)
-#include <stub-tag.h>

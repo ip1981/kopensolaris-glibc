@@ -1,4 +1,4 @@
-/* Copyright (C) 1991-2012 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -20,6 +20,7 @@
 #include <limits.h>
 #include <ctype.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -205,13 +206,13 @@ _IO_vfscanf_internal (_IO_FILE *s, const char *format, _IO_va_list argptr,
 #endif
 {
   va_list arg;
-  register const CHAR_T *f = format;
-  register UCHAR_T fc;	/* Current character of the format.  */
-  register WINT_T done = 0;	/* Assignments done.  */
-  register size_t read_in = 0;	/* Chars read in.  */
-  register WINT_T c = 0;	/* Last char read.  */
-  register int width;		/* Maximum field width.  */
-  register int flags;		/* Modifiers for current format element.  */
+  const CHAR_T *f = format;
+  UCHAR_T fc;	/* Current character of the format.  */
+  WINT_T done = 0;	/* Assignments done.  */
+  size_t read_in = 0;	/* Chars read in.  */
+  WINT_T c = 0;	/* Last char read.  */
+  int width;		/* Maximum field width.  */
+  int flags;		/* Modifiers for current format element.  */
   int errval = 0;
 #ifndef COMPILE_WSCANF
   __locale_t loc = _NL_CURRENT_LOCALE;
@@ -221,7 +222,7 @@ _IO_vfscanf_internal (_IO_FILE *s, const char *format, _IO_va_list argptr,
   /* Errno of last failed inchar call.  */
   int inchar_errno = 0;
   /* Status for reading F-P nums.  */
-  char got_dot, got_e, negative;
+  char got_digit, got_dot, got_e, negative;
   /* If a [...] is a [^...].  */
   CHAR_T not_in;
 #define exp_char not_in
@@ -1756,7 +1757,7 @@ _IO_vfscanf_internal (_IO_FILE *s, const char *format, _IO_va_list argptr,
 		 we must recognize "(nil)" as well.  */
 	      if (__builtin_expect (wpsize == 0
 				    && (flags & READ_POINTER)
-				    && (width < 0 || width >= 0)
+				    && (width < 0 || width >= 5)
 				    && c == '('
 				    && TOLOWER (inchar ()) == L_('n')
 				    && TOLOWER (inchar ()) == L_('i')
@@ -1844,7 +1845,7 @@ _IO_vfscanf_internal (_IO_FILE *s, const char *format, _IO_va_list argptr,
 	  if (__builtin_expect (c == EOF, 0))
 	    input_error ();
 
-	  got_dot = got_e = 0;
+	  got_digit = got_dot = got_e = 0;
 
 	  /* Check for a sign.  */
 	  if (c == L_('-') || c == L_('+'))
@@ -1965,18 +1966,26 @@ _IO_vfscanf_internal (_IO_FILE *s, const char *format, _IO_va_list argptr,
 		  if (width > 0)
 		    --width;
 		}
+	      else
+		got_digit = 1;
 	    }
 
 	  while (1)
 	    {
 	      if (ISDIGIT (c))
-		ADDW (c);
+		{
+		  ADDW (c);
+		  got_digit = 1;
+		}
 	      else if (!got_e && (flags & HEXA_FLOAT) && ISXDIGIT (c))
-		ADDW (c);
+		{
+		  ADDW (c);
+		  got_digit = 1;
+		}
 	      else if (got_e && wp[wpsize - 1] == exp_char
 		       && (c == L_('-') || c == L_('+')))
 		ADDW (c);
-	      else if (wpsize > 0 && !got_e
+	      else if (got_digit && !got_e
 		       && (CHAR_T) TOLOWER (c) == exp_char)
 		{
 		  ADDW (exp_char);
@@ -2178,7 +2187,7 @@ _IO_vfscanf_internal (_IO_FILE *s, const char *format, _IO_va_list argptr,
 		    }
 
 		  /* Start checking against localized digits, if
-		     convertion is done correctly. */
+		     conversion is done correctly. */
 		  while (1)
 		    {
 		      if (got_e && wp[wpsize - 1] == exp_char

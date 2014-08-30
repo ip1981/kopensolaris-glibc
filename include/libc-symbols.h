@@ -1,6 +1,6 @@
 /* Support macros for making weak and strong aliases for symbols,
    and for using symbol sets and linker warnings with GNU ld.
-   Copyright (C) 1995-2012 Free Software Foundation, Inc.
+   Copyright (C) 1995-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -27,9 +27,6 @@
    It should define for us the following symbols:
 
    * HAVE_ASM_SET_DIRECTIVE if we have `.set B, A' instead of `A = B'.
-   * ASM_GLOBAL_DIRECTIVE with `.globl' or `.global'.
-   * ASM_TYPE_DIRECTIVE_PREFIX with `@' or `#' or whatever for .type,
-     or leave it undefined if there is no .type directive.
    * HAVE_ASM_WEAK_DIRECTIVE if we have weak symbols using `.weak'.
    * HAVE_ASM_WEAKEXT_DIRECTIVE if we have weak symbols using `.weakext'.
 
@@ -117,32 +114,32 @@
 # ifdef HAVE_ASM_SET_DIRECTIVE
 #  ifdef HAVE_ASM_GLOBAL_DOT_NAME
 #   define strong_alias(original, alias)				\
-  ASM_GLOBAL_DIRECTIVE C_SYMBOL_NAME (alias) ASM_LINE_SEP		\
+  .globl C_SYMBOL_NAME (alias) ASM_LINE_SEP		\
   .set C_SYMBOL_NAME (alias),C_SYMBOL_NAME (original) ASM_LINE_SEP	\
-  ASM_GLOBAL_DIRECTIVE C_SYMBOL_DOT_NAME (alias) ASM_LINE_SEP		\
+  .globl C_SYMBOL_DOT_NAME (alias) ASM_LINE_SEP		\
   .set C_SYMBOL_DOT_NAME (alias),C_SYMBOL_DOT_NAME (original)
 #   define strong_data_alias(original, alias)				\
-  ASM_GLOBAL_DIRECTIVE C_SYMBOL_NAME (alias) ASM_LINE_SEP		\
+  .globl C_SYMBOL_NAME (alias) ASM_LINE_SEP		\
   .set C_SYMBOL_NAME (alias),C_SYMBOL_NAME (original)
 #  else
 #   define strong_alias(original, alias)				\
-  ASM_GLOBAL_DIRECTIVE C_SYMBOL_NAME (alias) ASM_LINE_SEP		\
+  .globl C_SYMBOL_NAME (alias) ASM_LINE_SEP		\
   .set C_SYMBOL_NAME (alias),C_SYMBOL_NAME (original)
 #   define strong_data_alias(original, alias) strong_alias(original, alias)
 #  endif
 # else
 #  ifdef HAVE_ASM_GLOBAL_DOT_NAME
 #   define strong_alias(original, alias)				\
-  ASM_GLOBAL_DIRECTIVE C_SYMBOL_NAME (alias) ASM_LINE_SEP		\
+  .globl C_SYMBOL_NAME (alias) ASM_LINE_SEP		\
   C_SYMBOL_NAME (alias) = C_SYMBOL_NAME (original) ASM_LINE_SEP		\
-  ASM_GLOBAL_DIRECTIVE C_SYMBOL_DOT_NAME (alias) ASM_LINE_SEP		\
+  .globl C_SYMBOL_DOT_NAME (alias) ASM_LINE_SEP		\
   C_SYMBOL_DOT_NAME (alias) = C_SYMBOL_DOT_NAME (original)
 #   define strong_data_alias(original, alias)				\
-  ASM_GLOBAL_DIRECTIVE C_SYMBOL_NAME (alias) ASM_LINE_SEP		\
+  .globl C_SYMBOL_NAME (alias) ASM_LINE_SEP		\
   C_SYMBOL_NAME (alias) = C_SYMBOL_NAME (original)
 #  else
 #   define strong_alias(original, alias)				\
-  ASM_GLOBAL_DIRECTIVE C_SYMBOL_NAME (alias) ASM_LINE_SEP		\
+  .globl C_SYMBOL_NAME (alias) ASM_LINE_SEP		\
   C_SYMBOL_NAME (alias) = C_SYMBOL_NAME (original)
 #   define strong_data_alias(original, alias) strong_alias(original, alias)
 #  endif
@@ -231,8 +228,7 @@
 /* A canned warning for sysdeps/stub functions.  */
 #define	stub_warning(name) \
   __make_section_unallocated (".gnu.glibc-stub." #name) \
-  link_warning (name, \
-		"warning: " #name " is not implemented and will always fail")
+  link_warning (name, #name " is not implemented and will always fail")
 
 /* Warning for linking functions calling dlopen into static binaries.  */
 #ifdef SHARED
@@ -253,38 +249,26 @@ for linking")
    thinks it is.  */
 #define declare_symbol_alias(symbol, original, type, size) \
   declare_symbol_alias_1 (symbol, original, type, size)
-#ifdef ASM_TYPE_DIRECTIVE_PREFIX
-# ifdef __ASSEMBLER__
-#  define declare_symbol_alias_1(symbol, original, type, size) \
-    strong_alias (original, symbol); \
-    .type C_SYMBOL_NAME (symbol), \
-	  declare_symbol_alias_1_paste (ASM_TYPE_DIRECTIVE_PREFIX, type); \
-    .size C_SYMBOL_NAME (symbol), size
-#  define declare_symbol_alias_1_paste(a, b) \
-  declare_symbol_alias_1_paste_1 (a,b)
-#  define declare_symbol_alias_1_paste_1(a,b)	a##b
-# else /* Not __ASSEMBLER__.  */
-#  define declare_symbol_alias_1(symbol, original, type, size) \
-    asm (declare_symbol_alias_1_stringify (ASM_GLOBAL_DIRECTIVE) \
-	 " " __SYMBOL_PREFIX #symbol \
-	 "\n\t" declare_symbol_alias_1_alias (symbol, original) \
-	 "\n\t.type " __SYMBOL_PREFIX #symbol ", " \
-	 declare_symbol_alias_1_stringify (ASM_TYPE_DIRECTIVE_PREFIX) #type \
-	 "\n\t.size " __SYMBOL_PREFIX #symbol ", " #size);
-#  define declare_symbol_alias_1_stringify(x) \
-  declare_symbol_alias_1_stringify_1 (x)
-#  define declare_symbol_alias_1_stringify_1(x) #x
-#  ifdef HAVE_ASM_SET_DIRECTIVE
-#   define declare_symbol_alias_1_alias(symbol, original) \
-	 ".set " __SYMBOL_PREFIX #symbol ", " __SYMBOL_PREFIX #original
-#  else
-#   define declare_symbol_alias_1_alias(symbol, original) \
-	 __SYMBOL_PREFIX #symbol " = " __SYMBOL_PREFIX #original
-#  endif /* HAVE_ASM_SET_DIRECTIVE */
-# endif /* __ASSEMBLER__ */
-#else
-# define declare_symbol_1(symbol, type, size) /* Nothing.  */
-#endif
+#ifdef __ASSEMBLER__
+# define declare_symbol_alias_1(symbol, original, type, size) \
+   strong_alias (original, symbol); \
+   .type C_SYMBOL_NAME (symbol), %##type; \
+   .size C_SYMBOL_NAME (symbol), size
+#else /* Not __ASSEMBLER__.  */
+# define declare_symbol_alias_1(symbol, original, type, size) \
+   asm (".globl " __SYMBOL_PREFIX #symbol \
+	"\n\t" declare_symbol_alias_1_alias (symbol, original) \
+	"\n\t.type " __SYMBOL_PREFIX #symbol ", " \
+	"%" #type \
+	"\n\t.size " __SYMBOL_PREFIX #symbol ", " #size);
+# ifdef HAVE_ASM_SET_DIRECTIVE
+#  define declare_symbol_alias_1_alias(symbol, original) \
+     ".set " __SYMBOL_PREFIX #symbol ", " __SYMBOL_PREFIX #original
+# else
+#  define declare_symbol_alias_1_alias(symbol, original) \
+     __SYMBOL_PREFIX #symbol " = " __SYMBOL_PREFIX #original
+# endif /* HAVE_ASM_SET_DIRECTIVE */
+#endif /* __ASSEMBLER__ */
 
 
 /*
@@ -338,7 +322,7 @@ for linking")
    past the last element in SET.  */
 #define symbol_set_end_p(set, ptr) ((ptr) >= (void *const *) &__stop_##set)
 
-#if DO_VERSIONING
+#ifdef SHARED
 # define symbol_version(real, name, version) \
      _symbol_version(real, name, version)
 # define default_symbol_version(real, name, version) \
@@ -482,14 +466,16 @@ for linking")
    versioned_symbol (libc, __real_foo, foo, GLIBC_2_1);
    libc_hidden_ver (__real_foo, foo)  */
 
-#if defined SHARED && defined DO_VERSIONING && !defined NO_HIDDEN
+#if defined SHARED && !defined NO_HIDDEN
 # ifndef __ASSEMBLER__
 #  define __hidden_proto_hiddenattr(attrs...) \
   __attribute__ ((visibility ("hidden"), ##attrs))
 #  define hidden_proto(name, attrs...) \
-  __hidden_proto (name, __GI_##name, ##attrs)
-#  define __hidden_proto(name, internal, attrs...) \
-  extern __typeof (name) name __asm__ (__hidden_asmname (#internal)) \
+  __hidden_proto (name, , __GI_##name, ##attrs)
+#  define hidden_tls_proto(name, attrs...) \
+  __hidden_proto (name, __thread, __GI_##name, ##attrs)
+#  define __hidden_proto(name, thread, internal, attrs...)	     \
+  extern thread __typeof (name) name __asm__ (__hidden_asmname (#internal)) \
   __hidden_proto_hiddenattr (attrs);
 #  define __hidden_asmname(name) \
   __hidden_asmname1 (__USER_LABEL_PREFIX__, name)
@@ -540,6 +526,7 @@ for linking")
 #else
 # ifndef __ASSEMBLER__
 #  define hidden_proto(name, attrs...)
+#  define hidden_tls_proto(name, attrs...)
 # else
 #  define HIDDEN_JUMPTARGET(name) JUMPTARGET(name)
 # endif /* Not  __ASSEMBLER__ */
@@ -554,6 +541,7 @@ for linking")
 
 #if !defined NOT_IN_libc
 # define libc_hidden_proto(name, attrs...) hidden_proto (name, ##attrs)
+# define libc_hidden_tls_proto(name, attrs...) hidden_tls_proto (name, ##attrs)
 # define libc_hidden_def(name) hidden_def (name)
 # define libc_hidden_weak(name) hidden_weak (name)
 # ifdef LINK_OBSOLETE_RPC
@@ -568,6 +556,7 @@ for linking")
 # define libc_hidden_data_ver(local, name) hidden_data_ver (local, name)
 #else
 # define libc_hidden_proto(name, attrs...)
+# define libc_hidden_tls_proto(name, attrs...)
 # define libc_hidden_def(name)
 # define libc_hidden_weak(name)
 # define libc_hidden_ver(local, name)
@@ -578,6 +567,7 @@ for linking")
 
 #if defined NOT_IN_libc && defined IS_IN_rtld
 # define rtld_hidden_proto(name, attrs...) hidden_proto (name, ##attrs)
+# define rtld_hidden_tls_proto(name, attrs...) hidden_tls_proto (name, ##attrs)
 # define rtld_hidden_def(name) hidden_def (name)
 # define rtld_hidden_weak(name) hidden_weak (name)
 # define rtld_hidden_ver(local, name) hidden_ver (local, name)
@@ -586,6 +576,7 @@ for linking")
 # define rtld_hidden_data_ver(local, name) hidden_data_ver (local, name)
 #else
 # define rtld_hidden_proto(name, attrs...)
+# define rtld_hidden_tls_proto(name, attrs...)
 # define rtld_hidden_def(name)
 # define rtld_hidden_weak(name)
 # define rtld_hidden_ver(local, name)
@@ -596,6 +587,7 @@ for linking")
 
 #if defined NOT_IN_libc && defined IS_IN_libm
 # define libm_hidden_proto(name, attrs...) hidden_proto (name, ##attrs)
+# define libm_hidden_tls_proto(name, attrs...) hidden_tls_proto (name, ##attrs)
 # define libm_hidden_def(name) hidden_def (name)
 # define libm_hidden_weak(name) hidden_weak (name)
 # define libm_hidden_ver(local, name) hidden_ver (local, name)
@@ -604,6 +596,7 @@ for linking")
 # define libm_hidden_data_ver(local, name) hidden_data_ver (local, name)
 #else
 # define libm_hidden_proto(name, attrs...)
+# define libm_hidden_tls_proto(name, attrs...)
 # define libm_hidden_def(name)
 # define libm_hidden_weak(name)
 # define libm_hidden_ver(local, name)
@@ -614,6 +607,8 @@ for linking")
 
 #if defined NOT_IN_libc && defined IS_IN_libresolv
 # define libresolv_hidden_proto(name, attrs...) hidden_proto (name, ##attrs)
+# define libresolv_hidden_tls_proto(name, attrs...) \
+  hidden_tls_proto (name, ##attrs)
 # define libresolv_hidden_def(name) hidden_def (name)
 # define libresolv_hidden_weak(name) hidden_weak (name)
 # define libresolv_hidden_ver(local, name) hidden_ver (local, name)
@@ -622,6 +617,7 @@ for linking")
 # define libresolv_hidden_data_ver(local, name) hidden_data_ver (local, name)
 #else
 # define libresolv_hidden_proto(name, attrs...)
+# define libresolv_hidden_tls_proto(name, attrs...)
 # define libresolv_hidden_def(name)
 # define libresolv_hidden_weak(name)
 # define libresolv_hidden_ver(local, name)
@@ -632,6 +628,8 @@ for linking")
 
 #if defined NOT_IN_libc && defined IS_IN_librt
 # define librt_hidden_proto(name, attrs...) hidden_proto (name, ##attrs)
+# define librt_hidden_tls_proto(name, attrs...) \
+  hidden_tls_proto (name, ##attrs)
 # define librt_hidden_def(name) hidden_def (name)
 # define librt_hidden_weak(name) hidden_weak (name)
 # define librt_hidden_ver(local, name) hidden_ver (local, name)
@@ -640,6 +638,7 @@ for linking")
 # define librt_hidden_data_ver(local, name) hidden_data_ver (local, name)
 #else
 # define librt_hidden_proto(name, attrs...)
+# define librt_hidden_tls_proto(name, attrs...)
 # define librt_hidden_def(name)
 # define librt_hidden_weak(name)
 # define librt_hidden_ver(local, name)
@@ -650,6 +649,8 @@ for linking")
 
 #if defined NOT_IN_libc && defined IS_IN_libdl
 # define libdl_hidden_proto(name, attrs...) hidden_proto (name, ##attrs)
+# define libdl_hidden_tls_proto(name, attrs...) \
+  hidden_tls_proto (name, ##attrs)
 # define libdl_hidden_def(name) hidden_def (name)
 # define libdl_hidden_weak(name) hidden_weak (name)
 # define libdl_hidden_ver(local, name) hidden_ver (local, name)
@@ -658,6 +659,7 @@ for linking")
 # define libdl_hidden_data_ver(local, name) hidden_data_ver (local, name)
 #else
 # define libdl_hidden_proto(name, attrs...)
+# define libdl_hidden_tls_proto(name, attrs...)
 # define libdl_hidden_def(name)
 # define libdl_hidden_weak(name)
 # define libdl_hidden_ver(local, name)
@@ -668,6 +670,8 @@ for linking")
 
 #if defined NOT_IN_libc && defined IS_IN_libnss_files
 # define libnss_files_hidden_proto(name, attrs...) hidden_proto (name, ##attrs)
+# define libnss_files_hidden_tls_proto(name, attrs...) \
+  hidden_tls_proto (name, ##attrs)
 # define libnss_files_hidden_def(name) hidden_def (name)
 # define libnss_files_hidden_weak(name) hidden_weak (name)
 # define libnss_files_hidden_ver(local, name) hidden_ver (local, name)
@@ -676,6 +680,7 @@ for linking")
 # define libnss_files_hidden_data_ver(local, name) hidden_data_ver(local, name)
 #else
 # define libnss_files_hidden_proto(name, attrs...)
+# define libnss_files_hidden_tls_proto(name, attrs...)
 # define libnss_files_hidden_def(name)
 # define libnss_files_hidden_weak(name)
 # define libnss_files_hidden_ver(local, name)
@@ -686,6 +691,8 @@ for linking")
 
 #if defined NOT_IN_libc && defined IS_IN_libnsl
 # define libnsl_hidden_proto(name, attrs...) hidden_proto (name, ##attrs)
+# define libnsl_hidden_tls_proto(name, attrs...) \
+  hidden_tls_proto (name, ##attrs)
 # define libnsl_hidden_def(name) hidden_def (name)
 # define libnsl_hidden_weak(name) hidden_weak (name)
 # define libnsl_hidden_ver(local, name) hidden_ver (local, name)
@@ -694,6 +701,7 @@ for linking")
 # define libnsl_hidden_data_ver(local, name) hidden_data_ver (local, name)
 #else
 # define libnsl_hidden_proto(name, attrs...)
+# define libnsl_hidden_tls_proto(name, attrs...)
 # define libnsl_hidden_def(name)
 # define libnsl_hidden_weak(name)
 # define libnsl_hidden_ver(local, name)
@@ -704,6 +712,8 @@ for linking")
 
 #if defined NOT_IN_libc && defined IS_IN_libnss_nisplus
 # define libnss_nisplus_hidden_proto(name, attrs...) hidden_proto (name, ##attrs)
+# define libnss_nisplus_hidden_tls_proto(name, attrs...) \
+  hidden_tls_proto (name, ##attrs)
 # define libnss_nisplus_hidden_def(name) hidden_def (name)
 # define libnss_nisplus_hidden_weak(name) hidden_weak (name)
 # define libnss_nisplus_hidden_ver(local, name) hidden_ver (local, name)
@@ -712,6 +722,7 @@ for linking")
 # define libnss_nisplus_hidden_data_ver(local, name) hidden_data_ver (local, name)
 #else
 # define libnss_nisplus_hidden_proto(name, attrs...)
+# define libnss_nisplus_hidden_tls_proto(name, attrs...)
 # define libnss_nisplus_hidden_def(name)
 # define libnss_nisplus_hidden_weak(name)
 # define libnss_nisplus_hidden_ver(local, name)
@@ -730,6 +741,8 @@ for linking")
 
 #if defined NOT_IN_libc && defined IS_IN_libutil
 # define libutil_hidden_proto(name, attrs...) hidden_proto (name, ##attrs)
+# define libutil_hidden_tls_proto(name, attrs...) \
+  hidden_tls_proto (name, ##attrs)
 # define libutil_hidden_def(name) hidden_def (name)
 # define libutil_hidden_weak(name) hidden_weak (name)
 # define libutil_hidden_ver(local, name) hidden_ver (local, name)
@@ -738,6 +751,7 @@ for linking")
 # define libutil_hidden_data_ver(local, name) hidden_data_ver (local, name)
 #else
 # define libutil_hidden_proto(name, attrs...)
+# define libutil_hidden_tls_proto(name, attrs...)
 # define libutil_hidden_def(name)
 # define libutil_hidden_weak(name)
 # define libutil_hidden_ver(local, name)
@@ -785,19 +799,27 @@ for linking")
 
 #ifdef HAVE_ASM_SET_DIRECTIVE
 # define libc_ifunc_hidden_def1(local, name)				\
-    __asm__ (declare_symbol_alias_1_stringify (ASM_GLOBAL_DIRECTIVE)	\
-	     " " #local "\n\t"						\
+    __asm__ (".globl " #local "\n\t"					\
 	     ".hidden " #local "\n\t"					\
 	     ".set " #local ", " #name);
 #else
 # define libc_ifunc_hidden_def1(local, name)				\
-    __asm__ (declare_symbol_alias_1_stringify (ASM_GLOBAL_DIRECTIVE)	\
-	     " " #local "\n\t"						\
+    __asm__ (".globl " #local "\n\t"					\
 	     ".hidden " #local "\n\t"					\
 	     #local " = " #name);
 #endif
 
 #define libc_ifunc_hidden_def(name) \
   libc_ifunc_hidden_def1 (__GI_##name, name)
+
+/* Add the compiler optimization to inhibit loop transformation to library
+   calls.  This is used to avoid recursive calls in memset and memmove
+   default implementations.  */
+#ifdef HAVE_CC_INHIBIT_LOOP_TO_LIBCALL
+# define inhibit_loop_to_libcall \
+    __attribute__ ((__optimize__ ("-fno-tree-loop-distribute-patterns")))
+#else
+# define inhibit_loop_to_libcall
+#endif
 
 #endif /* libc-symbols.h */

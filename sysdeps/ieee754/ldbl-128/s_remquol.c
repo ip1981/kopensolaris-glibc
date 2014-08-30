@@ -1,5 +1,5 @@
 /* Compute remainder and a congruent to the quotient.
-   Copyright (C) 1997, 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997 and
 		  Jakub Jelinek <jj@ultra.linux.cz>, 1999.
@@ -50,7 +50,7 @@ __remquol (long double x, long double y, int *quo)
 
   if (hy <= 0x7ffbffffffffffffLL)
     x = __ieee754_fmodl (x, 8 * y);              /* now x < 8y */
-      
+
   if (((hx - hy) | (lx - ly)) == 0)
     {
       *quo = qs ? -1 : 1;

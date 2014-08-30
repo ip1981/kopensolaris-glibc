@@ -1763,6 +1763,28 @@ GLIBC_2.16
  mbrtoc16 F
  mbrtoc32 F
  timespec_get F
+GLIBC_2.17
+ GLIBC_2.17 A
+ clock_getcpuclockid F
+ clock_getres F
+ clock_gettime F
+ clock_nanosleep F
+ clock_settime F
+ secure_getenv F
+GLIBC_2.18
+ GLIBC_2.18 A
+ __cxa_thread_atexit_impl F
+GLIBC_2.19
+ GLIBC_2.19 A
+ __longjmp_chk F
+ __setjmp F
+ __sigsetjmp F
+ _longjmp F
+ _setjmp F
+ getcontext F
+ longjmp F
+ setjmp F
+ siglongjmp F
 GLIBC_2.2
  GLIBC_2.2 A
  _IO_adjust_wcolumn F

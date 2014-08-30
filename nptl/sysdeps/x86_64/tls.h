@@ -1,5 +1,5 @@
 /* Definition for thread-local data handling.  nptl/x86_64 version.
-   Copyright (C) 2002-2009, 2011-2012 Free Software Foundation, Inc.
+   Copyright (C) 2002-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -30,6 +30,7 @@
 # include <stdint.h>
 # include <stdlib.h>
 # include <sysdep.h>
+# include <libc-internal.h>
 # include <kernel-features.h>
 
 /* Replacement type for __m128 since this file is included by ld.so,
@@ -67,12 +68,14 @@ typedef struct
 # ifndef __ASSUME_PRIVATE_FUTEX
   int private_futex;
 # else
-  int __unused1;
+  int __glibc_reserved1;
 # endif
   int rtld_must_xmm_save;
   /* Reservation of some values for the TM ABI.  */
-  void *__private_tm[5];
-  long int __unused2;
+  void *__private_tm[4];
+  /* GCC split stack support.  */
+  void *__private_ss;
+  long int __glibc_reserved2;
   /* Have space for the post-AVX register size.  */
   __128bits rtld_savespace_sse[8][4] __attribute__ ((aligned (32)));
 
@@ -266,7 +269,7 @@ typedef struct
 	   abort ();							      \
 									      \
 	 asm volatile ("movq %q0,%%fs:%P1" :				      \
-		       : IMM_MODE ((uint64_t) value),			      \
+		       : IMM_MODE ((uint64_t) cast_to_integer (value)),	      \
 			 "i" (offsetof (struct pthread, member)));	      \
        }})
 
@@ -291,7 +294,7 @@ typedef struct
 	   abort ();							      \
 									      \
 	 asm volatile ("movq %q0,%%fs:%P1(,%q2,8)" :			      \
-		       : IMM_MODE ((uint64_t) value),			      \
+		       : IMM_MODE ((uint64_t) cast_to_integer (value)),	      \
 			 "i" (offsetof (struct pthread, member[0])),	      \
 			 "r" (idx));					      \
        }})

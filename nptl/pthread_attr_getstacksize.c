@@ -1,4 +1,4 @@
-/* Copyright (C) 2002 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@redhat.com>, 2002.
 
@@ -30,9 +30,17 @@ __pthread_attr_getstacksize (attr, stacksize)
   assert (sizeof (*attr) >= sizeof (struct pthread_attr));
   iattr = (struct pthread_attr *) attr;
 
+  size_t size = iattr->stacksize;
+
   /* If the user has not set a stack size we return what the system
      will use as the default.  */
-  *stacksize = iattr->stacksize ?: __default_stacksize;
+  if (size == 0)
+    {
+      lll_lock (__default_pthread_attr_lock, LLL_PRIVATE);
+      size = __default_pthread_attr.stacksize;
+      lll_unlock (__default_pthread_attr_lock, LLL_PRIVATE);
+    }
+  *stacksize = size;
 
   return 0;
 }

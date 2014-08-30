@@ -1,4 +1,4 @@
-/* Copyright (C) 1999-2012 Free Software Foundation, Inc.
+/* Copyright (C) 1999-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Andreas Jaeger <aj@suse.de>, 1999.
 
@@ -31,6 +31,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdint.h>
 #include <sys/fcntl.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
@@ -173,13 +174,17 @@ is_hwcap_platform (const char *name)
 {
   int hwcap_idx = _dl_string_hwcap (name);
 
+  /* Is this a normal hwcap for the machine like "fpu?"  */
   if (hwcap_idx != -1 && ((1 << hwcap_idx) & hwcap_mask))
     return 1;
 
+  /* Is this a platform pseudo-hwcap like "i686?"  */
   hwcap_idx = _dl_string_platform (name);
   if (hwcap_idx != -1)
     return 1;
 
+  /* Is this one of the extra pseudo-hwcaps that we map beyond
+     _DL_FIRST_EXTRA like "tls", or "nosegneg?"  */
   for (hwcap_idx = _DL_FIRST_EXTRA; hwcap_idx < 64; ++hwcap_idx)
     if (hwcap_extra[hwcap_idx - _DL_FIRST_EXTRA] != NULL
 	&& !strcmp (name, hwcap_extra[hwcap_idx - _DL_FIRST_EXTRA]))
@@ -294,13 +299,16 @@ parse_opt (int key, char *arg, struct argp_state *state)
 static char *
 more_help (int key, const char *text, void *input)
 {
+  char *tp = NULL;
   switch (key)
     {
     case ARGP_KEY_HELP_EXTRA:
       /* We print some extra information.  */
-      return strdup (gettext ("\
+      if (asprintf (&tp, gettext ("\
 For bug reporting instructions, please see:\n\
-<http://www.gnu.org/software/libc/bugs.html>.\n"));
+%s.\n"), REPORT_BUGS_TO) < 0)
+	return NULL;
+      return tp;
     default:
       break;
     }
@@ -311,12 +319,12 @@ For bug reporting instructions, please see:\n\
 static void
 print_version (FILE *stream, struct argp_state *state)
 {
-  fprintf (stream, "ldconfig (GNU %s) %s\n", PACKAGE, VERSION);
+  fprintf (stream, "ldconfig %s%s\n", PKGVERSION, VERSION);
   fprintf (stream, gettext ("\
 Copyright (C) %s Free Software Foundation, Inc.\n\
 This is free software; see the source for copying conditions.  There is NO\n\
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
-"), "2012");
+"), "2014");
   fprintf (stream, gettext ("Written by %s.\n"),
 	   "Andreas Jaeger");
 }
@@ -1262,6 +1270,10 @@ main (int argc, char **argv)
 	  add_dir (argv[i]);
     }
 
+  /* The last entry in hwcap_extra is reserved for the "tls" pseudo-hwcap which
+     indicates support for TLS.  This pseudo-hwcap is only used by old versions
+     under which TLS support was optional.  The entry is no longer needed, but
+     must remain for compatibility.  */
   hwcap_extra[63 - _DL_FIRST_EXTRA] = "tls";
 
   set_hwcap ();

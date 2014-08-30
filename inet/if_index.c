@@ -1,4 +1,4 @@
-/* Copyright (C) 1997,98,99,2000,02 Free Software Foundation, Inc.
+/* Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -50,7 +50,6 @@ if_nameindex (void)
   return NULL;
 }
 stub_warning (if_nameindex)
-#include <stub-tag.h>
 
 #if 0
 void

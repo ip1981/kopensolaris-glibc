@@ -1,5 +1,5 @@
 /* Compute x * y + z as ternary operation.
-   Copyright (C) 2010-2012 Free Software Foundation, Inc.
+   Copyright (C) 2010-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Jakub Jelinek <jakub@redhat.com>, 2010.
 
@@ -32,8 +32,15 @@ float
 __fmaf (float x, float y, float z)
 {
   fenv_t env;
+
   /* Multiplication is always exact.  */
   double temp = (double) x * (double) y;
+
+  /* Ensure correct sign of an exact zero result by performing the
+     addition in the original rounding mode in that case.  */
+  if (temp == -z)
+    return (float) temp + z;
+
   union ieee754_double u;
 
   libc_feholdexcept_setround (&env, FE_TOWARDZERO);

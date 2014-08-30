@@ -1,6 +1,5 @@
 /* ix87 specific implementation of pow function.
-   Copyright (C) 1996-1999, 2001, 2004-2005, 2007, 2011-2012
-   Free Software Foundation, Inc.
+   Copyright (C) 1996-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1996.
 
@@ -23,31 +22,31 @@
 	.section .rodata.cst8,"aM",@progbits,8
 
 	.p2align 3
-	ASM_TYPE_DIRECTIVE(one,@object)
+	.type one,@object
 one:	.double 1.0
 	ASM_SIZE_DIRECTIVE(one)
-	ASM_TYPE_DIRECTIVE(limit,@object)
+	.type limit,@object
 limit:	.double 0.29
 	ASM_SIZE_DIRECTIVE(limit)
-	ASM_TYPE_DIRECTIVE(p63,@object)
+	.type p63,@object
 p63:	.byte 0, 0, 0, 0, 0, 0, 0xe0, 0x43
 	ASM_SIZE_DIRECTIVE(p63)
-	ASM_TYPE_DIRECTIVE(p10,@object)
+	.type p10,@object
 p10:	.byte 0, 0, 0, 0, 0, 0, 0x90, 0x40
 	ASM_SIZE_DIRECTIVE(p10)
 
 	.section .rodata.cst16,"aM",@progbits,16
 
 	.p2align 3
-	ASM_TYPE_DIRECTIVE(infinity,@object)
+	.type infinity,@object
 inf_zero:
 infinity:
 	.byte 0, 0, 0, 0, 0, 0, 0xf0, 0x7f
 	ASM_SIZE_DIRECTIVE(infinity)
-	ASM_TYPE_DIRECTIVE(zero,@object)
+	.type zero,@object
 zero:	.double 0.0
 	ASM_SIZE_DIRECTIVE(zero)
-	ASM_TYPE_DIRECTIVE(minf_mzero,@object)
+	.type minf_mzero,@object
 minf_mzero:
 minfinity:
 	.byte 0, 0, 0, 0, 0, 0, 0xf0, 0xff
@@ -98,6 +97,9 @@ ENTRY(__ieee754_pow)
 
 	cmpb	$0x05, %ah
 	je	15f		// x is ±inf
+
+	cmpb	$0x01, %ah
+	je	32f		// x is NaN
 
 	fxch			// y : x
 
@@ -164,6 +166,12 @@ ENTRY(__ieee754_pow)
 	je	31f
 	fxch			// y : x
 31:	fstp	%st(1)
+	ret
+
+	cfi_adjust_cfa_offset (8)
+32:	addl	$8, %esp
+	cfi_adjust_cfa_offset (-8)
+	fstp	%st(1)
 	ret
 
 	cfi_adjust_cfa_offset (8)

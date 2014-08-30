@@ -1,4 +1,4 @@
-/* Copyright (C) 1995, 1996, 1997 Free Software Foundation, Inc.
+/* Copyright (C) 1995-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -33,7 +33,7 @@ wcsstr (haystack, needle)
      const wchar_t *haystack;
      const wchar_t *needle;
 {
-  register wchar_t b, c;
+  wchar_t b, c;
 
   if ((b = *needle) != L'\0')
     {
@@ -50,8 +50,8 @@ wcsstr (haystack, needle)
 
       for (;;)
 	{
-	  register wchar_t a;
-	  register const wchar_t *rhaystack, *rneedle;
+	  wchar_t a;
+	  const wchar_t *rhaystack, *rneedle;
 
 	  do
 	    {

@@ -66,8 +66,6 @@ END LC_NUMERIC
 
 LC_TIME
 copy "tr_TR"
-first_workday 2
-first_weekday 2
 END LC_TIME
 
 LC_PAPER
@@ -79,7 +77,8 @@ copy "tr_TR"
 END LC_TELEPHONE
 
 LC_MEASUREMENT
-copy "tr_TR"
+% metric
+measurement 1
 END LC_MEASUREMENT
 
 LC_NAME
@@ -107,9 +106,9 @@ country_ab2	"<U0054><U0052>"
 country_ab3	"<U0054><U0055><U0052>"
 % Turkish
 lang_name	"<U0054><U0075><U0072><U006B><U0069><U0073><U0068>"
-% tr
+% tur
 lang_term	"<U0074><U0075><U0072>"
-% tr
+% tur
 lang_lib	"<U0074><U0075><U0072>"
 %tr
 lang_ab		"<U0074><U0072>"

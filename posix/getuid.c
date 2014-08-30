@@ -1,4 +1,4 @@
-/* Copyright (C) 1991, 1993, 1995, 1996, 1997 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -21,7 +21,7 @@
 
 /* Get the real user ID of the calling process.  */
 uid_t
-__getuid ()
+__getuid (void)
 {
   __set_errno (ENOSYS);
   return -1;
@@ -29,4 +29,3 @@ __getuid ()
 stub_warning (getuid)
 
 weak_alias (__getuid, getuid)
-#include <stub-tag.h>

@@ -1,4 +1,4 @@
-/* Copyright (C) 1993, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
+/* Copyright (C) 1993-2014 Free Software Foundation, Inc.
    Contributed by Ulrich Drepper <drepper@gnu.ai.mit.edu>
    This file is part of the GNU C Library.
 
@@ -45,7 +45,7 @@ hcreate (nel)
 
 
 void
-__hdestroy ()
+__hdestroy (void)
 {
   hdestroy_r (&htab);
 }

@@ -1,4 +1,4 @@
-/* Copyright (C) 1997-2012 Free Software Foundation, Inc.
+/* Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -55,8 +55,8 @@ __libc_sigaction (sig, act, oact)
   /* XXX The size argument hopefully will have to be changed to the
      real size of the user-level sigset_t.  */
   result = INLINE_SYSCALL (rt_sigaction, 4, sig,
-			   act ? __ptrvalue (&kact) : NULL,
-			   oact ? __ptrvalue (&koact) : NULL, _NSIG / 8);
+			   act ? &kact : NULL,
+			   oact ? &koact : NULL, _NSIG / 8);
 
   if (oact && result >= 0)
     {

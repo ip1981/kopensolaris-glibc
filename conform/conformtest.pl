@@ -20,16 +20,16 @@ if (@headers == ()) {
 	      "sys/stat.h", "sys/socket.h", "sys/shm.h", "sys/sem.h",
 	      "sys/select.h", "sys/resource.h", "sys/msg.h", "sys/mman.h",
 	      "sys/ipc.h", "syslog.h", "stropts.h", "strings.h", "string.h",
-	      "stdlib.h", "stdio.h", "stdint.h", "stddef.h", "stdarg.h",
-	      "spawn.h", "signal.h", "setjmp.h", "semaphore.h", "search.h",
-	      "sched.h", "regex.h", "pwd.h", "pthread.h", "poll.h",
-	      "nl_types.h", "netinet/tcp.h", "netinet/in.h", "net/if.h",
-	      "netdb.h", "ndbm.h", "mqueue.h", "monetary.h", "math.h",
-	      "locale.h", "libgen.h", "limits.h", "langinfo.h", "iso646.h",
-	      "inttypes.h", "iconv.h", "grp.h", "glob.h", "ftw.h", "fnmatch.h",
-	      "fmtmsg.h", "float.h", "fcntl.h", "errno.h", "dlfcn.h",
-	      "dirent.h", "ctype.h", "cpio.h", "complex.h", "assert.h",
-	      "arpa/inet.h", "aio.h");
+	      "stdnoreturn.h", "stdlib.h", "stdio.h", "stdint.h", "stddef.h",
+	      "stdbool.h", "stdarg.h", "stdalign.h", "spawn.h", "signal.h",
+	      "setjmp.h", "semaphore.h", "search.h", "sched.h", "regex.h",
+	      "pwd.h", "pthread.h", "poll.h", "nl_types.h", "netinet/tcp.h",
+	      "netinet/in.h", "net/if.h", "netdb.h", "ndbm.h", "mqueue.h",
+	      "monetary.h", "math.h", "locale.h", "libgen.h", "limits.h",
+	      "langinfo.h", "iso646.h", "inttypes.h", "iconv.h", "grp.h",
+	      "glob.h", "ftw.h", "fnmatch.h", "fmtmsg.h", "float.h", "fenv.h",
+	      "fcntl.h", "errno.h", "dlfcn.h", "dirent.h", "ctype.h", "cpio.h",
+	      "complex.h", "assert.h", "arpa/inet.h", "aio.h");
 }
 
 $CFLAGS{"ISO"} = "-ansi";
@@ -236,6 +236,8 @@ sub newtoken {
   for ($idx = 0; $idx <= $#allow; ++$idx) {
     return if (poorfnmatch ($allow[$idx], $token));
   }
+
+  $errors{$token} = 1;
 }
 
 
@@ -777,7 +779,7 @@ while ($#headers >= 0) {
   while ($#allowheader >= 0) {
     my($ah) = pop @allowheader;
 
-    open (ALLOW, "$CC -E -D$standard - < data/$ah-data |");
+    open (ALLOW, "$CC -E -D$standard -x c data/$ah-data |");
     acontrol: while (<ALLOW>) {
       chop;
       next acontrol if (/^#/);
@@ -786,7 +788,7 @@ while ($#headers >= 0) {
       if (/^element *({([^}]*)}|([^ ]*)) *({([^}]*)}|([^ ]*)) *([A-Za-z0-9_]*) *(.*)/) {
 	push @allow, $7;
       } elsif (/^(macro|constant|macro-constant|macro-int-constant) +([a-zA-Z0-9_]*) *(?:{([^}]*)} *)?(?:([>=<!]+) ([A-Za-z0-9_-]*))?/) {
-	push @allow, $1;
+	push @allow, $2;
       } elsif (/^(type|tag) *({([^}]*)|([a-zA-Z0-9_]*))/) {
 	my($type) = "$3$4";
 

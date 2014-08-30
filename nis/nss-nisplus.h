@@ -1,4 +1,4 @@
-/* Copyright (C) 1997, 2006 Free Software Foundation, Inc.
+/* Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Thorsten Kukuk <kukuk@uni-paderborn.de>, 1997.
 
@@ -28,7 +28,8 @@
 extern const enum nss_status __niserr2nss_tab[] attribute_hidden;
 extern const unsigned int __niserr2nss_count attribute_hidden;
 
-static inline enum nss_status
+static enum nss_status
+__attribute__ ((unused))
 niserr2nss (int errval)
 {
   if ((unsigned int) errval >= __niserr2nss_count)

@@ -1,7 +1,5 @@
 /* longlong.h -- definitions for mixed size 32/64 bit arithmetic.
-   Copyright (C) 1991, 1992, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
-   Free Software Foundation, Inc.
+   Copyright (C) 1991-2014 Free Software Foundation, Inc.
 
    This file is part of the GNU C Library.
 
@@ -190,16 +188,20 @@ extern UDItype __udiv_qrnnd (UDItype *, UDItype, UDItype, UDItype);
 	     "rIJ" ((USItype) (bh)),					\
 	     "r" ((USItype) (al)),					\
 	     "rIJ" ((USItype) (bl)))
-/* Call libgcc routine.  */
-#define umul_ppmm(w1, w0, u, v) \
-do {									\
-  DWunion __w;								\
-  __w.ll = __umulsidi3 (u, v);						\
-  w1 = __w.s.high;							\
-  w0 = __w.s.low;							\
-} while (0)
-#define __umulsidi3 __umulsidi3
-UDItype __umulsidi3 (USItype, USItype);
+
+#define __umulsidi3(u,v) ((UDItype)(USItype)u*(USItype)v)
+#ifdef __ARC_NORM__
+#define count_leading_zeros(count, x) \
+  do									\
+    {									\
+      SItype c_;							\
+									\
+      __asm__ ("norm.f\t%0,%1\n\tmov.mi\t%0,-1" : "=r" (c_) : "r" (x) : "cc");\
+      (count) = c_ + 1;							\
+    }									\
+  while (0)
+#define COUNT_LEADING_ZEROS_0 32
+#endif
 #endif
 
 #if defined (__arm__) && (defined (__thumb2__) || !defined (__thumb__)) \
@@ -287,12 +289,39 @@ UDItype __umulsidi3 (USItype, USItype);
 
 #endif /* defined (__AVR__) */
 
-#if defined (__CRIS__) && __CRIS_arch_version >= 3
+#if defined (__CRIS__)
+
+#if __CRIS_arch_version >= 3
 #define count_leading_zeros(COUNT, X) ((COUNT) = __builtin_clz (X))
+#define COUNT_LEADING_ZEROS_0 32
+#endif /* __CRIS_arch_version >= 3 */
+
 #if __CRIS_arch_version >= 8
 #define count_trailing_zeros(COUNT, X) ((COUNT) = __builtin_ctz (X))
-#endif
-#endif /* __CRIS__ */
+#endif /* __CRIS_arch_version >= 8 */
+
+#if __CRIS_arch_version >= 10
+#define __umulsidi3(u,v) ((UDItype)(USItype) (u) * (UDItype)(USItype) (v))
+#else
+#define __umulsidi3 __umulsidi3
+extern UDItype __umulsidi3 (USItype, USItype);
+#endif /* __CRIS_arch_version >= 10 */
+
+#define umul_ppmm(w1, w0, u, v)		\
+  do {					\
+    UDItype __x = __umulsidi3 (u, v);	\
+    (w0) = (USItype) (__x);		\
+    (w1) = (USItype) (__x >> 32);	\
+  } while (0)
+
+/* FIXME: defining add_ssaaaa and sub_ddmmss should be advantageous for
+   DFmode ("double" intrinsics, avoiding two of the three insns handling
+   carry), but defining them as open-code C composing and doing the
+   operation in DImode (UDImode) shows that the DImode needs work:
+   register pressure from requiring neighboring registers and the
+   traffic to and from them come to dominate, in the 4.7 series.  */
+
+#endif /* defined (__CRIS__) */
 
 #if defined (__hppa) && W_TYPE_SIZE == 32
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
@@ -850,8 +879,6 @@ UDItype __umulsidi3 (USItype, USItype);
    FIXME: What's needed for gcc PowerPC VxWorks?  __vxworks__ is not good
    enough, since that hits ARM and m68k too.  */
 #if (defined (_ARCH_PPC)	/* AIX */				\
-     || defined (_ARCH_PWR)	/* AIX */				\
-     || defined (_ARCH_COM)	/* AIX */				\
      || defined (__powerpc__)	/* gcc */				\
      || defined (__POWERPC__)	/* BEOS */				\
      || defined (__ppc__)	/* Darwin */				\
@@ -862,37 +889,37 @@ UDItype __umulsidi3 (USItype, USItype);
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
   do {									\
     if (__builtin_constant_p (bh) && (bh) == 0)				\
-      __asm__ ("{a%I4|add%I4c} %1,%3,%4\n\t{aze|addze} %0,%2"		\
+      __asm__ ("add%I4c %1,%3,%4\n\taddze %0,%2"		\
 	     : "=r" (sh), "=&r" (sl) : "r" (ah), "%r" (al), "rI" (bl));\
     else if (__builtin_constant_p (bh) && (bh) == ~(USItype) 0)		\
-      __asm__ ("{a%I4|add%I4c} %1,%3,%4\n\t{ame|addme} %0,%2"		\
+      __asm__ ("add%I4c %1,%3,%4\n\taddme %0,%2"		\
 	     : "=r" (sh), "=&r" (sl) : "r" (ah), "%r" (al), "rI" (bl));\
     else								\
-      __asm__ ("{a%I5|add%I5c} %1,%4,%5\n\t{ae|adde} %0,%2,%3"		\
+      __asm__ ("add%I5c %1,%4,%5\n\tadde %0,%2,%3"		\
 	     : "=r" (sh), "=&r" (sl)					\
 	     : "%r" (ah), "r" (bh), "%r" (al), "rI" (bl));		\
   } while (0)
 #define sub_ddmmss(sh, sl, ah, al, bh, bl) \
   do {									\
     if (__builtin_constant_p (ah) && (ah) == 0)				\
-      __asm__ ("{sf%I3|subf%I3c} %1,%4,%3\n\t{sfze|subfze} %0,%2"	\
+      __asm__ ("subf%I3c %1,%4,%3\n\tsubfze %0,%2"	\
 	       : "=r" (sh), "=&r" (sl) : "r" (bh), "rI" (al), "r" (bl));\
     else if (__builtin_constant_p (ah) && (ah) == ~(USItype) 0)		\
-      __asm__ ("{sf%I3|subf%I3c} %1,%4,%3\n\t{sfme|subfme} %0,%2"	\
+      __asm__ ("subf%I3c %1,%4,%3\n\tsubfme %0,%2"	\
 	       : "=r" (sh), "=&r" (sl) : "r" (bh), "rI" (al), "r" (bl));\
     else if (__builtin_constant_p (bh) && (bh) == 0)			\
-      __asm__ ("{sf%I3|subf%I3c} %1,%4,%3\n\t{ame|addme} %0,%2"		\
+      __asm__ ("subf%I3c %1,%4,%3\n\taddme %0,%2"		\
 	       : "=r" (sh), "=&r" (sl) : "r" (ah), "rI" (al), "r" (bl));\
     else if (__builtin_constant_p (bh) && (bh) == ~(USItype) 0)		\
-      __asm__ ("{sf%I3|subf%I3c} %1,%4,%3\n\t{aze|addze} %0,%2"		\
+      __asm__ ("subf%I3c %1,%4,%3\n\taddze %0,%2"		\
 	       : "=r" (sh), "=&r" (sl) : "r" (ah), "rI" (al), "r" (bl));\
     else								\
-      __asm__ ("{sf%I4|subf%I4c} %1,%5,%4\n\t{sfe|subfe} %0,%3,%2"	\
+      __asm__ ("subf%I4c %1,%5,%4\n\tsubfe %0,%3,%2"	\
 	       : "=r" (sh), "=&r" (sl)					\
 	       : "r" (ah), "r" (bh), "rI" (al), "r" (bl));		\
   } while (0)
 #define count_leading_zeros(count, x) \
-  __asm__ ("{cntlz|cntlzw} %0,%1" : "=r" (count) : "r" (x))
+  __asm__ ("cntlzw %0,%1" : "=r" (count) : "r" (x))
 #define COUNT_LEADING_ZEROS_0 32
 #if defined (_ARCH_PPC) || defined (__powerpc__) || defined (__POWERPC__) \
   || defined (__ppc__)                                                    \
@@ -914,14 +941,6 @@ UDItype __umulsidi3 (USItype, USItype);
   } while (0)
 #define SMUL_TIME 14
 #define UDIV_TIME 120
-#elif defined (_ARCH_PWR)
-#define UMUL_TIME 8
-#define smul_ppmm(xh, xl, m0, m1) \
-  __asm__ ("mul %0,%2,%3" : "=r" (xh), "=q" (xl) : "r" (m0), "r" (m1))
-#define SMUL_TIME 4
-#define sdiv_qrnnd(q, r, nh, nl, d) \
-  __asm__ ("div %0,%2,%4" : "=r" (q), "=q" (r) : "r" (nh), "1" (nl), "r" (d))
-#define UDIV_TIME 100
 #endif
 #endif /* 32-bit POWER architecture variants.  */
 
@@ -931,32 +950,32 @@ UDItype __umulsidi3 (USItype, USItype);
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
   do {									\
     if (__builtin_constant_p (bh) && (bh) == 0)				\
-      __asm__ ("{a%I4|add%I4c} %1,%3,%4\n\t{aze|addze} %0,%2"		\
+      __asm__ ("add%I4c %1,%3,%4\n\taddze %0,%2"		\
 	     : "=r" (sh), "=&r" (sl) : "r" (ah), "%r" (al), "rI" (bl));\
     else if (__builtin_constant_p (bh) && (bh) == ~(UDItype) 0)		\
-      __asm__ ("{a%I4|add%I4c} %1,%3,%4\n\t{ame|addme} %0,%2"		\
+      __asm__ ("add%I4c %1,%3,%4\n\taddme %0,%2"		\
 	     : "=r" (sh), "=&r" (sl) : "r" (ah), "%r" (al), "rI" (bl));\
     else								\
-      __asm__ ("{a%I5|add%I5c} %1,%4,%5\n\t{ae|adde} %0,%2,%3"		\
+      __asm__ ("add%I5c %1,%4,%5\n\tadde %0,%2,%3"		\
 	     : "=r" (sh), "=&r" (sl)					\
 	     : "%r" (ah), "r" (bh), "%r" (al), "rI" (bl));		\
   } while (0)
 #define sub_ddmmss(sh, sl, ah, al, bh, bl) \
   do {									\
     if (__builtin_constant_p (ah) && (ah) == 0)				\
-      __asm__ ("{sf%I3|subf%I3c} %1,%4,%3\n\t{sfze|subfze} %0,%2"	\
+      __asm__ ("subf%I3c %1,%4,%3\n\tsubfze %0,%2"	\
 	       : "=r" (sh), "=&r" (sl) : "r" (bh), "rI" (al), "r" (bl));\
     else if (__builtin_constant_p (ah) && (ah) == ~(UDItype) 0)		\
-      __asm__ ("{sf%I3|subf%I3c} %1,%4,%3\n\t{sfme|subfme} %0,%2"	\
+      __asm__ ("subf%I3c %1,%4,%3\n\tsubfme %0,%2"	\
 	       : "=r" (sh), "=&r" (sl) : "r" (bh), "rI" (al), "r" (bl));\
     else if (__builtin_constant_p (bh) && (bh) == 0)			\
-      __asm__ ("{sf%I3|subf%I3c} %1,%4,%3\n\t{ame|addme} %0,%2"		\
+      __asm__ ("subf%I3c %1,%4,%3\n\taddme %0,%2"		\
 	       : "=r" (sh), "=&r" (sl) : "r" (ah), "rI" (al), "r" (bl));\
     else if (__builtin_constant_p (bh) && (bh) == ~(UDItype) 0)		\
-      __asm__ ("{sf%I3|subf%I3c} %1,%4,%3\n\t{aze|addze} %0,%2"		\
+      __asm__ ("subf%I3c %1,%4,%3\n\taddze %0,%2"		\
 	       : "=r" (sh), "=&r" (sl) : "r" (ah), "rI" (al), "r" (bl));\
     else								\
-      __asm__ ("{sf%I4|subf%I4c} %1,%5,%4\n\t{sfe|subfe} %0,%3,%2"	\
+      __asm__ ("subf%I4c %1,%5,%4\n\tsubfe %0,%3,%2"	\
 	       : "=r" (sh), "=&r" (sl)					\
 	       : "r" (ah), "r" (bh), "rI" (al), "r" (bl));		\
   } while (0)

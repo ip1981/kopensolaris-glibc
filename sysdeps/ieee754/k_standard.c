@@ -31,7 +31,7 @@ static char rcsid[] = "$NetBSD: k_standard.c,v 1.6 1995/05/10 20:46:35 jtc Exp $
 #endif	/* !defined(_USE_WRITE) */
 
 /* XXX gcc versions until now don't delay the 0.0/0.0 division until
-   runtime but produce NaN at copile time.  This is wrong since the
+   runtime but produce NaN at compile time.  This is wrong since the
    exceptions are not set correctly.  */
 #if 0
 static const double zero = 0.0;	/* used as const */
@@ -248,7 +248,7 @@ __kernel_standard(double x, double y, int type)
 		else
 		  exc.retval = -HUGE_VAL;
 		if (_LIB_VERSION == _POSIX_)
-		  __set_errno (EDOM);
+		  __set_errno (ERANGE);
 		else if (!matherr(&exc)) {
 		  if (_LIB_VERSION == _SVID_) {
 			(void) WRITE2("y0: DOMAIN error\n", 17);
@@ -265,7 +265,7 @@ __kernel_standard(double x, double y, int type)
 		if (_LIB_VERSION == _SVID_)
 		  exc.retval = -HUGE;
 		else
-		  exc.retval = -HUGE_VAL;
+		  exc.retval = NAN;
 		if (_LIB_VERSION == _POSIX_)
 		  __set_errno (EDOM);
 		else if (!matherr(&exc)) {
@@ -286,7 +286,7 @@ __kernel_standard(double x, double y, int type)
 		else
 		  exc.retval = -HUGE_VAL;
 		if (_LIB_VERSION == _POSIX_)
-		  __set_errno (EDOM);
+		  __set_errno (ERANGE);
 		else if (!matherr(&exc)) {
 		  if (_LIB_VERSION == _SVID_) {
 			(void) WRITE2("y1: DOMAIN error\n", 17);
@@ -303,7 +303,7 @@ __kernel_standard(double x, double y, int type)
 		if (_LIB_VERSION == _SVID_)
 		  exc.retval = -HUGE;
 		else
-		  exc.retval = -HUGE_VAL;
+		  exc.retval = NAN;
 		if (_LIB_VERSION == _POSIX_)
 		  __set_errno (EDOM);
 		else if (!matherr(&exc)) {
@@ -322,9 +322,11 @@ __kernel_standard(double x, double y, int type)
 		if (_LIB_VERSION == _SVID_)
 		  exc.retval = -HUGE;
 		else
-		  exc.retval = -HUGE_VAL;
+		  exc.retval = ((x < 0 && ((int) x & 1) != 0)
+				? HUGE_VAL
+				: -HUGE_VAL);
 		if (_LIB_VERSION == _POSIX_)
-		  __set_errno (EDOM);
+		  __set_errno (ERANGE);
 		else if (!matherr(&exc)) {
 		  if (_LIB_VERSION == _SVID_) {
 			(void) WRITE2("yn: DOMAIN error\n", 17);
@@ -341,7 +343,7 @@ __kernel_standard(double x, double y, int type)
 		if (_LIB_VERSION == _SVID_)
 		  exc.retval = -HUGE;
 		else
-		  exc.retval = -HUGE_VAL;
+		  exc.retval = NAN;
 		if (_LIB_VERSION == _POSIX_)
 		  __set_errno (EDOM);
 		else if (!matherr(&exc)) {
@@ -837,7 +839,7 @@ __kernel_standard(double x, double y, int type)
 		exc.type = OVERFLOW;
 		exc.name = type < 100 ? "tgamma" : (type < 200
 						   ? "tgammaf" : "tgammal");
-		exc.retval = HUGE_VAL;
+		exc.retval = __copysign (HUGE_VAL, x);
 		if (_LIB_VERSION == _POSIX_)
 		  __set_errno (ERANGE);
 		else if (!matherr(&exc)) {
@@ -1003,6 +1005,7 @@ __kernel_standard_f(float x, float y, int type)
 	return __kernel_standard(x, y, type);
 }
 
+#ifndef __NO_LONG_DOUBLE_MATH
 long double
 __kernel_standard_l (long double x, long double y, int type)
 {
@@ -1082,3 +1085,4 @@ __kernel_standard_l (long double x, long double y, int type)
       return __kernel_standard (dx, dy, type);
     }
 }
+#endif

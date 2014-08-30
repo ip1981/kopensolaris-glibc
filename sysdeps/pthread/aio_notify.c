@@ -1,5 +1,5 @@
 /* Notify initiator of AIO request.
-   Copyright (C) 1997-2001, 2003, 2004, 2006 Free Software Foundation, Inc.
+   Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997.
 
@@ -95,7 +95,7 @@ __aio_notify_only (struct sigevent *sigev)
   else if (sigev->sigev_notify == SIGEV_SIGNAL)
     {
       /* We have to send a signal.  */
-#if _POSIX_REALTIME_SIGNALS
+#if _POSIX_REALTIME_SIGNALS > 0
       /* Note that the standard gives us the option of using a plain
 	 non-queuing signal here when SA_SIGINFO is not set for the signal.  */
 # ifdef BROKEN_THREAD_SIGNALS
@@ -157,7 +157,7 @@ __aio_notify (struct requestlist *req)
 #endif
 	}
       else
-	/* This is part of a asynchronous `lio_listio' operation.  If
+	/* This is part of an asynchronous `lio_listio' operation.  If
 	   this request is the last one, send the signal.  */
 	if (--*waitlist->counterp == 0)
 	  {

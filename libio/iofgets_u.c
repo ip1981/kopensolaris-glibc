@@ -1,4 +1,4 @@
-/* Copyright (C) 1993-2012 Free Software Foundation, Inc.
+/* Copyright (C) 1993-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -56,7 +56,7 @@ fgets_unlocked (buf, n, fp)
   /* If we read in some bytes and errno is EAGAIN, that error will
      be reported for next read. */
   if (count == 0 || ((fp->_IO_file_flags & _IO_ERR_SEEN)
-  		     && errno != EAGAIN))
+		     && errno != EAGAIN))
     result = NULL;
   else
     {

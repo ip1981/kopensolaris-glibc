@@ -1,5 +1,5 @@
 /* __frame_state_for unwinder helper function wrapper.
-   Copyright (C) 2001-2012 Free Software Foundation, Inc.
+   Copyright (C) 2001-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Jakub Jelinek <jakub@redhat.com>, 2001.
 
@@ -44,7 +44,7 @@ __frame_state_for (void *pc, struct frame_state *frame_state)
 #ifndef __USING_SJLJ_EXCEPTIONS__
 	frame_state_for = fallback_frame_state_for;
 #else
-      	frame_state_for = abort;
+	frame_state_for = abort;
 #endif
     }
 

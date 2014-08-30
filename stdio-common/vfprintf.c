@@ -1,4 +1,4 @@
-/* Copyright (C) 1991-2012   Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -67,7 +67,7 @@
   do {									      \
     unsigned int _val = val;						      \
     assert ((unsigned int) done < (unsigned int) INT_MAX);		      \
-    if (__builtin_expect (INT_MAX - done < _val, 0))			      \
+    if (__glibc_unlikely (INT_MAX - done < _val))			      \
       {									      \
 	done = -1;							      \
 	 __set_errno (EOVERFLOW);					      \
@@ -87,8 +87,18 @@
 
 # define PUT(F, S, N)	_IO_sputn ((F), (S), (N))
 # define PAD(Padchar) \
-  if (width > 0)							      \
-    done_add (_IO_padn (s, (Padchar), width))
+  do {									      \
+    if (width > 0)							      \
+      {									      \
+	_IO_ssize_t written = _IO_padn (s, (Padchar), width);		      \
+	if (__glibc_unlikely (written != width))			      \
+	  {								      \
+	    done = -1;							      \
+	    goto all_done;						      \
+	  }								      \
+	done_add (written);						      \
+      }									      \
+  } while (0)
 # define PUTC(C, F)	_IO_putc_unlocked (C, F)
 # define ORIENT		if (_IO_vtable_offset (s) == 0 && _IO_fwide (s, -1) != -1)\
 			  return -1
@@ -106,8 +116,18 @@
 
 # define PUT(F, S, N)	_IO_sputn ((F), (S), (N))
 # define PAD(Padchar) \
-  if (width > 0)							      \
-    done_add (_IO_wpadn (s, (Padchar), width))
+  do {									      \
+    if (width > 0)							      \
+      {									      \
+	_IO_ssize_t written = _IO_wpadn (s, (Padchar), width);		      \
+	if (__glibc_unlikely (written != width))			      \
+	  {								      \
+	    done = -1;							      \
+	    goto all_done;						      \
+	  }								      \
+	done_add (written);						      \
+      }									      \
+  } while (0)
 # define PUTC(C, F)	_IO_putwc_unlocked (C, F)
 # define ORIENT		if (_IO_fwide (s, 1) != 1) return -1
 
@@ -127,7 +147,7 @@
 #define	outchar(Ch)							      \
   do									      \
     {									      \
-      register const INT_T outc = (Ch);					      \
+      const INT_T outc = (Ch);						      \
       if (PUTC (outc, s) == EOF || done == INT_MAX)			      \
 	{								      \
 	  done = -1;							      \
@@ -146,7 +166,7 @@
 	  done = -1;							      \
 	  goto all_done;						      \
 	}								      \
-      if (__builtin_expect (INT_MAX - done < (Len), 0))			      \
+      if (__glibc_unlikely (INT_MAX - done < (Len)))			      \
       {									      \
 	done = -1;							      \
 	 __set_errno (EOVERFLOW);					      \
@@ -282,7 +302,7 @@ vfprintf (FILE *s, const CHAR_T *format, va_list ap)
       do								      \
 	{								      \
 	  int offset;							      \
-	  void *__unbounded ptr;					      \
+	  void *ptr;							      \
 	  spec = (ChExpr);						      \
 	  offset = NOT_IN_JUMP_RANGE (spec) ? REF (form_unknown)	      \
 	    : table[CHAR_CLASS (spec)];					      \
@@ -295,7 +315,7 @@ vfprintf (FILE *s, const CHAR_T *format, va_list ap)
 # define JUMP(ChExpr, table)						      \
       do								      \
 	{								      \
-	  const void *__unbounded ptr;					      \
+	  const void *ptr;						      \
 	  spec = (ChExpr);						      \
 	  ptr = NOT_IN_JUMP_RANGE (spec) ? REF (form_unknown)		      \
 	    : table[CHAR_CLASS (spec)];					      \
@@ -1047,7 +1067,13 @@ vfprintf (FILE *s, const CHAR_T *format, va_list ap)
 	    /* Allocate dynamically an array which definitely is long	      \
 	       enough for the wide character version.  Each byte in the	      \
 	       multi-byte string can produce at most one wide character.  */  \
-	    if (__libc_use_alloca (len * sizeof (wchar_t)))		      \
+	    if (__glibc_unlikely (len > SIZE_MAX / sizeof (wchar_t)))	      \
+	      {								      \
+		__set_errno (EOVERFLOW);				      \
+		done = -1;						      \
+		goto all_done;						      \
+	      }								      \
+	    else if (__libc_use_alloca (len * sizeof (wchar_t)))	      \
 	      string = (CHAR_T *) alloca (len * sizeof (wchar_t));	      \
 	    else if ((string = (CHAR_T *) malloc (len * sizeof (wchar_t)))    \
 		     == NULL)						      \
@@ -1088,7 +1114,7 @@ vfprintf (FILE *s, const CHAR_T *format, va_list ap)
 	outstring (string, len);					      \
 	if (left)							      \
 	  PAD (L' ');							      \
-	if (__builtin_expect (string_malloced, 0))			      \
+	if (__glibc_unlikely (string_malloced))				      \
 	  free (string);						      \
       }									      \
       break;
@@ -1168,42 +1194,9 @@ vfprintf (FILE *s, const CHAR_T *format, va_list ap)
 	else if (!is_long && spec != L_('S'))				      \
 	  {								      \
 	    if (prec != -1)						      \
-	      {								      \
-		/* Search for the end of the string, but don't search past    \
-		   the length (in bytes) specified by the precision.  Also    \
-		   don't use incomplete characters.  */			      \
-		if (_NL_CURRENT_WORD (LC_CTYPE, _NL_CTYPE_MB_CUR_MAX) == 1)   \
-		  len = __strnlen (string, prec);			      \
-		else							      \
-		  {							      \
-		    /* In case we have a multibyte character set the	      \
-		       situation is more complicated.  We must not copy	      \
-		       bytes at the end which form an incomplete character. */\
-		    size_t ignore_size = (unsigned) prec > 1024 ? 1024 : prec;\
-		    wchar_t ignore[ignore_size];			      \
-		    const char *str2 = string;				      \
-		    const char *strend = string + prec;			      \
-		    if (strend < string)				      \
-		      strend = (const char *) UINTPTR_MAX;		      \
-									      \
-		    mbstate_t ps;					      \
-		    memset (&ps, '\0', sizeof (ps));			      \
-									      \
-		    while (str2 != NULL && str2 < strend)		      \
-		      if (__mbsnrtowcs (ignore, &str2, strend - str2,	      \
-					ignore_size, &ps) == (size_t) -1)     \
-			{						      \
-			  /* Conversion function has set errno.  */	      \
-			  done = -1;					      \
-			  goto all_done;				      \
-			}						      \
-									      \
-		    if (str2 == NULL)					      \
-		      len = strlen (string);				      \
-		    else						      \
-		      len = str2 - string - (ps.__count & 7);		      \
-		  }							      \
-	      }								      \
+	      /* Search for the end of the string, but don't search past      \
+		 the length (in bytes) specified by the precision.  */	      \
+	      len = __strnlen (string, prec);				      \
 	    else							      \
 	      len = strlen (string);					      \
 	  }								      \
@@ -1267,7 +1260,7 @@ vfprintf (FILE *s, const CHAR_T *format, va_list ap)
 	outstring (string, len);					      \
 	if (left)							      \
 	  PAD (' ');							      \
-	if (__builtin_expect (string_malloced, 0))			      \
+	if (__glibc_unlikely (string_malloced))			              \
 	  free (string);						      \
       }									      \
       break;
@@ -1328,9 +1321,9 @@ vfprintf (FILE *s, const CHAR_T *format, va_list ap)
     goto all_done;
 
   /* Use the slow path in case any printf handler is registered.  */
-  if (__builtin_expect (__printf_function_table != NULL
+  if (__glibc_unlikely (__printf_function_table != NULL
 			|| __printf_modifier_table != NULL
-			|| __printf_va_arg_table != NULL, 0))
+			|| __printf_va_arg_table != NULL))
     goto do_positional;
 
   /* Process whole format string.  */
@@ -1465,7 +1458,7 @@ vfprintf (FILE *s, const CHAR_T *format, va_list ap)
 	    left = 1;
 	  }
 
-	if (__builtin_expect (width >= INT_MAX / sizeof (CHAR_T) - 32, 0))
+	if (__glibc_unlikely (width >= INT_MAX / sizeof (CHAR_T) - 32))
 	  {
 	    __set_errno (EOVERFLOW);
 	    done = -1;
@@ -1497,8 +1490,8 @@ vfprintf (FILE *s, const CHAR_T *format, va_list ap)
     LABEL (width):
       width = read_int (&f);
 
-      if (__builtin_expect (width == -1
-			    || width >= INT_MAX / sizeof (CHAR_T) - 32, 0))
+      if (__glibc_unlikely (width == -1
+			    || width >= INT_MAX / sizeof (CHAR_T) - 32))
 	{
 	  __set_errno (EOVERFLOW);
 	  done = -1;
@@ -1574,7 +1567,7 @@ vfprintf (FILE *s, const CHAR_T *format, va_list ap)
       if (prec > width
 	  && prec > sizeof (work_buffer) / sizeof (work_buffer[0]) - 32)
 	{
-	  if (__builtin_expect (prec >= INT_MAX / sizeof (CHAR_T) - 32, 0))
+	  if (__glibc_unlikely (prec >= INT_MAX / sizeof (CHAR_T) - 32))
 	    {
 	      __set_errno (EOVERFLOW);
 	      done = -1;
@@ -1658,7 +1651,7 @@ vfprintf (FILE *s, const CHAR_T *format, va_list ap)
       /* The format is correctly handled.  */
       ++nspecs_done;
 
-      if (__builtin_expect (workstart != NULL, 0))
+      if (__glibc_unlikely (workstart != NULL))
 	free (workstart);
       workstart = NULL;
 
@@ -1704,7 +1697,8 @@ do_positional:
     /* Just a counter.  */
     size_t cnt;
 
-    free (workstart);
+    if (__glibc_unlikely (workstart != NULL))
+      free (workstart);
     workstart = NULL;
 
     if (grouping == (const char *) -1)
@@ -1749,7 +1743,7 @@ do_positional:
 		     + sizeof (*args_type));
 
     /* Check for potential integer overflow.  */
-    if (__builtin_expect (nargs > INT_MAX / bytes_per_arg, 0))
+    if (__glibc_unlikely (nargs > INT_MAX / bytes_per_arg))
       {
 	 __set_errno (EOVERFLOW);
 	 done = -1;
@@ -1854,7 +1848,7 @@ do_positional:
 	default:
 	  if ((args_type[cnt] & PA_FLAG_PTR) != 0)
 	    args_value[cnt].pa_pointer = va_arg (ap_save, void *);
-	  else if (__builtin_expect (__printf_va_arg_table != NULL, 0)
+	  else if (__glibc_unlikely (__printf_va_arg_table != NULL)
 		   && __printf_va_arg_table[args_type[cnt] - PA_LAST] != NULL)
 	    {
 	      args_value[cnt].pa_user = alloca (args_size[cnt]);
@@ -1957,6 +1951,11 @@ do_positional:
 	      {
 		workstart = (CHAR_T *) malloc ((MAX (prec, width) + 32)
 					       * sizeof (CHAR_T));
+		if (workstart == NULL)
+		  {
+		    done = -1;
+		    goto all_done;
+		  }
 		workend = workstart + (MAX (prec, width) + 32);
 	      }
 	  }
@@ -2034,7 +2033,8 @@ do_positional:
 	    break;
 	  }
 
-	free (workstart);
+	if (__glibc_unlikely (workstart != NULL))
+	  free (workstart);
 	workstart = NULL;
 
 	/* Write the following constant string.  */
@@ -2045,8 +2045,10 @@ do_positional:
   }
 
 all_done:
-  free (args_malloced);
-  free (workstart);
+  if (__glibc_unlikely (args_malloced != NULL))
+    free (args_malloced);
+  if (__glibc_unlikely (workstart != NULL))
+    free (workstart);
   /* Unlock the stream.  */
   _IO_funlockfile (s);
   _IO_cleanup_region_end (0);
@@ -2065,7 +2067,7 @@ printf_unknown (FILE *s, const struct printf_info *info,
   CHAR_T work_buffer[MAX (sizeof (info->width), sizeof (info->prec)) * 3];
   CHAR_T *const workend
     = &work_buffer[sizeof (work_buffer) / sizeof (CHAR_T)];
-  register CHAR_T *w;
+  CHAR_T *w;
 
   outchar (L_('%'));
 
@@ -2271,12 +2273,12 @@ static const struct _IO_jump_t _IO_helper_jumps =
 
 static int
 internal_function
-buffered_vfprintf (register _IO_FILE *s, const CHAR_T *format,
+buffered_vfprintf (_IO_FILE *s, const CHAR_T *format,
 		   _IO_va_list args)
 {
   CHAR_T buf[_IO_BUFSIZ];
   struct helper_file helper;
-  register _IO_FILE *hp = (_IO_FILE *) &helper._f;
+  _IO_FILE *hp = (_IO_FILE *) &helper._f;
   int result, to_flush;
 
   /* Orient the stream.  */

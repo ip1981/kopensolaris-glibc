@@ -1,5 +1,5 @@
 /* round function.  PowerPC32 version.
-   Copyright (C) 2004, 2006, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2004-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -27,11 +27,11 @@
 	.long 0x3f000000
 
 /* double [fp1] round (double x [fp1])
-   IEEE 1003.1 round function.  IEEE specifies "round to the nearest 
+   IEEE 1003.1 round function.  IEEE specifies "round to the nearest
    integer value, rounding halfway cases away from zero, regardless of
    the current rounding mode."  However PowerPC Architecture defines
-   "Round to Nearest" as "Choose the best approximation. In case of a 
-   tie, choose the one that is even (least significant bit o).". 
+   "Round to Nearest" as "Choose the best approximation. In case of a
+   tie, choose the one that is even (least significant bit o).".
    So we can't use the PowerPC "Round to Nearest" mode. Instead we set
    "Round toward Zero" mode and round by adding +-0.5 before rounding
    to the integer value.  */

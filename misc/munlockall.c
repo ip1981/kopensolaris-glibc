@@ -1,5 +1,5 @@
 /* munlockall -- undo the effects of all prior mlock calls.  Stub version.
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -30,4 +30,3 @@ munlockall (void)
 }
 
 stub_warning (munlockall)
-#include <stub-tag.h>

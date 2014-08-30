@@ -1,4 +1,4 @@
-/* Copyright (C) 1991-2012 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -401,8 +401,10 @@ __getcwd (buf, size)
 	      goto lose;
 	    }
 
+#ifdef _DIRENT_HAVE_D_TYPE
 	  if (d->d_type != DT_DIR && d->d_type != DT_UNKNOWN)
 	    continue;
+#endif
 	  if (d->d_name[0] == '.'
 	      && (d->d_name[1] == '\0'
 		  || (d->d_name[1] == '.' && d->d_name[2] == '\0')))

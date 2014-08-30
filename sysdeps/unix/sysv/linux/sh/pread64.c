@@ -1,4 +1,4 @@
-/* Copyright (C) 1997-2012 Free Software Foundation, Inc.
+/* Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997.
 
@@ -22,7 +22,6 @@
 
 #include <sysdep-cancel.h>
 #include <sys/syscall.h>
-#include <bp-checks.h>
 
 #include <kernel-features.h>
 
@@ -45,7 +44,7 @@ __libc_pread64 (fd, buf, count, offset)
 
   if (SINGLE_THREAD_P)
     {
-     result = INLINE_SYSCALL (pread, 6, fd, CHECK_N (buf, count), count, 0,
+     result = INLINE_SYSCALL (pread, 6, fd, buf, count, 0,
 			      __LONG_LONG_PAIR ((off_t) (offset >> 32),
 			      (off_t) (offset & 0xffffffff)));
      return result;
@@ -53,7 +52,7 @@ __libc_pread64 (fd, buf, count, offset)
 
   int oldtype = LIBC_CANCEL_ASYNC ();
 
-  result = INLINE_SYSCALL (pread, 6, fd, CHECK_N (buf, count), count, 0,
+  result = INLINE_SYSCALL (pread, 6, fd, buf, count, 0,
 			   __LONG_LONG_PAIR ((off_t) (offset >> 32),
 					     (off_t) (offset & 0xffffffff)));
 

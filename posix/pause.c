@@ -1,4 +1,4 @@
-/* Copyright (C) 1991, 1996, 1997 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -23,11 +23,10 @@
    This is supposed to always return -1 and set errno to EINTR,
    but rules were meant to be broken.  */
 int
-pause ()
+pause (void)
 {
   __set_errno (ENOSYS);
   return -1;
 }
 
 stub_warning (pause)
-#include <stub-tag.h>

@@ -1,5 +1,5 @@
 /* PLT trampolines.  Sparc 32-bit version.
-   Copyright (C) 2005, 2012 Free Software Foundation, Inc.
+   Copyright (C) 2005-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -175,7 +175,7 @@ _dl_runtime_profile:
 	cmp	%l0, 0
 	bl	1f
 	 nop
-	
+
 	call	_dl_profile_invoke
 	 nop
 

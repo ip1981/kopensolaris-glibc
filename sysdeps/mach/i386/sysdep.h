@@ -1,5 +1,4 @@
-/* Copyright (C) 1991, 1992, 1993, 1994, 1995, 1996, 1997, 2007
-     Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
 
    This file is part of the GNU C Library.
 
@@ -29,7 +28,7 @@
 #define SNARF_ARGS(entry_sp, argc, argv, envp)				      \
   do									      \
     {									      \
-      register char **p;						      \
+      char **p;								      \
       argc = (int) *entry_sp;						      \
       argv = (char **) (entry_sp + 1);					      \
       p = argv;								      \

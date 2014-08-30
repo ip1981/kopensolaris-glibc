@@ -1,5 +1,5 @@
 /* Optimized rawmemchr implementation for PowerPC32/POWER7 using cmpb insn.
-   Copyright (C) 2010 Free Software Foundation, Inc.
+   Copyright (C) 2010-2014 Free Software Foundation, Inc.
    Contributed by Luis Machado <luisgpm@br.ibm.com>.
    This file is part of the GNU C Library.
 
@@ -18,27 +18,30 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include <sysdep.h>
-#include <bp-sym.h>
-#include <bp-asm.h>
 
 /* int [r3] rawmemchr (void *s [r3], int c [r4])  */
 	.machine  power7
-ENTRY (BP_SYM(__rawmemchr))
+ENTRY (__rawmemchr)
 	CALL_MCOUNT
 	dcbt	0,r3
 	clrrwi	r8,r3,2	      /* Align the address to word boundary.  */
 
 	/* Replicate byte to word.  */
-	rlwimi	r4,r4,8,16,23
-	rlwimi	r4,r4,16,0,15
+	rldimi	r4,r4,8,48
+	rldimi	r4,r4,16,32
 
 	/* Now r4 has a word of c bytes.  */
 
 	rlwinm	r6,r3,3,27,28 /* Calculate padding.  */
 	lwz	r12,0(r8)     /* Load word from memory.  */
 	cmpb	r5,r12,r4     /* Compare each byte against c byte.  */
+#ifdef __LITTLE_ENDIAN__
+	srw	r5,r5,r6
+	slw	r5,r5,r6
+#else
 	slw	r5,r5,r6      /* Move left to discard ignored bits.  */
 	srw	r5,r5,r6      /* Bring the bits back as zeros.  */
+#endif
 	cmpwi	cr7,r5,0      /* If r5 == 0, no c bytes have been found.  */
 	bne	cr7,L(done)
 
@@ -92,10 +95,16 @@ L(loop):
 	   word from the string.  Use that fact to find out what is
 	   the position of the byte inside the string.  */
 L(done):
+#ifdef __LITTLE_ENDIAN__
+	addi    r0,r5,-1
+	andc    r0,r0,r5
+	popcntw	r0,r0
+#else
 	cntlzw	r0,r5	      /* Count leading zeros before the match.  */
-	srwi	r0,r0,3	      /* Convert leading zeroes to bytes.  */
+#endif
+	srwi	r0,r0,3	      /* Convert leading zeros to bytes.  */
 	add	r3,r8,r0      /* Return address of the matching char.  */
 	blr
-END (BP_SYM (__rawmemchr))
+END (__rawmemchr)
 weak_alias (__rawmemchr,rawmemchr)
 libc_hidden_builtin_def (__rawmemchr)

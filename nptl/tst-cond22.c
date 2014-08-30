@@ -108,7 +108,7 @@ do_test (void)
 
 #ifndef OPAQUE_STRUCTS
   printf ("cond = { %d, %x, %lld, %lld, %lld, %p, %u, %u }\n",
-  	  c.__data.__lock, c.__data.__futex, c.__data.__total_seq,
+	  c.__data.__lock, c.__data.__futex, c.__data.__total_seq,
 	  c.__data.__wakeup_seq, c.__data.__woken_seq, c.__data.__mutex,
 	  c.__data.__nwaiters, c.__data.__broadcast_seq);
 #endif
@@ -152,7 +152,7 @@ do_test (void)
 
 #ifndef OPAQUE_STRUCTS
   printf ("cond = { %d, %x, %lld, %lld, %lld, %p, %u, %u }\n",
-  	  c.__data.__lock, c.__data.__futex, c.__data.__total_seq,
+	  c.__data.__lock, c.__data.__futex, c.__data.__total_seq,
 	  c.__data.__wakeup_seq, c.__data.__woken_seq, c.__data.__mutex,
 	  c.__data.__nwaiters, c.__data.__broadcast_seq);
 #endif

@@ -1,5 +1,4 @@
-# Copyright (C) 1995-2000,2002,2003,2004,2005,2006,2007,2011,2012
-#	Free Software Foundation, Inc.
+# Copyright (C) 1995-2014 Free Software Foundation, Inc.
 # This file is part of the GNU C Library.
 
 # The GNU C Library is free software; you can redistribute it and/or
@@ -45,6 +44,8 @@ strop-tests :=  wcscmp wmemcmp wcslen wcschr wcsrchr wcscpy
 tests := tst-wcstof wcsmbs-tst1 tst-wcsnlen tst-btowc tst-mbrtowc \
 	 tst-wcrtomb tst-wcpncpy tst-mbsrtowcs tst-wchar-h tst-mbrtowc2 \
 	 tst-c16c32-1 wcsatcliff $(addprefix test-,$(strop-tests))
+tests-ifunc := $(strop-tests:%=test-%-ifunc)
+tests += $(tests-ifunc)
 
 include ../Rules
 
@@ -72,9 +73,8 @@ CFLAGS-isoc99_wscanf.c += $(exceptions)
 CFLAGS-isoc99_fwscanf.c += $(exceptions)
 CFLAGS-isoc99_vwscanf.c += $(exceptions)
 CFLAGS-isoc99_vfwscanf.c += $(exceptions)
-ifneq (,$(filter %REENTRANT, $(defines)))
-CPPFLAGS += -D_IO_MTSAFE_IO
-endif
+
+CPPFLAGS += $(libio-mtsafe)
 
 # We need to find the default version of strtold_l in stdlib.
 CPPFLAGS-wcstold_l.c = -I../stdlib

@@ -1,5 +1,5 @@
 /* Tables for conversion from and to IBM5347.
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Masahide Washizawa <washi@jp.ibm.com>, 2005.
 
@@ -16,6 +16,8 @@
    You should have received a copy of the GNU Lesser General Public
    License along with the GNU C Library; if not, see
    <http://www.gnu.org/licenses/>.  */
+
+#include <stdint.h>
 
 static const uint32_t to_ucs4[256] =
 {

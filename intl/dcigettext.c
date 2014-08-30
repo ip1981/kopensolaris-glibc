@@ -1,6 +1,5 @@
 /* Implementation of the internal dcigettext function.
-   Copyright (C) 1995-2005, 2006, 2007, 2008, 2009, 2011
-   Free Software Foundation, Inc.
+   Copyright (C) 1995-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -639,6 +638,11 @@ DCIGETTEXT (domainname, msgid1, msgid2, plural, n, category)
 		  retval = _nl_find_msg (domain->successor[cnt], binding,
 					 msgid1, 1, &retlen);
 
+		  /* Resource problems are not fatal, instead we return no
+		     translation.  */
+		  if (__builtin_expect (retval == (char *) -1, 0))
+		    goto no_translation;
+
 		  if (retval != NULL)
 		    {
 		      domain = domain->successor[cnt];
@@ -942,6 +946,11 @@ _nl_find_msg (domain_file, domainbinding, msgid, convert, lengthp)
 	    nullentry =
 	      _nl_find_msg (domain_file, domainbinding, "", 0, &nullentrylen);
 
+	    /* Resource problems are fatal.  If we continue onwards we will
+	       only attempt to calloc a new conv_tab and fail later.  */
+	    if (__builtin_expect (nullentry == (char *) -1, 0))
+	      return (char *) -1;
+
 	    if (nullentry != NULL)
 	      {
 		const char *charsetstr;
@@ -1155,7 +1164,7 @@ _nl_find_msg (domain_file, domainbinding, msgid, convert, lengthp)
 							     freemem_size);
 # ifdef _LIBC
 		      if (newmem != NULL)
-			transmem_list = transmem_list->next;
+			transmem_list = newmem;
 		      else
 			{
 			  struct transmem_list *old = transmem_list;
@@ -1170,6 +1179,16 @@ _nl_find_msg (domain_file, domainbinding, msgid, convert, lengthp)
 		      malloc_count = 1;
 		      freemem_size = INITIAL_BLOCK_SIZE;
 		      newmem = (transmem_block_t *) malloc (freemem_size);
+# ifdef _LIBC
+		      if (newmem != NULL)
+			{
+			  /* Add the block to the list of blocks we have to free
+			     at some point.  */
+			  newmem->next = transmem_list;
+			  transmem_list = newmem;
+			}
+		      /* Fall through and return -1.  */
+# endif
 		    }
 		  if (__builtin_expect (newmem == NULL, 0))
 		    {
@@ -1180,11 +1199,6 @@ _nl_find_msg (domain_file, domainbinding, msgid, convert, lengthp)
 		    }
 
 # ifdef _LIBC
-		  /* Add the block to the list of blocks we have to free
-		     at some point.  */
-		  newmem->next = transmem_list;
-		  transmem_list = newmem;
-
 		  freemem = (unsigned char *) newmem->data;
 		  freemem_size -= offsetof (struct transmem_list, data);
 # else

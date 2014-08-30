@@ -1,4 +1,4 @@
-/* Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+/* Copyright (C) 2004-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 2004.
 
@@ -32,6 +32,9 @@
 /* nscd uses 1MB or 2MB thread stacks.  */
 #define __libc_use_alloca(size) (size <= __MAX_ALLOCA_CUTOFF)
 
+/* We are nscd, so we don't want to be talking to ourselves.  */
+#undef  USE_NSCD
+
 #include <getaddrinfo.c>
 
 /* Support code.  */
@@ -43,7 +46,3 @@
 
 /* Some variables normally defined in libc.  */
 service_user *__nss_hosts_database;
-
-#if defined NEED_NETLINK && __ASSUME_NETLINK_SUPPORT == 0
-int __no_netlink_support attribute_hidden;
-#endif

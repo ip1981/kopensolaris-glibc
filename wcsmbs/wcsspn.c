@@ -1,4 +1,4 @@
-/* Copyright (C) 1995, 1996, 1997 Free Software Foundation, Inc.
+/* Copyright (C) 1995-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@gnu.ai.mit.edu>, 1995.
 
@@ -26,9 +26,9 @@ wcsspn (wcs, accept)
      const wchar_t *wcs;
      const wchar_t *accept;
 {
-  register const wchar_t *p;
-  register const wchar_t *a;
-  register size_t count = 0;
+  const wchar_t *p;
+  const wchar_t *a;
+  size_t count = 0;
 
   for (p = wcs; *p != L'\0'; ++p)
     {

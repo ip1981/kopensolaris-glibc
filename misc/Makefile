@@ -1,4 +1,4 @@
-# Copyright (C) 1991-2007, 2009, 2011, 2012 Free Software Foundation, Inc.
+# Copyright (C) 1991-2014 Free Software Foundation, Inc.
 # This file is part of the GNU C Library.
 
 # The GNU C Library is free software; you can redistribute it and/or
@@ -25,7 +25,8 @@ headers	:= sys/uio.h bits/uio.h sys/ioctl.h bits/ioctls.h bits/ioctl-types.h \
 	   sys/ptrace.h sys/file.h sys/dir.h sys/cdefs.h \
 	   ar.h a.out.h libgen.h stab.h bits/stab.def sgtty.h \
 	   ttyent.h paths.h sys/reboot.h \
-	   sys/mman.h sys/param.h fstab.h mntent.h search.h err.h error.h \
+	   sys/mman.h sys/param.h bits/param.h \
+	   fstab.h mntent.h search.h err.h error.h \
 	   sys/queue.h sysexits.h syscall.h sys/syscall.h sys/swap.h \
 	   sys/select.h ustat.h sys/ustat.h bits/ustat.h sys/sysinfo.h \
 	   regexp.h bits/select.h bits/mman.h sys/xattr.h \
@@ -64,22 +65,23 @@ routines := brk sbrk sstk ioctl \
 	    getloadavg getclktck \
 	    fgetxattr flistxattr fremovexattr fsetxattr getxattr \
 	    listxattr lgetxattr llistxattr lremovexattr lsetxattr \
-	    removexattr setxattr getauxval
+	    removexattr setxattr getauxval ifunc-impl-list
 
 generated := tst-error1.mtrace tst-error1-mem
 
 include ../Makeconfig
 
 aux := init-misc
-install-lib := libbsd-compat.a libg.a
+install-lib := libg.a
 gpl2lgpl := error.c error.h
 
 tests := tst-dirname tst-tsearch tst-fdset tst-efgcvt tst-mntent tst-hsearch \
 	 tst-error1 tst-pselect tst-insremque tst-mntent2 bug-hsearch1
-ifeq (no,$(cross-compiling))
+ifeq ($(run-built-tests),yes)
 tests: $(objpfx)tst-error1-mem
 endif
 
+CFLAGS-select.c = -fexceptions -fasynchronous-unwind-tables
 CFLAGS-tsearch.c = $(uses-callbacks)
 CFLAGS-lsearch.c = $(uses-callbacks)
 CFLAGS-pselect.c = -fexceptions
@@ -95,21 +97,15 @@ CFLAGS-getsysstats.c = -fexceptions
 CFLAGS-getusershell.c = -fexceptions
 CFLAGS-err.c = -fexceptions
 CFLAGS-tst-tsearch.c = $(stack-align-test-flags)
-CFLAGS-mntent_r.c = -D_IO_MTSAFE_IO
 
 include ../Rules
 
-$(objpfx)libbsd-compat.a: $(dep-dummy-lib); $(make-dummy-lib)
 $(objpfx)libg.a: $(dep-dummy-lib); $(make-dummy-lib)
 
 ifeq ($(build-shared),yes)
 $(objpfx)tst-tsearch: $(common-objpfx)math/libm.so$(libm.so-version)
 else
 $(objpfx)tst-tsearch: $(common-objpfx)math/libm.a
-endif
-
-ifeq ($(build-bounded),yes)
-$(objpfx)tst-tsearch-bp: $(common-objpfx)math/libm_b.a
 endif
 
 tst-error1-ENV = MALLOC_TRACE=$(objpfx)tst-error1.mtrace

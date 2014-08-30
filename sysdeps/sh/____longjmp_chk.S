@@ -1,4 +1,4 @@
-/* Copyright (C) 2009 Free Software Foundation, Inc.
+/* Copyright (C) 2009-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -28,14 +28,20 @@ longjmp_msg:
 # define CALL_FAIL \
 	mov.l	.Lfail, r1;				\
 	mov.l	.Lstr, r4;				\
+	mov.l	r12, @-r15;				\
+	cfi_remember_state;				\
+	cfi_adjust_cfa_offset (4);			\
+	cfi_rel_offset (r12, 0);			\
 	mova	.Lgot, r0;				\
 	mov.l	.Lgot, r12;				\
 	add	r0, r12;				\
+	sts.l	pr, @-r15;				\
+	cfi_adjust_cfa_offset (4);			\
+	cfi_rel_offset (pr, 0);				\
 	bsrf	r1;					\
 	 add	r12, r4;				\
+	/* Unreachable.	 */				\
 .Lfail0:						\
-	bra	0f;					\
-	 nop;						\
 	.align	2;					\
 .Lgot:							\
 	.long	_GLOBAL_OFFSET_TABLE_;			\
@@ -43,21 +49,24 @@ longjmp_msg:
 	.long	longjmp_msg@GOTOFF;			\
 .Lfail:							\
 	.long	__GI___fortify_fail@PLT-(.Lfail0-.);	\
-0:
+	cfi_restore_state;
 #else
 # define CALL_FAIL \
 	mov.l	.Lfail, r1;				\
 	mov.l	.Lstr, r4;				\
+	sts.l	pr, @-r15;				\
+	cfi_remember_state;				\
+	cfi_adjust_cfa_offset (4);			\
+	cfi_rel_offset (pr, 0);				\
 	jsr	@r1;					\
 	 nop;						\
-	bra	0f;					\
-	 nop;						\
+	/* Unreachable.	 */				\
 	.align	2;					\
 .Lstr:							\
 	.long	longjmp_msg;				\
 .Lfail:							\
 	.long	__fortify_fail;				\
-0:
+	cfi_restore_state;
 #endif
 
 #define CHECK_SP(reg) \

@@ -1,4 +1,4 @@
-/* Copyright (C) 2012 Free Software Foundation, Inc.
+/* Copyright (C) 2012-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Adhemerval Zanella <azanella@linux.vnet.ibm.com>, 2011.
 
@@ -18,6 +18,7 @@
 
 #include <math.h>
 #include <errno.h>
+#include <limits.h>
 #include <math_private.h>
 
 /* wrapper ilogbl */

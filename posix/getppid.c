@@ -1,4 +1,4 @@
-/* Copyright (C) 1991, 1995, 1996, 1997 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -21,7 +21,7 @@
 
 /* Get the parent process ID of the calling process.  */
 int
-__getppid ()
+__getppid (void)
 {
   __set_errno (ENOSYS);
   return -1;
@@ -29,4 +29,3 @@ __getppid ()
 stub_warning (getppid)
 
 weak_alias (__getppid, getppid)
-#include <stub-tag.h>

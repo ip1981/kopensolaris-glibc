@@ -1,5 +1,5 @@
 /* Mapping table for CP737.
-   Copyright (C) 1998, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1998.
 
@@ -16,6 +16,8 @@
    You should have received a copy of the GNU Lesser General Public
    License along with the GNU C Library; if not, see
    <http://www.gnu.org/licenses/>.  */
+
+#include <stdint.h>
 
 /* Table to map to UCS4.  It can be generated using
    (I know, this is a useless use of cat, but the linebreak requires it):

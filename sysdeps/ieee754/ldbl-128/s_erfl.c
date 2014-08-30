@@ -11,9 +11,9 @@
 
 /* Modifications and expansions for 128-bit long double are
    Copyright (C) 2001 Stephen L. Moshier <moshier@na-net.ornl.gov>
-   and are incorporated herein by permission of the author.  The author 
+   and are incorporated herein by permission of the author.  The author
    reserves the right to distribute this material elsewhere under different
-   copying permissions.  These modifications are distributed here under 
+   copying permissions.  These modifications are distributed here under
    the following terms:
 
     This library is free software; you can redistribute it and/or
@@ -96,6 +96,7 @@
  *		erfc/erf(NaN) is NaN
  */
 
+#include <errno.h>
 #include <math.h>
 #include <math_private.h>
 
@@ -918,14 +919,22 @@ __erfcl (long double x)
       r = __ieee754_expl (-z * z - 0.5625) *
 	__ieee754_expl ((z - x) * (z + x) + p);
       if ((sign & 0x80000000) == 0)
-	return r / x;
+	{
+	  long double ret = r / x;
+	  if (ret == 0)
+	    __set_errno (ERANGE);
+	  return ret;
+	}
       else
 	return two - r / x;
     }
   else
     {
       if ((sign & 0x80000000) == 0)
-	return tiny * tiny;
+	{
+	  __set_errno (ERANGE);
+	  return tiny * tiny;
+	}
       else
 	return two - tiny;
     }

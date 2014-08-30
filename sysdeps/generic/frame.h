@@ -1,5 +1,5 @@
 /* Definition of stack frame structure.  Generic version.
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -18,6 +18,6 @@
 
 struct layout
 {
-  void *__unbounded next;
-  void *__unbounded return_address;
+  void *next;
+  void *return_address;
 };

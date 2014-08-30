@@ -1,5 +1,5 @@
 /* Implementation of sigqueue function from POSIX.1b.
-   Copyright (C) 1997 Free Software Foundation, Inc.
+   Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -29,4 +29,3 @@ __sigqueue (pid_t pid, int sig, const union sigval val)
 weak_alias (__sigqueue, sigqueue)
 
 stub_warning (sigqueue)
-#include <stub-tag.h>

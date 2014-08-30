@@ -1,5 +1,5 @@
 /* Store current floating-point environment.
-   Copyright (C) 1997, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997.
 
@@ -19,20 +19,18 @@
 
 #include <fenv.h>
 #include <shlib-compat.h>
-#include <bp-sym.h>
 
 int
 __fegetenv (fenv_t *envp)
 {
-  /* This always fails.  */
-  return 1;
+  /* Nothing to do.  */
+  return 0;
 }
 #if SHLIB_COMPAT (libm, GLIBC_2_1, GLIBC_2_2)
 strong_alias (__fegetenv, __old_fegetenv)
-compat_symbol (libm, BP_SYM (__old_fegetenv), BP_SYM (fegetenv), GLIBC_2_1);
+compat_symbol (libm, __old_fegetenv, fegetenv, GLIBC_2_1);
 #endif
 libm_hidden_ver (__fegetenv, fegetenv)
-versioned_symbol (libm, BP_SYM (__fegetenv), BP_SYM (fegetenv), GLIBC_2_2);
+versioned_symbol (libm, __fegetenv, fegetenv, GLIBC_2_2);
 
 stub_warning (fegetenv)
-#include <stub-tag.h>

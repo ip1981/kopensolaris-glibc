@@ -1,4 +1,4 @@
-/* Copyright (C) 2001, 2003, 2005 Free Software Foundation, Inc.
+/* Copyright (C) 2001-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -47,8 +47,7 @@ __gai_sigqueue (sig, val, caller_pid)
   info.si_uid = __getuid ();
   info.si_value = val;
 
-  return INLINE_SYSCALL (rt_sigqueueinfo, 3, info.si_pid,
-			 sig, __ptrvalue (&info));
+  return INLINE_SYSCALL (rt_sigqueueinfo, 3, info.si_pid, sig, &info);
 }
 #else
 # include <resolv/gai_sigqueue.c>

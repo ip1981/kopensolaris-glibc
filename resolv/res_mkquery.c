@@ -77,12 +77,14 @@ static const char rcsid[] = "$BINDId: res_mkquery.c,v 8.12 1999/10/13 16:39:40 v
 #include <resolv.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/time.h>
 
 /* Options.  Leave them on. */
 /* #define DEBUG */
 
 #ifdef _LIBC
 # include <hp-timing.h>
+# include <stdint.h>
 # if HP_TIMING_AVAIL
 #  define RANDOM_BITS(Var) { uint64_t v64; HP_TIMING_NOW (v64); Var = v64; }
 # endif
@@ -103,9 +105,9 @@ res_nmkquery(res_state statp,
 	     u_char *buf,		/* buffer to put query */
 	     int buflen)		/* size of buffer */
 {
-	register HEADER *hp;
-	register u_char *cp;
-	register int n;
+	HEADER *hp;
+	u_char *cp;
+	int n;
 	u_char *dnptrs[20], **dpp, **lastdnptr;
 
 #ifdef DEBUG

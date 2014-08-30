@@ -1,5 +1,5 @@
 #! @KSH@
-# Copyright (C) 2011, 2012 Free Software Foundation, Inc.
+# Copyright (C) 2011-2014 Free Software Foundation, Inc.
 # This file is part of the GNU C Library.
 
 # The GNU C Library is free software; you can redistribute it and/or
@@ -46,9 +46,8 @@ function do_help {
   printf $"Mandatory arguments to long options are also mandatory for any corresponding\nshort options.\n"
   echo
 
-  printf $"For bug reporting instructions, please see:
-<http://www.gnu.org/software/libc/bugs.html>.
-"
+  printf $"For bug reporting instructions, please see:\\n%s.\\n" \
+    "@REPORT_BUGS_TO@"
   exit 0
 }
 
@@ -72,11 +71,11 @@ function do_ambiguous {
 while test $# -gt 0; do
   case "$1" in
   --v | --ve | --ver | --vers | --versi | --versio | --version)
-    echo "sotruss (GNU libc) @VERSION@"
+    echo "sotruss @PKGVERSION@@VERSION@"
     printf $"Copyright (C) %s Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-" "2012"
+" "2014"
     printf $"Written by %s.\n" "Ulrich Drepper"
     exit 0
     ;;
@@ -95,14 +94,14 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
       do_missing_arg "$1"
     fi
     shift
-    SOTRUSS_FROMLIST="$2"
+    SOTRUSS_FROMLIST="$1"
     ;;
   -T | --t | --to)
     if test $# -eq 1; then
       do_missing_arg "$1"
     fi
     shift
-    SOTRUSS_TOLIST="$2"
+    SOTRUSS_TOLIST="$1"
     ;;
   -o | --o | --ou | --out | --outp | --outpu | --output)
     if test $# -eq 1; then

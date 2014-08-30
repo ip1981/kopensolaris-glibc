@@ -1,5 +1,5 @@
 #! /bin/bash
-# Copyright (C) 2005,2007,2009,2011 Free Software Foundation, Inc.
+# Copyright (C) 2005-2014 Free Software Foundation, Inc.
 # This file is part of the GNU C Library.
 
 # The GNU C Library is free software; you can redistribute it and/or
@@ -22,13 +22,18 @@ objpfx="$2"
 # To avoid long paths.
 cd "$objpfx"
 
+# OK if *.os is missing.
+shopt -s nullglob
+
 # Search all dependency files for file names in the include directory.
 # There are a few system headers we are known to use.
+# These include Linux kernel headers (asm*, arch, and linux),
+# and Mach kernel headers (mach).
 exec ${AWK} -v includedir="$includedir" '
 BEGIN {
   status = 0
   exclude = "^" includedir \
-    "/(.*-.*-.*/|)(asm[-/]|linux/|selinux/|gd|nss3/|sys/capability\\.h|libaudit\\.h)"
+    "/(.*-.*-.*/|)(asm[-/]|arch|linux/|selinux/|mach/|gd|nss3/|c\\+\\+/|sys/(capability|sdt(|-config))\\.h|libaudit\\.h)"
 }
 /^[^ ]/ && $1 ~ /.*:/ { obj = $1 }
 {

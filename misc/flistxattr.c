@@ -1,4 +1,4 @@
-/* Copyright (C) 2002 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -26,4 +26,3 @@ flistxattr (int __fd, char *__list, size_t __size)
 }
 
 stub_warning (flistxattr)
-#include <stub-tag.h>

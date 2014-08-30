@@ -1,6 +1,5 @@
 /* Highly optimized version for x86-64.
-   Copyright (C) 1999, 2000, 2002, 2003, 2005, 2009, 2010, 2011
-   Free Software Foundation, Inc.
+   Copyright (C) 1999-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Based on i686 version contributed by Ulrich Drepper
    <drepper@cygnus.com>, 1999.
@@ -22,8 +21,6 @@
 
 #include <sysdep.h>
 #include "asm-syntax.h"
-#include "bp-sym.h"
-#include "bp-asm.h"
 
 #undef UPDATE_STRNCMP_COUNTER
 
@@ -35,7 +32,7 @@
 /* The simplified code below is not set up to handle strncmp() so far.
    Should this become necessary it has to be implemented.  For now
    just report the problem.  */
-# ifdef NOT_IN_lib
+# ifdef NOT_IN_libc
 #  error "strncmp not implemented so far"
 # endif
 
@@ -54,7 +51,7 @@
 # include "locale-defines.h"
 
 /* No support for strcasecmp outside libc so far since it is not needed.  */
-# ifdef NOT_IN_lib
+# ifdef NOT_IN_libc
 #  error "strcasecmp_l not implemented so far"
 # endif
 
@@ -63,7 +60,7 @@
 # include "locale-defines.h"
 
 /* No support for strncasecmp outside libc so far since it is not needed.  */
-# ifdef NOT_IN_lib
+# ifdef NOT_IN_libc
 #  error "strncasecmp_l not implemented so far"
 # endif
 
@@ -128,7 +125,7 @@ libc_hidden_def (__strncasecmp)
 	/* FALLTHROUGH to strncasecmp_l.  */
 #endif
 
-ENTRY (BP_SYM (STRCMP))
+ENTRY (STRCMP)
 #ifdef NOT_IN_libc
 /* Simple version since we can't use SSE registers in ld.so.  */
 L(oop):	movb	(%rdi), %al
@@ -146,7 +143,7 @@ L(neq):	movl	$1, %eax
 	movl	$-1, %ecx
 	cmovbl	%ecx, %eax
 	ret
-END (BP_SYM (STRCMP))
+END (STRCMP)
 #else	/* NOT_IN_libc */
 # ifdef USE_AS_STRCASECMP_L
 	/* We have to fall back on the C implementation for locales
@@ -2282,7 +2279,7 @@ LABEL(Byte0):
 
 	sub	%ecx, %eax
 	ret
-END (BP_SYM (STRCMP))
+END (STRCMP)
 
 	.section .rodata,"a",@progbits
 	.p2align 3

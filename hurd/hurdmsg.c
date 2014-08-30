@@ -1,4 +1,4 @@
-/* Copyright (C) 1992, 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+/* Copyright (C) 1992-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -324,7 +324,7 @@ _S_msg_get_env_variable (mach_port_t msgport,
   valuelen = strlen (value);
   if (valuelen > *datalen)
     {
-      if (err = __vm_allocate (__mach_task_self (), 
+      if (err = __vm_allocate (__mach_task_self (),
 			       (vm_address_t *) data, valuelen, 1))
 	return err;
     }

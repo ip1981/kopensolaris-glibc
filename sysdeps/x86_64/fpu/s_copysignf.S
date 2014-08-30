@@ -1,5 +1,5 @@
 /* copy sign, double version.
-   Copyright (C) 2002, 2006, 2012 Free Software Foundation, Inc.
+   Copyright (C) 2002-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Andreas Jaeger <aj@suse.de>, 2002.
 
@@ -22,7 +22,7 @@
 	.section .rodata
 
 	.align ALIGNARG(4)
-	ASM_TYPE_DIRECTIVE(mask,@object)
+	.type mask,@object
 mask:
 	.byte 0xff, 0xff, 0xff, 0x7f
 	ASM_SIZE_DIRECTIVE(mask)

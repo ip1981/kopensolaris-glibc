@@ -1,5 +1,5 @@
 /* Return run-time value of CLK_TCK for Hurd.
-   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1999-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -21,7 +21,7 @@
 /* Return frequency of `times'.
    Since Mach reports CPU times in microseconds, we always use 1 million.  */
 int
-__getclktck ()
+__getclktck (void)
 {
   return 1000000;
 }

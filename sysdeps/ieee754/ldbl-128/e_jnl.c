@@ -56,6 +56,7 @@
  *
  */
 
+#include <errno.h>
 #include <math.h>
 #include <math_private.h>
 
@@ -315,7 +316,7 @@ __ieee754_ynl (int n, long double x)
   if (x <= 0.0L)
     {
       if (x == 0.0L)
-	return -HUGE_VALL + x;
+	return ((n < 0 && (n & 1) != 0) ? 1.0L : -1.0L) / 0.0L;
       if (se & 0x80000000)
 	return zero / (zero * x);
     }
@@ -385,6 +386,9 @@ __ieee754_ynl (int n, long double x)
 	  a = temp;
 	}
     }
+  /* If B is +-Inf, set up errno accordingly.  */
+  if (! __finitel (b))
+    __set_errno (ERANGE);
   if (sign > 0)
     return b;
   else

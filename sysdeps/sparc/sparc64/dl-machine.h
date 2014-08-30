@@ -1,5 +1,5 @@
 /* Machine-dependent ELF dynamic relocation inline functions.  Sparc64 version.
-   Copyright (C) 1997-2006, 2009, 2010, 2011 Free Software Foundation, Inc.
+   Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -26,11 +26,6 @@
 #include <ldsodefs.h>
 #include <sysdep.h>
 #include <dl-plt.h>
-
-#ifndef VALIDX
-# define VALIDX(tag) (DT_NUM + DT_THISPROCNUM + DT_VERSIONTAGNUM \
-		      + DT_EXTRANUM + DT_VALTAGIDX (tag))
-#endif
 
 #define ELF64_R_TYPE_ID(info)	((info) & 0xff)
 #define ELF64_R_TYPE_DATA(info) ((info) >> 8)
@@ -441,8 +436,7 @@ elf_machine_rela (struct link_map *map, const Elf64_Rela *reloc,
 	  strtab = (const void *) D_PTR (map, l_info[DT_STRTAB]);
 	  _dl_error_printf ("\
 %s: Symbol `%s' has different size in shared object, consider re-linking\n",
-			    rtld_progname ?: "<program name unknown>",
-			    strtab + refsym->st_name);
+			    RTLD_PROGNAME, strtab + refsym->st_name);
 	}
       memcpy (reloc_addr_arg, (void *) value,
 	      MIN (sym->st_size, refsym->st_size));
@@ -458,7 +452,14 @@ elf_machine_rela (struct link_map *map, const Elf64_Rela *reloc,
       break;
     case R_SPARC_JMP_IREL:
       value = ((Elf64_Addr (*) (int)) value) (GLRO(dl_hwcap));
-      /* Fall thru */
+      /* 'high' is always zero, for large PLT entries the linker
+	 emits an R_SPARC_IRELATIVE.  */
+#ifdef RESOLVE_CONFLICT_FIND_MAP
+      sparc64_fixup_plt (NULL, reloc, reloc_addr, value, 0, 0);
+#else
+      sparc64_fixup_plt (map, reloc, reloc_addr, value, 0, 0);
+#endif
+      break;
     case R_SPARC_JMP_SLOT:
 #ifdef RESOLVE_CONFLICT_FIND_MAP
       /* R_SPARC_JMP_SLOT conflicts against .plt[32768+]

@@ -1,4 +1,4 @@
-/* Copyright (C) 1991,1995-1997,2001,2002,2012 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -36,4 +36,3 @@ __sendto (fd, buf, n, flags, addr, addr_len)
 weak_alias (__sendto, sendto)
 
 stub_warning (sendto)
-#include <stub-tag.h>

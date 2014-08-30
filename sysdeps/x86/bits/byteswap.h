@@ -1,5 +1,5 @@
 /* Macros to swap the order of bytes in integer values.
-   Copyright (C) 1997-2012   Free Software Foundation, Inc.
+   Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -24,6 +24,7 @@
 #define _BITS_BYTESWAP_H 1
 
 #include <features.h>
+#include <bits/types.h>
 #include <bits/wordsize.h>
 
 /* Swap bytes in 16 bit value.  */
@@ -39,7 +40,7 @@
       (((x) & 0x0000ff00) <<  8) | (((x) & 0x000000ff) << 24))
 
 #ifdef __GNUC__
-# if __GNUC_PREREQ (4, 2)
+# if __GNUC_PREREQ (4, 3)
 static __inline unsigned int
 __bswap_32 (unsigned int __bsx)
 {
@@ -56,7 +57,7 @@ __bswap_32 (unsigned int __bsx)
    `bswap' opcode.  On i386 we have to use three instructions.  */
 #   define __bswap_32(x) \
       (__extension__							      \
-       ({ register unsigned int __v, __x = (x);				      \
+       ({ unsigned int __v, __x = (x);					      \
 	  if (__builtin_constant_p (__x))				      \
 	    __v = __bswap_constant_32 (__x);				      \
 	  else								      \
@@ -65,7 +66,7 @@ __bswap_32 (unsigned int __bsx)
 #  else
 #   define __bswap_32(x)						      \
       (__extension__							      \
-       ({ register unsigned int __v, __x = (x);				      \
+       ({ unsigned int __v, __x = (x);					      \
 	  if (__builtin_constant_p (__x))				      \
 	    __v = __bswap_constant_32 (__x);				      \
 	  else								      \
@@ -80,7 +81,7 @@ __bswap_32 (unsigned int __bsx)
 # else
 #  define __bswap_32(x) \
      (__extension__							      \
-      ({ register unsigned int __x = (x); __bswap_constant_32 (__x); }))
+      ({ unsigned int __x = (x); __bswap_constant_32 (__x); }))
 # endif
 #else
 static __inline unsigned int
@@ -103,16 +104,16 @@ __bswap_32 (unsigned int __bsx)
 		     | (((x) & 0x000000000000ff00ull) << 40)		      \
 		     | (((x) & 0x00000000000000ffull) << 56)))
 
-# if __GNUC_PREREQ (4, 2)
-static __inline unsigned long long int
-__bswap_64 (unsigned long long int __bsx)
+# if __GNUC_PREREQ (4, 3)
+static __inline __uint64_t
+__bswap_64 (__uint64_t __bsx)
 {
   return __builtin_bswap64 (__bsx);
 }
 # elif __WORDSIZE == 64
 #  define __bswap_64(x) \
      (__extension__							      \
-      ({ register unsigned long __v, __x = (x);				      \
+      ({ __uint64_t __v, __x = (x);					      \
 	 if (__builtin_constant_p (__x))				      \
 	   __v = __bswap_constant_64 (__x);				      \
 	 else								      \
@@ -121,7 +122,7 @@ __bswap_64 (unsigned long long int __bsx)
 # else
 #  define __bswap_64(x) \
      (__extension__                                                           \
-      ({ union { __extension__ unsigned long long int __ll;                   \
+      ({ union { __extension__ __uint64_t __ll;		                      \
 		 unsigned int __l[2]; } __w, __r;                             \
 	 if (__builtin_constant_p (x))                                        \
 	   __r.__ll = __bswap_constant_64 (x);                                \
@@ -133,7 +134,7 @@ __bswap_64 (unsigned long long int __bsx)
 	   }                                                                  \
 	 __r.__ll; }))
 # endif
-#elif __GLIBC_HAVE_LONG_LONG
+#else
 # define __bswap_constant_64(x) \
      ((((x) & 0xff00000000000000ull) >> 56)				      \
       | (((x) & 0x00ff000000000000ull) >> 40)				      \
@@ -144,8 +145,8 @@ __bswap_64 (unsigned long long int __bsx)
       | (((x) & 0x000000000000ff00ull) << 40)				      \
       | (((x) & 0x00000000000000ffull) << 56))
 
-static __inline unsigned long long int
-__bswap_64 (unsigned long long int __bsx)
+static __inline __uint64_t
+__bswap_64 (__uint64_t __bsx)
 {
   return __bswap_constant_64 (__bsx);
 }

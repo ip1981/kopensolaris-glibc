@@ -1,4 +1,4 @@
-/* Copyright (C) 1996-2012 Free Software Foundation, Inc.
+/* Copyright (C) 1996-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Extended from original form by Ulrich Drepper <drepper@cygnus.com>, 1996.
 
@@ -87,10 +87,6 @@
 #include <resolv/mapv4v6hostent.h>
 
 #define RESOLVSORT
-
-/* Maximum number of aliases we allow.  */
-#define MAX_NR_ALIASES	48
-#define MAX_NR_ADDRS	48
 
 #if PACKETSZ > 65536
 # define MAXPACKET	PACKETSZ
@@ -203,6 +199,11 @@ _nss_dns_gethostbyname3_r (const char *name, int af, struct hostent *result,
 	  status = NSS_STATUS_TRYAGAIN;
 	  h_errno = TRY_AGAIN;
 	  break;
+	/* System has run out of file descriptors.  */
+	case EMFILE:
+	case ENFILE:
+	  h_errno = NETDB_INTERNAL;
+	  /* Fall through.  */
 	case ECONNREFUSED:
 	case ETIMEDOUT:
 	  status = NSS_STATUS_UNAVAIL;
@@ -315,14 +316,26 @@ _nss_dns_gethostbyname4_r (const char *name, struct gaih_addrtuple **pat,
 			      &ans2p, &nans2p, &resplen2);
   if (n < 0)
     {
-      if (errno == ESRCH)
+      switch (errno)
 	{
+	case ESRCH:
 	  status = NSS_STATUS_TRYAGAIN;
 	  h_errno = TRY_AGAIN;
+	  break;
+	/* System has run out of file descriptors.  */
+	case EMFILE:
+	case ENFILE:
+	  h_errno = NETDB_INTERNAL;
+	  /* Fall through.  */
+	case ECONNREFUSED:
+	case ETIMEDOUT:
+	  status = NSS_STATUS_UNAVAIL;
+	  break;
+	default:
+	  status = NSS_STATUS_NOTFOUND;
+	  break;
 	}
-      else
-	status = (errno == ECONNREFUSED
-		  ? NSS_STATUS_UNAVAIL : NSS_STATUS_NOTFOUND);
+
       *herrnop = h_errno;
       if (h_errno == TRY_AGAIN)
 	*errnop = EAGAIN;
@@ -588,7 +601,7 @@ getanswer_r (const querybuf *answer, int anslen, const char *qname, int qtype,
     char *h_addr_ptrs[0];
   } *host_data;
   int linebuflen;
-  register const HEADER *hp;
+  const HEADER *hp;
   const u_char *end_of_message, *cp;
   int n, ancount, qdcount;
   int haveanswer, had_error;
@@ -907,7 +920,7 @@ getanswer_r (const querybuf *answer, int anslen, const char *qname, int qtype,
 	    }
 	  if (!haveanswer)
 	    {
-	      register int nn;
+	      int nn;
 
 	      /* We compose a single hostent out of the entire chain of
 	         entries, so the TTL of the hostent is essentially the lowest

@@ -1,4 +1,4 @@
-/* Copyright (c) 1997, 1998, 2005, 2006, 2007 Free Software Foundation, Inc.
+/* Copyright (c) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Thorsten Kukuk <kukuk@vt.uni-paderborn.de>, 1997.
 
@@ -16,6 +16,7 @@
    License along with the GNU C Library; if not, see
    <http://www.gnu.org/licenses/>.  */
 
+#include <stdint.h>
 #include <rpcsvc/nis.h>
 #include <rpcsvc/nis_callback.h> /* for "official" Solaris xdr functions */
 

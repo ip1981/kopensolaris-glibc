@@ -1,4 +1,4 @@
-/* Copyright (C) 2003, 2005 Free Software Foundation, Inc.
+/* Copyright (C) 2003-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@redhat.com>, 2003.
 
@@ -21,14 +21,14 @@
 #define SYSOP_semtimedop 4
 
 #define SVRSP	12		/* saved register space */
-#define PARMS	LINKAGE+SVRSP	/* space for 3 saved regs */
+#define PARMS	4+SVRSP	/* space for 3 saved regs */
 #define SEMID	PARMS
 #define SOPS	SEMID+4
-#define NSOPS	SOPS+PTR_SIZE
+#define NSOPS	SOPS+4
 #define TIMEOUT	NSOPS+4
 
 	.text
-ENTRY (BP_SYM (semtimedop))
+ENTRY (semtimedop)
 
 	pushl	%ebp
 	cfi_adjust_cfa_offset (4)
@@ -65,10 +65,9 @@ ENTRY (BP_SYM (semtimedop))
 	ja SYSCALL_ERROR_LABEL
 
 	/* Successful; return the syscall's value.  */
-L(pseudo_end):
 	ret
 
 #ifdef PIC
 	.align	4
 #endif
-PSEUDO_END (BP_SYM (semtimedop))
+PSEUDO_END (semtimedop)

@@ -1,4 +1,4 @@
-/* Copyright (C) 2004 Free Software Foundation, Inc.
+/* Copyright (C) 2004-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -29,4 +29,3 @@ mq_setattr (mqd_t mqdes, const struct mq_attr *__restrict mqstat,
 }
 hidden_def (mq_setattr)
 stub_warning (mq_setattr)
-#include <stub-tag.h>

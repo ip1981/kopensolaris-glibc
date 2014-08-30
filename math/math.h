@@ -1,6 +1,5 @@
 /* Declarations for math functions.
-   Copyright (C) 1991-1993, 1995-1999, 2001, 2002, 2004, 2006, 2009, 2011, 2012
-   Free Software Foundation, Inc.
+   Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -189,16 +188,21 @@ extern int signgam;
 /* All floating-point numbers can be put in one of these categories.  */
 enum
   {
-    FP_NAN,
-# define FP_NAN FP_NAN
-    FP_INFINITE,
-# define FP_INFINITE FP_INFINITE
-    FP_ZERO,
-# define FP_ZERO FP_ZERO
-    FP_SUBNORMAL,
-# define FP_SUBNORMAL FP_SUBNORMAL
-    FP_NORMAL
-# define FP_NORMAL FP_NORMAL
+    FP_NAN =
+# define FP_NAN 0
+      FP_NAN,
+    FP_INFINITE =
+# define FP_INFINITE 1
+      FP_INFINITE,
+    FP_ZERO =
+# define FP_ZERO 2
+      FP_ZERO,
+    FP_SUBNORMAL =
+# define FP_SUBNORMAL 3
+      FP_SUBNORMAL,
+    FP_NORMAL =
+# define FP_NORMAL 4
+      FP_NORMAL
   };
 
 /* Return number of classification appropriate for X.  */
@@ -277,6 +281,20 @@ enum
 # endif
 
 #endif /* Use ISO C99.  */
+
+#ifdef __USE_GNU
+/* Return nonzero value if X is a signaling NaN.  */
+# ifdef __NO_LONG_DOUBLE_MATH
+#  define issignaling(x) \
+     (sizeof (x) == sizeof (float) ? __issignalingf (x) : __issignaling (x))
+# else
+#  define issignaling(x) \
+     (sizeof (x) == sizeof (float)					      \
+      ? __issignalingf (x)						      \
+      : sizeof (x) == sizeof (double)					      \
+      ? __issignaling (x) : __issignalingl (x))
+# endif
+#endif /* Use GNU.  */
 
 #ifdef	__USE_MISC
 /* Support for various different standard error handling behaviors.  */

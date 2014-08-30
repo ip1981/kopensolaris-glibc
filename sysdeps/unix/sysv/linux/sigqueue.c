@@ -1,4 +1,4 @@
-/* Copyright (C) 1997, 1998, 2000, 2003, 2005 Free Software Foundation, Inc.
+/* Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -43,7 +43,7 @@ __sigqueue (pid, sig, val)
   info.si_uid = __getuid ();
   info.si_value = val;
 
-  return INLINE_SYSCALL (rt_sigqueueinfo, 3, pid, sig, __ptrvalue (&info));
+  return INLINE_SYSCALL (rt_sigqueueinfo, 3, pid, sig, &info);
 }
 weak_alias (__sigqueue, sigqueue)
 #else

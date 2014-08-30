@@ -1,4 +1,4 @@
-/* Copyright (C) 1996,97,2002 Free Software Foundation, Inc.
+/* Copyright (C) 1996-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@gnu.org>, 1996.
 
@@ -20,9 +20,9 @@
 
 wchar_t *
 wmemchr (s, c, n)
-     register const wchar_t *s;
-     register wchar_t c;
-     register size_t n;
+     const wchar_t *s;
+     wchar_t c;
+     size_t n;
 {
   /* For performance reasons unfold the loop four times.  */
   while (n >= 4)

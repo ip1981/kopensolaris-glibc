@@ -1,5 +1,5 @@
 /* Get enabled floating-point exceptions.
-   Copyright (C) 2012 Free Software Foundation, Inc.
+   Copyright (C) 2012-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, 2012.
 
@@ -27,9 +27,6 @@ fegetexcept (void)
 
   /* Get current exceptions.  */
   _FPU_GETCW (temp);
-  /* When read fpscr, this was initialized.
-     We need to rewrite value of temp. */
-  _FPU_SETCW (temp);
 
   return (temp >> 5) & FE_ALL_EXCEPT;
 }

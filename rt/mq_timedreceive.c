@@ -1,4 +1,4 @@
-/* Copyright (C) 2004 Free Software Foundation, Inc.
+/* Copyright (C) 2004-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -30,4 +30,3 @@ mq_timedreceive (mqd_t mqdes, char *__restrict msg_ptr, size_t msg_len,
 }
 hidden_def (mq_timedreceive)
 stub_warning (mq_timedreceive)
-#include <stub-tag.h>

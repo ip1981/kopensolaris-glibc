@@ -1,5 +1,6 @@
 /* Multiple versions of memcmp
-   Copyright (C) 2010, 2012 Free Software Foundation, Inc.
+   All versions must be listed in ifunc-impl-list.c.
+   Copyright (C) 2010-2014 Free Software Foundation, Inc.
    Contributed by Intel Corporation.
    This file is part of the GNU C Library.
 
@@ -67,6 +68,8 @@ END(memcmp)
 # define ENTRY(name) \
 	.type __memcmp_ia32, @function; \
 	.p2align 4; \
+	.globl __memcmp_ia32; \
+	.hidden __memcmp_ia32; \
 	__memcmp_ia32: cfi_startproc; \
 	CALL_MCOUNT
 # undef END

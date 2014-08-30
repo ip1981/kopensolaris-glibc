@@ -356,13 +356,30 @@ extern void __dubcos (double __x, double __dx, double __v[]);
 extern double __halfulp (double __x, double __y);
 extern double __sin32 (double __x, double __res, double __res1);
 extern double __cos32 (double __x, double __res, double __res1);
-extern double __mpsin (double __x, double __dx);
-extern double __mpcos (double __x, double __dx);
-extern double __mpsin1 (double __x);
-extern double __mpcos1 (double __x);
+extern double __mpsin (double __x, double __dx, bool __range_reduce);
+extern double __mpcos (double __x, double __dx, bool __range_reduce);
 extern double __slowexp (double __x);
 extern double __slowpow (double __x, double __y, double __z);
 extern void __docos (double __x, double __dx, double __v[]);
+
+/* Return X^2 + Y^2 - 1, computed without large cancellation error.
+   It is given that 1 > X >= Y >= epsilon / 2, and that either X >=
+   0.75 or Y >= 0.5.  */
+extern float __x2y2m1f (float x, float y);
+extern double __x2y2m1 (double x, double y);
+extern long double __x2y2m1l (long double x, long double y);
+
+/* Compute the product of X + X_EPS, X + X_EPS + 1, ..., X + X_EPS + N
+   - 1, in the form R * (1 + *EPS) where the return value R is an
+   approximation to the product and *EPS is set to indicate the
+   approximate error in the return value.  X is such that all the
+   values X + 1, ..., X + N - 1 are exactly representable, and X_EPS /
+   X is small enough that factors quadratic in it can be
+   neglected.  */
+extern float __gamma_productf (float x, float x_eps, int n, float *eps);
+extern double __gamma_product (double x, double x_eps, int n, double *eps);
+extern long double __gamma_productl (long double x, long double x_eps,
+				     int n, long double *eps);
 
 #ifndef math_opt_barrier
 # define math_opt_barrier(x) \
@@ -395,6 +412,22 @@ default_libc_feholdexcept (fenv_t *e)
 #endif
 
 static __always_inline void
+default_libc_fesetround (int r)
+{
+  (void) fesetround (r);
+}
+
+#ifndef libc_fesetround
+# define libc_fesetround  default_libc_fesetround
+#endif
+#ifndef libc_fesetroundf
+# define libc_fesetroundf default_libc_fesetround
+#endif
+#ifndef libc_fesetroundl
+# define libc_fesetroundl default_libc_fesetround
+#endif
+
+static __always_inline void
 default_libc_feholdexcept_setround (fenv_t *e, int r)
 {
   feholdexcept (e);
@@ -411,8 +444,8 @@ default_libc_feholdexcept_setround (fenv_t *e, int r)
 # define libc_feholdexcept_setroundl default_libc_feholdexcept_setround
 #endif
 
-#ifndef libc_feholdexcept_setround_53bit
-# define libc_feholdexcept_setround_53bit libc_feholdexcept_setround
+#ifndef libc_feholdsetround_53bit
+# define libc_feholdsetround_53bit libc_feholdsetround
 #endif
 
 #ifndef libc_fetestexcept
@@ -457,8 +490,8 @@ default_libc_feupdateenv (fenv_t *e)
 # define libc_feupdateenvl default_libc_feupdateenv
 #endif
 
-#ifndef libc_feupdateenv_53bit
-# define libc_feupdateenv_53bit libc_feupdateenv
+#ifndef libc_feresetround_53bit
+# define libc_feresetround_53bit libc_feresetround
 #endif
 
 static __always_inline int
@@ -518,35 +551,62 @@ default_libc_feupdateenv_test (fenv_t *e, int ex)
 # define libc_feresetround_noexl libc_fesetenvl
 #endif
 
+#if HAVE_RM_CTX
+/* Set/Restore Rounding Modes only when necessary.  If defined, these functions
+   set/restore floating point state only if the state needed within the lexical
+   block is different from the current state.  This saves a lot of time when
+   the floating point unit is much slower than the fixed point units.  */
+
+# ifndef libc_feresetround_noex_ctx
+#   define libc_feresetround_noex_ctx  libc_fesetenv_ctx
+# endif
+# ifndef libc_feresetround_noexf_ctx
+#   define libc_feresetround_noexf_ctx libc_fesetenvf_ctx
+# endif
+# ifndef libc_feresetround_noexl_ctx
+#   define libc_feresetround_noexl_ctx libc_fesetenvl_ctx
+# endif
+
+# ifndef libc_feholdsetround_53bit_ctx
+#   define libc_feholdsetround_53bit_ctx libc_feholdsetround_ctx
+# endif
+
+# ifndef libc_feresetround_53bit_ctx
+#   define libc_feresetround_53bit_ctx libc_feresetround_ctx
+# endif
+
+# define SET_RESTORE_ROUND_GENERIC(RM,ROUNDFUNC,CLEANUPFUNC) \
+  struct rm_ctx ctx __attribute__((cleanup(CLEANUPFUNC ## _ctx)));	      \
+  ROUNDFUNC ## _ctx (&ctx, (RM))
+#else
+# define SET_RESTORE_ROUND_GENERIC(RM, ROUNDFUNC, CLEANUPFUNC) \
+  fenv_t __libc_save_rm __attribute__((cleanup(CLEANUPFUNC)));	\
+  ROUNDFUNC (&__libc_save_rm, (RM))
+#endif
+
 /* Save and restore the rounding mode within a lexical block.  */
 
 #define SET_RESTORE_ROUND(RM) \
-  fenv_t __libc_save_rm __attribute__((cleanup(libc_feresetround)));	\
-  libc_feholdsetround (&__libc_save_rm, (RM))
+  SET_RESTORE_ROUND_GENERIC (RM, libc_feholdsetround, libc_feresetround)
 #define SET_RESTORE_ROUNDF(RM) \
-  fenv_t __libc_save_rm __attribute__((cleanup(libc_feresetroundf)));	\
-  libc_feholdsetroundf (&__libc_save_rm, (RM))
+  SET_RESTORE_ROUND_GENERIC (RM, libc_feholdsetroundf, libc_feresetroundf)
 #define SET_RESTORE_ROUNDL(RM) \
-  fenv_t __libc_save_rm __attribute__((cleanup(libc_feresetroundl)));	\
-  libc_feholdsetroundl (&__libc_save_rm, (RM))
+  SET_RESTORE_ROUND_GENERIC (RM, libc_feholdsetroundl, libc_feresetroundl)
 
 /* Save and restore the rounding mode within a lexical block, and also
    the set of exceptions raised within the block may be discarded.  */
 
 #define SET_RESTORE_ROUND_NOEX(RM) \
-  fenv_t __libc_save_rm __attribute__((cleanup(libc_feresetround_noex))); \
-  libc_feholdsetround (&__libc_save_rm, (RM))
+  SET_RESTORE_ROUND_GENERIC (RM, libc_feholdsetround, libc_feresetround_noex)
 #define SET_RESTORE_ROUND_NOEXF(RM) \
-  fenv_t __libc_save_rm __attribute__((cleanup(libc_feresetround_noexf))); \
-  libc_feholdsetroundf (&__libc_save_rm, (RM))
+  SET_RESTORE_ROUND_GENERIC (RM, libc_feholdsetroundf, libc_feresetround_noexf)
 #define SET_RESTORE_ROUND_NOEXL(RM) \
-  fenv_t __libc_save_rm __attribute__((cleanup(libc_feresetround_noexl))); \
-  libc_feholdsetroundl (&__libc_save_rm, (RM))
+  SET_RESTORE_ROUND_GENERIC (RM, libc_feholdsetroundl, libc_feresetround_noexl)
 
 /* Like SET_RESTORE_ROUND, but also set rounding precision to 53 bits.  */
 #define SET_RESTORE_ROUND_53BIT(RM) \
-  fenv_t __libc_save_rm __attribute__((cleanup(libc_feupdateenv_53bit))); \
-  libc_feholdexcept_setround_53bit (&__libc_save_rm, (RM))
+  SET_RESTORE_ROUND_GENERIC (RM, libc_feholdsetround_53bit,	      \
+			     libc_feresetround_53bit)
 
 #define __nan(str) \
   (__builtin_constant_p (str) && str[0] == '\0' ? NAN : __nan (str))

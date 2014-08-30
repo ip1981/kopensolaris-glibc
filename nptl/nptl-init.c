@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2012 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@redhat.com>, 2002.
 
@@ -177,24 +177,18 @@ __nptl_set_robust (struct pthread *self)
 static void
 sigcancel_handler (int sig, siginfo_t *si, void *ctx)
 {
-#ifdef __ASSUME_CORRECT_SI_PID
   /* Determine the process ID.  It might be negative if the thread is
      in the middle of a fork() call.  */
   pid_t pid = THREAD_GETMEM (THREAD_SELF, pid);
   if (__builtin_expect (pid < 0, 0))
     pid = -pid;
-#endif
 
   /* Safety check.  It would be possible to call this function for
      other signals and send a signal from another process.  This is not
      correct and might even be a security problem.  Try to catch as
      many incorrect invocations as possible.  */
   if (sig != SIGCANCEL
-#ifdef __ASSUME_CORRECT_SI_PID
-      /* Kernels before 2.5.75 stored the thread ID and not the process
-	 ID in si_pid so we skip this test.  */
       || si->si_pid != pid
-#endif
       || si->si_code != SI_TKILL)
 {
     return;
@@ -238,7 +232,9 @@ sigcancel_handler (int sig, siginfo_t *si, void *ctx)
 #ifndef NO_SETXID_SUPPORT
 struct xid_command *__xidcmd attribute_hidden;
 
-/* For asynchronous cancellation we use a signal.  This is the handler.  */
+/* We use the SIGSETXID signal in the setuid, setgid, etc. implementations to
+   tell each thread to call the respective setxid syscall on itself.  This is
+   the handler.  */
 static void
 sighandler_setxid (int sig, siginfo_t *si, void *ctx)
 {
@@ -257,11 +253,7 @@ sighandler_setxid (int sig, siginfo_t *si, void *ctx)
      correct and might even be a security problem.  Try to catch as
      many incorrect invocations as possible.  */
   if (sig != SIGSETXID
-#ifdef __ASSUME_CORRECT_SI_PID
-      /* Kernels before 2.5.75 stored the thread ID and not the process
-	 ID in si_pid so we skip this test.  */
       || si->si_pid != pid
-#endif
       || si->si_code != SI_TKILL)
     return;
 
@@ -440,7 +432,6 @@ __pthread_initialize_minimal_internal (void)
 
   __static_tls_size = roundup (__static_tls_size, static_tls_align);
 
-#ifndef PTHREAD_USE_ARCH_STACK_DEFAULT_SIZE
   /* Determine the default allowed stack size.  This is the size used
      in case the user does not specify one.  */
   struct rlimit limit;
@@ -463,11 +454,10 @@ __pthread_initialize_minimal_internal (void)
 
   /* Round the resource limit up to page size.  */
   limit.rlim_cur = (limit.rlim_cur + pagesz - 1) & -pagesz;
-  __default_stacksize = limit.rlim_cur;
-#else
-  /* Don't dynamically compute stack size.  */
-  __default_stacksize = ARCH_STACK_DEFAULT_SIZE;
-#endif /* PTHREAD_USE_ARCH_STACK_DEFAULT_SIZE */
+  lll_lock (__default_pthread_attr_lock, LLL_PRIVATE);
+  __default_pthread_attr.stacksize = limit.rlim_cur;
+  __default_pthread_attr.guardsize = GLRO (dl_pagesize);
+  lll_unlock (__default_pthread_attr_lock, LLL_PRIVATE);
 
 #ifdef SHARED
   /* Transfer the old value from the dynamic linker's internal location.  */

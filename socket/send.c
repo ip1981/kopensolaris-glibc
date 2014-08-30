@@ -1,4 +1,4 @@
-/* Copyright (C) 1991,1995,1996,1997,2001,2002,2012 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -33,4 +33,3 @@ libc_hidden_def (__send)
 weak_alias (__send, send)
 
 stub_warning (send)
-#include <stub-tag.h>

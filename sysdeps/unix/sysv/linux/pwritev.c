@@ -1,4 +1,4 @@
-/* Copyright (C) 2009, 2012 Free Software Foundation, Inc.
+/* Copyright (C) 2009-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -17,6 +17,7 @@
 
 #include <errno.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <sys/param.h>
 #if __WORDSIZE == 64 && !defined PWRITEV
 /* Hide the pwritev64 declaration.  */

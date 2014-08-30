@@ -1,4 +1,4 @@
-/* Copyright (C) 1991, 1995, 1996, 1997, 1999 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -42,4 +42,3 @@ __libc_pwrite (int fd, const void *buf, size_t nbytes, off_t offset)
 strong_alias (__libc_pwrite, __pwrite)
 weak_alias (__libc_pwrite, pwrite)
 stub_warning (pwrite)
-#include <stub-tag.h>

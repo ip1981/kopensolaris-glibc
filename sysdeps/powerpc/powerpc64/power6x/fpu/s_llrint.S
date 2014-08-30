@@ -1,5 +1,5 @@
 /* Round double to long int.  POWER6x PowerPC64 version.
-   Copyright (C) 2006 Free Software Foundation, Inc.
+   Copyright (C) 2006-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -21,7 +21,7 @@
 
 	.machine	"power6"
 /* long long int[r3] __llrint (double x[fp1])  */
-ENTRY (__llrint)	
+ENTRY (__llrint)
 	CALL_MCOUNT 0
 	fctid	fp13,fp1
 	mftgpr  r3,fp13

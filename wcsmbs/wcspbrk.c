@@ -1,4 +1,4 @@
-/* Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+/* Copyright (C) 1995-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper, <drepper@gnu.ai.mit.edu>
 
@@ -22,8 +22,8 @@
 /* Find the first occurrence in WCS of any wide-character in ACCEPT.  */
 wchar_t *
 wcspbrk (wcs, accept)
-     register const wchar_t *wcs;
-     register const wchar_t *accept;
+     const wchar_t *wcs;
+     const wchar_t *accept;
 {
   while (*wcs != L'\0')
     if (wcschr (accept, *wcs) == NULL)

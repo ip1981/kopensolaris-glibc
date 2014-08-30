@@ -1,5 +1,5 @@
 /* low level locking for pthread library.  Generic futex-using version.
-   Copyright (C) 2003, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2003-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Paul Mackerras <paulus@au.ibm.com>, 2003.
 
@@ -21,7 +21,7 @@
 #include <sysdep.h>
 #include <lowlevellock.h>
 #include <sys/time.h>
-
+#include <atomic.h>
 
 void
 __lll_lock_wait_private (int *futex)

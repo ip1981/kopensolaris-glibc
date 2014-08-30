@@ -1,5 +1,5 @@
 /* ix87 specific implementation of arcsinh.
-   Copyright (C) 1996-1997, 2005, 2011-2012 Free Software Foundation, Inc.
+   Copyright (C) 1996-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1996.
 
@@ -25,13 +25,13 @@
 	/* Please note that we use double value for 1.0.  This number
 	   has an exact representation and so we don't get accuracy
 	   problems.  The advantage is that the code is simpler.  */
-	ASM_TYPE_DIRECTIVE(one,@object)
+	.type one,@object
 one:	.double 1.0
 	ASM_SIZE_DIRECTIVE(one)
 	/* It is not important that this constant is precise.  It is only
 	   a value which is known to be on the safe side for using the
 	   fyl2xp1 instruction.  */
-	ASM_TYPE_DIRECTIVE(limit,@object)
+	.type limit,@object
 limit:	.double 0.29
 	ASM_SIZE_DIRECTIVE(limit)
 

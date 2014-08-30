@@ -1,4 +1,4 @@
-/* Copyright (C) 1991,1995,1996,1997,1998,2002 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -36,4 +36,3 @@ __setsockopt (fd, level, optname, optval, optlen)
 weak_alias (__setsockopt, setsockopt)
 
 stub_warning (setsockopt)
-#include <stub-tag.h>

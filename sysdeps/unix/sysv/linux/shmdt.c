@@ -1,4 +1,4 @@
-/* Copyright (C) 1995, 1997, 1998, 2000 Free Software Foundation, Inc.
+/* Copyright (C) 1995-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@gnu.ai.mit.edu>, August 1995.
 
@@ -30,5 +30,5 @@ int
 shmdt (shmaddr)
      const void *shmaddr;
 {
-  return INLINE_SYSCALL (ipc, 5, IPCOP_shmdt, 0, 0, 0, __ptrvalue ((void *) shmaddr));
+  return INLINE_SYSCALL (ipc, 5, IPCOP_shmdt, 0, 0, 0, (void *) shmaddr);
 }

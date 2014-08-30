@@ -1,5 +1,5 @@
 /* BSD `_setjmp' entry point to `sigsetjmp (..., 0)'.  i386 version.
-   Copyright (C) 1994-2012 Free Software Foundation, Inc.
+   Copyright (C) 1994-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -22,22 +22,18 @@
 
 #include <sysdep.h>
 #include <jmpbuf-offsets.h>
-#include "bp-sym.h"
-#include "bp-asm.h"
 #include <stap-probe.h>
 
-#define PARMS	LINKAGE		/* no space for saved regs */
+#define PARMS	4		/* no space for saved regs */
 #define JMPBUF	PARMS
-#define SIGMSK	JMPBUF+PTR_SIZE
+#define SIGMSK	JMPBUF+4
 
-ENTRY (BP_SYM (_setjmp))
-	ENTER
+ENTRY (_setjmp)
 
 	xorl %eax, %eax
 	movl JMPBUF(%esp), %edx
-	CHECK_BOUNDS_BOTH_WIDE (%edx, JMPBUF(%esp), $(JB_SIZE+4))
 
-     	/* Save registers.  */
+	/* Save registers.  */
 	movl %ebx, (JB_BX*4)(%edx)
 	movl %esi, (JB_SI*4)(%edx)
 	movl %edi, (JB_DI*4)(%edx)
@@ -45,17 +41,16 @@ ENTRY (BP_SYM (_setjmp))
 #ifdef PTR_MANGLE
 	PTR_MANGLE (%ecx)
 #endif
-     	movl %ecx, (JB_SP*4)(%edx)
-	movl PCOFF(%esp), %ecx	/* Save PC we are returning to now.  */
+	movl %ecx, (JB_SP*4)(%edx)
+	movl 0(%esp), %ecx	/* Save PC we are returning to now.  */
 	LIBC_PROBE (setjmp, 3, 4@%edx, -4@$0, 4@%ecx)
 #ifdef PTR_MANGLE
 	PTR_MANGLE (%ecx)
 #endif
-     	movl %ecx, (JB_PC*4)(%edx)
-	LEAVE
+	movl %ecx, (JB_PC*4)(%edx)
 	movl %ebp, (JB_BP*4)(%edx) /* Save caller's frame pointer.  */
 
 	movl %eax, JB_SIZE(%edx) /* No signal mask set.  */
 	ret
-END (BP_SYM (_setjmp))
+END (_setjmp)
 libc_hidden_def (_setjmp)

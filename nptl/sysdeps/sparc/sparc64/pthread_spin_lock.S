@@ -1,4 +1,4 @@
-/* Copyright (C) 2012 Free Software Foundation, Inc.
+/* Copyright (C) 2012-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -19,10 +19,10 @@
 
 	.text
 ENTRY(pthread_spin_lock)
-	ldstub		[%o0], %g1
+1:	ldstub		[%o0], %g1
 	brnz,pn		%g1, 2f
 	 membar		#StoreLoad | #StoreStore
-1:	retl
+	retl
 	 mov		0, %o0
 2:	ldub		[%o0], %g1
 	brnz,pt		%g1, 2b

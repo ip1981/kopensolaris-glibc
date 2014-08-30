@@ -1,5 +1,4 @@
-/* Copyright (C) 1991-1997,2000,2002,2004,2005,2011,2012
-	Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -19,8 +18,6 @@
 #include <sysdep.h>
 #define _ERRNO_H
 #include <bits/errno.h>
-#include <bp-asm.h>
-#include <bp-sym.h>
 
 #ifdef IS_IN_rtld
 # include <dl-sysdep.h>		/* Defines RTLD_PRIVATE_ERRNO.  */

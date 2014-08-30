@@ -1,5 +1,5 @@
 /* ix87 specific implementation of arctanh function.
-   Copyright (C) 1996, 1999, 2005, 2011-2012 Free Software Foundation, Inc.
+   Copyright (C) 1996-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1996.
 
@@ -22,16 +22,16 @@
 	.section .rodata
 
 	.align ALIGNARG(4)
-	ASM_TYPE_DIRECTIVE(half,@object)
+	.type half,@object
 half:	.double 0.5
 	ASM_SIZE_DIRECTIVE(half)
-	ASM_TYPE_DIRECTIVE(one,@object)
+	.type one,@object
 one:	.double 1.0
 	ASM_SIZE_DIRECTIVE(one)
-	ASM_TYPE_DIRECTIVE(limit,@object)
+	.type limit,@object
 limit:	.double 0.29
 	ASM_SIZE_DIRECTIVE(limit)
-	ASM_TYPE_DIRECTIVE(ln2_2,@object)
+	.type ln2_2,@object
 ln2_2:	.tfloat 0.3465735902799726547086160
 	ASM_SIZE_DIRECTIVE(ln2_2)
 

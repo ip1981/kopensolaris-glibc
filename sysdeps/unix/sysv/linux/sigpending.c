@@ -1,4 +1,4 @@
-/* Copyright (C) 1997-2012 Free Software Foundation, Inc.
+/* Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -21,7 +21,6 @@
 
 #include <sysdep.h>
 #include <sys/syscall.h>
-#include <bp-checks.h>
 
 #include <kernel-features.h>
 
@@ -32,5 +31,5 @@ int
 sigpending (set)
      sigset_t *set;
 {
-  return INLINE_SYSCALL (rt_sigpending, 2, CHECK_SIGSET (set), _NSIG / 8);
+  return INLINE_SYSCALL (rt_sigpending, 2, set, _NSIG / 8);
 }

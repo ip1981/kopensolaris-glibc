@@ -1,5 +1,5 @@
 /* Operating system support for run-time dynamic linker.  Hurd version.
-   Copyright (C) 1995-2012 Free Software Foundation, Inc.
+   Copyright (C) 1995-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -54,7 +54,7 @@ int __libc_enable_secure = 0;
 INTVARDEF(__libc_enable_secure)
 int __libc_multiple_libcs = 0;	/* Defining this here avoids the inclusion
 				   of init-first.  */
-/* This variable containts the lowest stack address ever used.  */
+/* This variable contains the lowest stack address ever used.  */
 void *__libc_stack_end;
 
 #if HP_TIMING_AVAIL
@@ -123,7 +123,6 @@ _dl_sysdep_start (void **start_argptr,
 {
   void go (intptr_t *argdata)
     {
-      extern unsigned int _dl_skip_args; /* rtld.c */
       char **p;
 
       /* Cache the information in various global variables.  */
@@ -554,7 +553,7 @@ __access (const char *file, int type)
 }
 
 pid_t weak_function
-__getpid ()
+__getpid (void)
 {
   pid_t pid, ppid;
   int orphaned;
@@ -645,26 +644,6 @@ _dl_show_auxv (void)
   /* There is nothing to print.  Hurd has no auxiliary vector.  */
 }
 
-
-/* Return an array of useful/necessary hardware capability names.  */
-const struct r_strlenpair *
-internal_function
-_dl_important_hwcaps (const char *platform, size_t platform_len, size_t *sz,
-		      size_t *max_capstrlen)
-{
-  struct r_strlenpair *result;
-
-  /* Return an empty array.  Hurd has no hardware capabilities.  */
-  result = (struct r_strlenpair *) malloc (sizeof (*result));
-  if (result == NULL)
-    _dl_signal_error (ENOMEM, NULL, NULL, "cannot create capability list");
-
-  result[0].str = (char *) result;	/* Does not really matter.  */
-  result[0].len = 0;
-
-  *sz = 1;
-  return result;
-}
 
 void weak_function
 _dl_init_first (int argc, ...)

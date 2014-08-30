@@ -78,6 +78,18 @@ GLIBC_2.16
  mbrtoc16 F
  mbrtoc32 F
  timespec_get F
+GLIBC_2.17
+ GLIBC_2.17 A
+ __ppc_get_timebase_freq F
+ clock_getcpuclockid F
+ clock_getres F
+ clock_gettime F
+ clock_nanosleep F
+ clock_settime F
+ secure_getenv F
+GLIBC_2.18
+ GLIBC_2.18 A
+ __cxa_thread_atexit_impl F
 GLIBC_2.3
  GLIBC_2.3 A
  _Exit F

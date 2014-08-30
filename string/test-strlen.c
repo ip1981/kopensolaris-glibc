@@ -1,5 +1,5 @@
 /* Test and measure STRLEN functions.
-   Copyright (C) 1999, 2002, 2003, 2005, 2011 Free Software Foundation, Inc.
+   Copyright (C) 1999-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Written by Jakub Jelinek <jakub@redhat.com>, 1999.
    Added wcslen support by Liubov Dmitrieva <liubov.dmitrieva@gmail.com>, 2011
@@ -19,6 +19,11 @@
    <http://www.gnu.org/licenses/>.  */
 
 #define TEST_MAIN
+#ifndef WIDE
+# define TEST_NAME "strlen"
+#else
+# define TEST_NAME "wcslen"
+#endif
 #include "test-string.h"
 
 #ifndef WIDE
@@ -67,24 +72,6 @@ do_one_test (impl_t *impl, const CHAR *s, size_t exp_len)
       ret = 1;
       return;
     }
-
-  if (HP_TIMING_AVAIL)
-    {
-      hp_timing_t start __attribute ((unused));
-      hp_timing_t stop __attribute ((unused));
-      hp_timing_t best_time = ~ (hp_timing_t) 0;
-      size_t i;
-
-      for (i = 0; i < 32; ++i)
-	{
-	  HP_TIMING_NOW (start);
-	  CALL (impl, s);
-	  HP_TIMING_NOW (stop);
-	  HP_TIMING_BEST (best_time, start, stop);
-	}
-
-      printf ("\t%zd", (size_t) best_time);
-    }
 }
 
 static void
@@ -102,14 +89,8 @@ do_test (size_t align, size_t len)
     buf[align + i] = 1 + 11111 * i % MAX_CHAR;
   buf[align + len] = 0;
 
-  if (HP_TIMING_AVAIL)
-    printf ("Length %4zd, alignment %2zd:", len, align);
-
   FOR_EACH_IMPL (impl, 0)
     do_one_test (impl, (CHAR *) (buf + align), len);
-
-  if (HP_TIMING_AVAIL)
-    putchar ('\n');
 }
 
 static void

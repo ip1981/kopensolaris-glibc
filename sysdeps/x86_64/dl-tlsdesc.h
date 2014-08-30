@@ -1,6 +1,6 @@
 /* Thread-local storage descriptor handling in the ELF dynamic linker.
    x86_64 version.
-   Copyright (C) 2005, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2005-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -17,14 +17,10 @@
    License along with the GNU C Library; if not, see
    <http://www.gnu.org/licenses/>.  */
 
+#include <stdint.h>
+
 #ifndef _X86_64_DL_TLSDESC_H
 # define _X86_64_DL_TLSDESC_H 1
-
-/* Use this to access DT_TLSDESC_PLT and DT_TLSDESC_GOT.  */
-#ifndef ADDRIDX
-# define ADDRIDX(tag) (DT_NUM + DT_THISPROCNUM + DT_VERSIONTAGNUM \
-		       + DT_EXTRANUM + DT_VALNUM + DT_ADDRTAGIDX (tag))
-#endif
 
 /* Type used to represent a TLS descriptor in the GOT.  */
 struct tlsdesc

@@ -1,4 +1,4 @@
-/* Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -21,6 +21,13 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <sys/stat.h>
+#include <kernel-features.h>
+
+/* Some mostly-generic code (e.g. sysdeps/posix/getcwd.c) uses this variable
+   if __ASSUME_ATFCTS is not defined.  */
+#ifndef __ASSUME_ATFCTS
+int __have_atfcts;
+#endif
 
 /* Open FILE with access OFLAG.  Interpret relative paths relative to
    the directory associated with FD.  If OFLAG includes O_CREAT, a
@@ -68,18 +75,6 @@ libc_hidden_def (__openat)
 weak_alias (__openat, openat)
 stub_warning (openat)
 
-
-int
-__openat_2 (fd, file, oflag)
-     int fd;
-     const char *file;
-     int oflag;
-{
-  if (oflag & O_CREAT)
-    __fortify_fail ("invalid openat call: O_CREAT without mode");
-
-  return __openat (fd, file, oflag);
-}
+/* __openat_2 is a generic wrapper that calls __openat.
+   So give a stub warning for that symbol too.  */
 stub_warning (__openat_2)
-
-#include <stub-tag.h>

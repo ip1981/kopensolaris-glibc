@@ -1,5 +1,4 @@
-/* Copyright (C) 1991-1993,1995-2004,2007,2009,2010,2012
-   Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -32,8 +31,12 @@ __BEGIN_DECLS
 #define	__need_NULL
 #include <stddef.h>
 
-/* Tell the caller that we provide correct C++ prototypes.  */
-#if defined __cplusplus && __GNUC_PREREQ (4, 4)
+/* Provide correct C++ prototypes, and indicate this to the caller.  This
+   requires a compatible C++ standard library.  As a heuristic, we provide
+   these when the compiler indicates full conformance with C++98 or later,
+   and for older GCC versions that are known to provide a compatible
+   libstdc++.  */
+#if defined __cplusplus && (__cplusplus >= 199711L || __GNUC_PREREQ (4, 4))
 # define __CORRECT_ISO_CPP_STRING_H_PROTO
 #endif
 
@@ -433,7 +436,7 @@ extern int __xpg_strerror_r (int __errnum, char *__buf, size_t __buflen)
 /* If a temporary buffer is required, at most BUFLEN bytes of BUF will be
    used.  */
 extern char *strerror_r (int __errnum, char *__buf, size_t __buflen)
-     __THROW __nonnull ((2));
+     __THROW __nonnull ((2)) __wur;
 # endif
 #endif
 
@@ -523,10 +526,8 @@ extern int ffs (int __i) __THROW __attribute__ ((__const__));
    platforms.  */
 # ifdef	__USE_GNU
 extern int ffsl (long int __l) __THROW __attribute__ ((__const__));
-#  ifdef __GNUC__
 __extension__ extern int ffsll (long long int __ll)
      __THROW __attribute__ ((__const__));
-#  endif
 # endif
 
 /* Compare S1 and S2, ignoring case.  */

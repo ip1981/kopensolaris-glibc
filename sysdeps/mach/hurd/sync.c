@@ -1,4 +1,4 @@
-/* Copyright (C) 1991,1992,1993,1994,1997,2001 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -21,7 +21,7 @@
 
 /* Make all changes done to all files actually appear on disk.  */
 void
-sync ()
+sync (void)
 {
   /* This is not actually synchronous; we don't wait.  */
   error_t err = __USEPORT (CRDIR, __file_syncfs (port, 0, 1));

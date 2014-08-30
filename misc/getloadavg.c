@@ -1,5 +1,5 @@
 /* Get system load averages.  Stub version.
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -33,4 +33,3 @@ getloadavg (double loadavg[], int nelem)
   return -1;
 }
 stub_warning (getloadavg)
-#include <stub-tag.h>

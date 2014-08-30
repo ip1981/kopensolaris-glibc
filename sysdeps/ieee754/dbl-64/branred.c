@@ -1,7 +1,7 @@
 /*
  * IBM Accurate Mathematical Library
  * Written by International Business Machines Corp.
- * Copyright (C) 2001, 2011 Free Software Foundation, Inc.
+ * Copyright (C) 2001-2014 Free Software Foundation, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -53,13 +53,7 @@ SECTION
 __branred(double x, double *a, double *aa)
 {
   int i,k;
-#if 0
-  int n;
-#endif
   mynumber  u,gor;
-#if 0
-  mynumber v;
-#endif
   double r[6],s,t,sum,b,bb,sum1,sum2,b1,bb1,b2,bb2,x1,x2,t1,t2;
 
   x*=tm600.x;

@@ -1,5 +1,4 @@
-/* Copyright (C) 1991-2001, 2003, 2004, 2006, 2007, 2008, 2011, 2012
-   Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -27,13 +26,21 @@
 
 __BEGIN_DECLS
 
+/* Internet address.  */
+typedef uint32_t in_addr_t;
+struct in_addr
+  {
+    in_addr_t s_addr;
+  };
+
+/* Get system-specific definitions.  */
+#include <bits/in.h>
+
 /* Standard well-defined IP protocols.  */
 enum
   {
     IPPROTO_IP = 0,	   /* Dummy protocol for TCP.  */
 #define IPPROTO_IP		IPPROTO_IP
-    IPPROTO_HOPOPTS = 0,   /* IPv6 Hop-by-Hop options.  */
-#define IPPROTO_HOPOPTS		IPPROTO_HOPOPTS
     IPPROTO_ICMP = 1,	   /* Internet Control Message Protocol.  */
 #define IPPROTO_ICMP		IPPROTO_ICMP
     IPPROTO_IGMP = 2,	   /* Internet Group Management Protocol. */
@@ -56,10 +63,6 @@ enum
 #define IPPROTO_DCCP		IPPROTO_DCCP
     IPPROTO_IPV6 = 41,     /* IPv6 header.  */
 #define IPPROTO_IPV6		IPPROTO_IPV6
-    IPPROTO_ROUTING = 43,  /* IPv6 routing header.  */
-#define IPPROTO_ROUTING		IPPROTO_ROUTING
-    IPPROTO_FRAGMENT = 44, /* IPv6 fragmentation header.  */
-#define IPPROTO_FRAGMENT	IPPROTO_FRAGMENT
     IPPROTO_RSVP = 46,	   /* Reservation Protocol.  */
 #define IPPROTO_RSVP		IPPROTO_RSVP
     IPPROTO_GRE = 47,	   /* General Routing Encapsulation.  */
@@ -68,14 +71,10 @@ enum
 #define IPPROTO_ESP		IPPROTO_ESP
     IPPROTO_AH = 51,       /* authentication header.  */
 #define IPPROTO_AH		IPPROTO_AH
-    IPPROTO_ICMPV6 = 58,   /* ICMPv6.  */
-#define IPPROTO_ICMPV6		IPPROTO_ICMPV6
-    IPPROTO_NONE = 59,     /* IPv6 no next header.  */
-#define IPPROTO_NONE		IPPROTO_NONE
-    IPPROTO_DSTOPTS = 60,  /* IPv6 destination options.  */
-#define IPPROTO_DSTOPTS		IPPROTO_DSTOPTS
     IPPROTO_MTP = 92,	   /* Multicast Transport Protocol.  */
 #define IPPROTO_MTP		IPPROTO_MTP
+    IPPROTO_BEETPH = 94,   /* IP option pseudo header for BEET.  */
+#define IPPROTO_BEETPH		IPPROTO_BEETPH
     IPPROTO_ENCAP = 98,	   /* Encapsulation Header.  */
 #define IPPROTO_ENCAP		IPPROTO_ENCAP
     IPPROTO_PIM = 103,	   /* Protocol Independent Multicast.  */
@@ -91,6 +90,28 @@ enum
     IPPROTO_MAX
   };
 
+/* If __USE_KERNEL_IPV6_DEFS is defined then the user has included the kernel
+   network headers first and we should use those ABI-identical definitions
+   instead of our own.  */
+#ifndef __USE_KERNEL_IPV6_DEFS
+enum
+  {
+    IPPROTO_HOPOPTS = 0,   /* IPv6 Hop-by-Hop options.  */
+#define IPPROTO_HOPOPTS		IPPROTO_HOPOPTS
+    IPPROTO_ROUTING = 43,  /* IPv6 routing header.  */
+#define IPPROTO_ROUTING		IPPROTO_ROUTING
+    IPPROTO_FRAGMENT = 44, /* IPv6 fragmentation header.  */
+#define IPPROTO_FRAGMENT	IPPROTO_FRAGMENT
+    IPPROTO_ICMPV6 = 58,   /* ICMPv6.  */
+#define IPPROTO_ICMPV6		IPPROTO_ICMPV6
+    IPPROTO_NONE = 59,     /* IPv6 no next header.  */
+#define IPPROTO_NONE		IPPROTO_NONE
+    IPPROTO_DSTOPTS = 60,  /* IPv6 destination options.  */
+#define IPPROTO_DSTOPTS		IPPROTO_DSTOPTS
+    IPPROTO_MH = 135       /* IPv6 mobility header.  */
+#define IPPROTO_MH		IPPROTO_MH
+  };
+#endif /* !__USE_KERNEL_IPV6_DEFS */
 
 /* Type to represent a port.  */
 typedef uint16_t in_port_t;
@@ -134,15 +155,6 @@ enum
     /* Ports greater this value are reserved for (non-privileged) servers.  */
     IPPORT_USERRESERVED = 5000
   };
-
-
-/* Internet address.  */
-typedef uint32_t in_addr_t;
-struct in_addr
-  {
-    in_addr_t s_addr;
-  };
-
 
 /* Definitions of the bits in an Internet address integer.
 
@@ -192,7 +204,7 @@ struct in_addr
 #define INADDR_ALLRTRS_GROUP    ((in_addr_t) 0xe0000002) /* 224.0.0.2 */
 #define INADDR_MAX_LOCAL_GROUP  ((in_addr_t) 0xe00000ff) /* 224.0.0.255 */
 
-
+#ifndef __USE_KERNEL_IPV6_DEFS
 /* IPv6 address */
 struct in6_addr
   {
@@ -210,6 +222,7 @@ struct in6_addr
 # define s6_addr32		__in6_u.__u6_addr32
 #endif
   };
+#endif /* !__USE_KERNEL_IPV6_DEFS */
 
 extern const struct in6_addr in6addr_any;        /* :: */
 extern const struct in6_addr in6addr_loopback;   /* ::1 */
@@ -234,6 +247,7 @@ struct sockaddr_in
 			   sizeof (struct in_addr)];
   };
 
+#ifndef __USE_KERNEL_IPV6_DEFS
 /* Ditto, for IPv6.  */
 struct sockaddr_in6
   {
@@ -246,7 +260,7 @@ struct sockaddr_in6
 __SOCKADDR_IN6_EXTRA_FIELDS
 #endif
   };
-
+#endif /* !__USE_KERNEL_IPV6_DEFS */
 
 #if defined __USE_MISC || defined __USE_GNU
 /* IPv4 multicast request.  */
@@ -272,7 +286,7 @@ struct ip_mreq_source
   };
 #endif
 
-
+#ifndef __USE_KERNEL_IPV6_DEFS
 /* Likewise, for IPv6.  */
 struct ipv6_mreq
   {
@@ -282,7 +296,7 @@ struct ipv6_mreq
     /* local interface */
     unsigned int ipv6mr_interface;
   };
-
+#endif /* !__USE_KERNEL_IPV6_DEFS */
 
 #if defined __USE_MISC || defined __USE_GNU
 /* Multicast group request.  */
@@ -352,10 +366,6 @@ struct group_filter
 				   + ((numsrc)				      \
 				      * sizeof (struct sockaddr_storage)))
 #endif
-
-
-/* Get system-specific definitions.  */
-#include <bits/in.h>
 
 /* Functions to convert between host and network byte order.
 
@@ -521,6 +531,8 @@ extern int bindresvport6 (int __sockfd, struct sockaddr_in6 *__sock_in)
 
 
 #ifdef __USE_GNU
+struct cmsghdr;			/* Forward declaration.  */
+
 /* IPv6 packet information.  */
 struct in6_pktinfo
   {

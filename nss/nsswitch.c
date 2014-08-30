@@ -1,4 +1,4 @@
-/* Copyright (C) 1996-2012 Free Software Foundation, Inc.
+/* Copyright (C) 1996-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1996.
 
@@ -46,8 +46,10 @@ static name_database *nss_parse_file (const char *fname) internal_function;
 static name_database_entry *nss_getline (char *line) internal_function;
 static service_user *nss_parse_service_list (const char *line)
      internal_function;
+#if !defined DO_STATIC_NSS || defined SHARED
 static service_library *nss_new_service (name_database *database,
 					 const char *name) internal_function;
+#endif
 
 
 /* Declare external database variables.  */
@@ -92,10 +94,12 @@ static name_database *service_table;
 static name_database_entry *defconfig_entries;
 
 
+#ifdef USE_NSCD
 /* Nonzero if this is the nscd process.  */
 static bool is_nscd;
 /* The callback passed to the init functions when nscd is used.  */
 static void (*nscd_init_cb) (size_t, struct traced_file *);
+#endif
 
 
 /* -1 == database not found
@@ -358,6 +362,7 @@ nss_load_library (service_user *ni)
 	  ni->library->lib_handle = (void *) -1l;
 	  __set_errno (saved_errno);
 	}
+# ifdef USE_NSCD
       else if (is_nscd)
 	{
 	  /* Call the init function when nscd is used.  */
@@ -377,12 +382,13 @@ nss_load_library (service_user *ni)
 	  if (ifct != NULL)
 	    {
 	      void (*cb) (size_t, struct traced_file *) = nscd_init_cb;
-# ifdef PTR_DEMANGLE
+#  ifdef PTR_DEMANGLE
 	      PTR_DEMANGLE (cb);
-# endif
+#  endif
 	      ifct (cb);
 	    }
 	}
+# endif
     }
 
   return 0;
@@ -415,7 +421,9 @@ __nss_lookup_function (service_user *ni, const char *fct_name)
     {
       /* The search found an existing structure in the tree.  */
       result = ((known_function *) *found)->fct_ptr;
+#ifdef PTR_DEMANGLE
       PTR_DEMANGLE (result);
+#endif
     }
   else
     {
@@ -427,7 +435,9 @@ __nss_lookup_function (service_user *ni, const char *fct_name)
       known_function *known = malloc (sizeof *known);
       if (! known)
 	{
+#if !defined DO_STATIC_NSS || defined SHARED
 	remove_from_tree:
+#endif
 	  /* Oops.  We can't instantiate this node properly.
 	     Remove it from the tree.  */
 	  __tdelete (&fct_name, &ni->known, &known_compare);
@@ -503,7 +513,9 @@ __nss_lookup_function (service_user *ni, const char *fct_name)
 	  /* Remember function pointer for later calls.  Even if null, we
 	     record it so a second try needn't search the library again.  */
 	  known->fct_ptr = result;
+#ifdef PTR_MANGLE
 	  PTR_MANGLE (known->fct_ptr);
+#endif
 	}
     }
 
@@ -778,6 +790,7 @@ nss_getline (char *line)
 }
 
 
+#if !defined DO_STATIC_NSS || defined SHARED
 static service_library *
 internal_function
 nss_new_service (name_database *database, const char *name)
@@ -802,9 +815,10 @@ nss_new_service (name_database *database, const char *name)
 
   return *currentp;
 }
+#endif
 
 
-#ifdef SHARED
+#if defined SHARED && defined USE_NSCD
 /* Load all libraries for the service.  */
 static void
 nss_load_all_libraries (const char *service, const char *def)

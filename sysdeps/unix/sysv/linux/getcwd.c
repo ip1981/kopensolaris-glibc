@@ -1,5 +1,5 @@
 /* Determine current working directory.  Linux version.
-   Copyright (C) 1997-2012 Free Software Foundation, Inc.
+   Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997.
 
@@ -26,7 +26,6 @@
 
 #include <sysdep.h>
 #include <sys/syscall.h>
-#include <bp-checks.h>
 
 #include <kernel-features.h>
 
@@ -78,7 +77,7 @@ __getcwd (char *buf, size_t size)
 
   int retval;
 
-  retval = INLINE_SYSCALL (getcwd, 2, CHECK_STRING (path), alloc_size);
+  retval = INLINE_SYSCALL (getcwd, 2, path, alloc_size);
   if (retval >= 0)
     {
 #ifndef NO_ALLOCATION

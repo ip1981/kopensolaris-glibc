@@ -1,4 +1,4 @@
-/* Copyright (C) 2001, 2006 Free Software Foundation, Inc.
+/* Copyright (C) 2001-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -32,4 +32,3 @@ __gai_sigqueue (sig, val, caller_pid)
 }
 
 stub_warning (__gai_sigqueue)
-#include <stub-tag.h>

@@ -1,5 +1,5 @@
 /* isnan().  PowerPC32 version.
-   Copyright (C) 2008 Free Software Foundation, Inc.
+   Copyright (C) 2008-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -21,7 +21,7 @@
 
 /* int __isnan(x)  */
 	.machine power4
-EALIGN (__isnan, 4, 0)	
+EALIGN (__isnan, 4, 0)
 	mffs	fp0
 	mtfsb0	4*cr6+lt /* reset_fpscr_bit (FPSCR_VE) */
 	fcmpu	cr7,fp1,fp1
@@ -37,9 +37,11 @@ weak_alias (__isnan, isnan)
 
 /* It turns out that the 'double' version will also always work for
    single-precision.  */
+#ifndef __isnan
 strong_alias (__isnan, __isnanf)
 hidden_def (__isnanf)
 weak_alias (__isnanf, isnanf)
+#endif
 
 #ifdef NO_LONG_DOUBLE
 strong_alias (__isnan, __isnanl)

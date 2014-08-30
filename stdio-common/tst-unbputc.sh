@@ -1,8 +1,7 @@
 #! /bin/sh
 # Testing the stdio implementation
-# Copyright (C) 2000 Free Software Foundation, Inc.
+# Copyright (C) 2000-2014 Free Software Foundation, Inc.
 # This file is part of the GNU C Library.
-#
 
 # The GNU C Library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -18,12 +17,14 @@
 # License along with the GNU C Library; if not, see
 # <http://www.gnu.org/licenses/>.
 
+set -e
+
 common_objpfx=$1; shift
-run_program_prefix=$1; shift
+test_program_prefix=$1; shift
 
 status=0
 
-${run_program_prefix} \
+${test_program_prefix} \
   ${common_objpfx}stdio-common/tst-unbputc \
     2> ${common_objpfx}stdio-common/tst-unbputc.out || status=1
 

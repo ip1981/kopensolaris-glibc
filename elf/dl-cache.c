@@ -1,6 +1,5 @@
 /* Support for reading /etc/ld.so.cache files written by Linux ldconfig.
-   Copyright (C) 1996-2002,2003,2004,2006,2010
-	Free Software Foundation, Inc.
+   Copyright (C) 1996-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -23,7 +22,7 @@
 #include <sys/mman.h>
 #include <dl-cache.h>
 #include <dl-procinfo.h>
-
+#include <stdint.h>
 #include <_itoa.h>
 
 #ifndef _DL_PLATFORMS_COUNT
@@ -173,8 +172,9 @@ _dl_cache_libcmp (const char *p1, const char *p2)
 }
 
 
-/* Look up NAME in ld.so.cache and return the file name stored there,
-   or null if none is found.  */
+/* Look up NAME in ld.so.cache and return the file name stored there, or null
+   if none is found.  The cache is loaded if it was not already.  If loading
+   the cache previously failed there will be no more attempts to load it.  */
 
 const char *
 internal_function

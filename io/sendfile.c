@@ -1,5 +1,5 @@
 /* sendfile -- copy data directly from one file descriptor to another
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -28,5 +28,3 @@ sendfile (int out_fd, int in_fd, off_t *offset, size_t count)
   return -1;
 }
 stub_warning (sendfile)
-
-#include <stub-tag.h>

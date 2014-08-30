@@ -1,4 +1,4 @@
-/* Copyright (C) 1991, 1995, 1996, 1997 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -33,4 +33,3 @@ __getdirentries (fd, buf, nbytes, basep)
 weak_alias (__getdirentries, getdirentries)
 
 stub_warning (getdirentries)
-#include <stub-tag.h>

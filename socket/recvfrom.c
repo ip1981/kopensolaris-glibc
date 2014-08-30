@@ -1,4 +1,4 @@
-/* Copyright (C) 1991,1995,1996,1997,2001,2002 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -37,4 +37,3 @@ __recvfrom (fd, buf, n, flags, addr, addr_len)
 weak_alias (__recvfrom, recvfrom)
 
 stub_warning (recvfrom)
-#include <stub-tag.h>

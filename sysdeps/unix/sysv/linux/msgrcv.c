@@ -1,4 +1,4 @@
-/* Copyright (C) 1995,1997,1998,2000,2002,2006 Free Software Foundation, Inc.
+/* Copyright (C) 1995-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@gnu.ai.mit.edu>, August 1995.
 
@@ -23,13 +23,11 @@
 #include <sysdep-cancel.h>
 #include <sys/syscall.h>
 
-#include <bp-checks.h>
-
 /* Kludge to work around Linux' restriction of only up to five
    arguments to a system call.  */
 struct ipc_kludge
   {
-    void *__unbounded msgp;
+    void *msgp;
     long int msgtyp;
   };
 
@@ -46,17 +44,16 @@ __libc_msgrcv (msqid, msgp, msgsz, msgtyp, msgflg)
      fives parameters to a system call.  */
   struct ipc_kludge tmp;
 
-  tmp.msgp = CHECK_N (msgp, msgsz);
+  tmp.msgp = msgp;
   tmp.msgtyp = msgtyp;
 
   if (SINGLE_THREAD_P)
-    return INLINE_SYSCALL (ipc, 5, IPCOP_msgrcv, msqid, msgsz, msgflg,
-			   __ptrvalue (&tmp));
+    return INLINE_SYSCALL (ipc, 5, IPCOP_msgrcv, msqid, msgsz, msgflg, &tmp);
 
   int oldtype = LIBC_CANCEL_ASYNC ();
 
   ssize_t result = INLINE_SYSCALL (ipc, 5, IPCOP_msgrcv, msqid, msgsz, msgflg,
-				   __ptrvalue (&tmp));
+				   &tmp);
 
    LIBC_CANCEL_RESET (oldtype);
 

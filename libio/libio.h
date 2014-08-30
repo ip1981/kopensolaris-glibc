@@ -1,5 +1,4 @@
-/* Copyright (C) 1991-1995,1997-2007,2009,2011,2012
-   Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Written by Per Bothner <bothner@cygnus.com>.
 
@@ -31,40 +30,33 @@
 
 #include <_G_config.h>
 /* ALL of these should be defined in _G_config.h */
-#define _IO_pos_t _G_fpos_t /* obsolete */
 #define _IO_fpos_t _G_fpos_t
 #define _IO_fpos64_t _G_fpos64_t
-#define _IO_size_t _G_size_t
-#define _IO_ssize_t _G_ssize_t
-#define _IO_off_t _G_off_t
-#define _IO_off64_t _G_off64_t
-#define _IO_pid_t _G_pid_t
-#define _IO_uid_t _G_uid_t
+#define _IO_size_t size_t
+#define _IO_ssize_t __ssize_t
+#define _IO_off_t __off_t
+#define _IO_off64_t __off64_t
+#define _IO_pid_t __pid_t
+#define _IO_uid_t __uid_t
 #define _IO_iconv_t _G_iconv_t
-#define _IO_HAVE_SYS_WAIT _G_HAVE_SYS_WAIT
 #define _IO_HAVE_ST_BLKSIZE _G_HAVE_ST_BLKSIZE
 #define _IO_BUFSIZ _G_BUFSIZ
 #define _IO_va_list _G_va_list
-#define _IO_wint_t _G_wint_t
+#define _IO_wint_t wint_t
 
-#ifdef _G_NEED_STDARG_H
 /* This define avoids name pollution if we're using GNU stdarg.h */
-# define __need___va_list
-# include <stdarg.h>
-# ifdef __GNUC_VA_LIST
-#  undef _IO_va_list
-#  define _IO_va_list __gnuc_va_list
-# endif /* __GNUC_VA_LIST */
-#endif
+#define __need___va_list
+#include <stdarg.h>
+#ifdef __GNUC_VA_LIST
+# undef _IO_va_list
+# define _IO_va_list __gnuc_va_list
+#endif /* __GNUC_VA_LIST */
 
 #ifndef __P
 # include <sys/cdefs.h>
 #endif /*!__P*/
 
 #define _IO_UNIFIED_JUMPTABLES 1
-#ifndef _G_HAVE_PRINTF_FP
-# define _IO_USE_DTOA 1
-#endif
 
 #ifndef EOF
 # define EOF (-1)

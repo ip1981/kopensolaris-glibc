@@ -1,4 +1,4 @@
-/* Copyright (C) 1997, 1999, 2000, 2002 Free Software Foundation, Inc.
+/* Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Mark Kettenis <kettenis@phys.uva.nl>, 1997.
 
@@ -189,33 +189,6 @@ _nss_hesiod_initgroups_dyn (const char *user, gid_t group, long int *start,
     {
       hesiod_end (context);
       return errno == ENOENT ? NSS_STATUS_NOTFOUND : NSS_STATUS_UNAVAIL;
-    }
-
-  if (!internal_gid_in_list (groups, group, *start))
-    {
-      if (__builtin_expect (*start == *size, 0))
-	{
-	  /* Need a bigger buffer.  */
-	  gid_t *newgroups;
-	  long int newsize;
-
-	  if (limit > 0 && *size == limit)
-	    /* We reached the maximum.  */
-	    goto done;
-
-	  if (limit <= 0)
-	    newsize = 2 * *size;
-	  else
-	    newsize = MIN (limit, 2 * *size);
-
-	  newgroups = realloc (groups, newsize * sizeof (*groups));
-	  if (newgroups == NULL)
-	    goto done;
-	  *groupsp = groups = newgroups;
-	  *size = newsize;
-	}
-
-      groups[(*start)++] = group;
     }
 
   save_errno = errno;

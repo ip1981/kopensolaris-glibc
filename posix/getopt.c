@@ -2,8 +2,7 @@
    NOTE: getopt is part of the C library, so if you don't know what
    "Keep this file name-space clean" means, talk to drepper@gnu.org
    before changing it!
-   Copyright (C) 1987-1996,1998-2004,2008,2009,2010,2011
-   Free Software Foundation, Inc.
+   Copyright (C) 1987-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -228,7 +227,7 @@ exchange (char **argv, struct _getopt_data *d)
 	{
 	  /* Bottom segment is the short one.  */
 	  int len = middle - bottom;
-	  register int i;
+	  int i;
 
 	  /* Swap it with the top part of the top segment.  */
 	  for (i = 0; i < len; i++)
@@ -245,7 +244,7 @@ exchange (char **argv, struct _getopt_data *d)
 	{
 	  /* Top segment is the short one.  */
 	  int len = top - middle;
-	  register int i;
+	  int i;
 
 	  /* Swap it with the bottom part of the bottom segment.  */
 	  for (i = 0; i < len; i++)

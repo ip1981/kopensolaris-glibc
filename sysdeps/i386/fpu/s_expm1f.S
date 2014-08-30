@@ -1,5 +1,5 @@
 /* ix87 specific implementation of exp(x)-1.
-   Copyright (C) 1996-1997, 2005, 2012 Free Software Foundation, Inc.
+   Copyright (C) 1996-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1996.
    Based on code by John C. Bowman <bowman@ipp-garching.mpg.de>.
@@ -27,13 +27,13 @@
 	.section .rodata
 
 	.align ALIGNARG(4)
-	ASM_TYPE_DIRECTIVE(minus1,@object)
+	.type minus1,@object
 minus1:	.double -1.0
 	ASM_SIZE_DIRECTIVE(minus1)
-	ASM_TYPE_DIRECTIVE(one,@object)
+	.type one,@object
 one:	.double 1.0
 	ASM_SIZE_DIRECTIVE(one)
-	ASM_TYPE_DIRECTIVE(l2e,@object)
+	.type l2e,@object
 l2e:	.tfloat 1.442695040888963407359924681002
 	ASM_SIZE_DIRECTIVE(l2e)
 
@@ -51,22 +51,45 @@ ENTRY(__expm1f)
 	jae	HIDDEN_JUMPTARGET (__expf)
 
 	flds	4(%esp)		// x
-	fxam			// Is NaN or +-Inf?
+	fxam			// Is NaN, +-Inf or +-0?
+	xorb	$0x80, %ah
+	cmpl	$0xc190, %eax	// is num <= -18.0?
 	fstsw	%ax
 	movb	$0x45, %ch
+	jb	4f
+
+	// Below -18.0 (may be -NaN or -Inf).
+	andb	%ah, %ch
+#ifdef	PIC
+	LOAD_PIC_REG (dx)
+#endif
+	cmpb	$0x01, %ch
+	je	5f		// If -NaN, jump.
+	jmp	2f		// -large, possibly -Inf.
+
+4:	// In range -18.0 to 88.5 (may be +-0 but not NaN or +-Inf).
 	andb	%ah, %ch
 	cmpb	$0x40, %ch
 	je	3f		// If +-0, jump.
 #ifdef	PIC
 	LOAD_PIC_REG (dx)
 #endif
-	cmpb	$0x05, %ch
-	je	2f		// If +-Inf, jump.
 
-	fldt	MO(l2e)		// log2(e) : x
+5:	fldt	MO(l2e)		// log2(e) : x
 	fmulp			// log2(e)*x
 	fld	%st		// log2(e)*x : log2(e)*x
+	// Set round-to-nearest temporarily.
+	subl	$8, %esp
+	cfi_adjust_cfa_offset (8)
+	fstcw	4(%esp)
+	movl	$0xf3ff, %ecx
+	andl	4(%esp), %ecx
+	movl	%ecx, (%esp)
+	fldcw	(%esp)
 	frndint			// int(log2(e)*x) : log2(e)*x
+	fldcw	4(%esp)
+	addl	$8, %esp
+	cfi_adjust_cfa_offset (-8)
 	fsubr	%st, %st(1)	// int(log2(e)*x) : fract(log2(e)*x)
 	fxch			// fract(log2(e)*x) : int(log2(e)*x)
 	f2xm1			// 2^fract(log2(e)*x)-1 : int(log2(e)*x)
@@ -79,9 +102,7 @@ ENTRY(__expm1f)
 	fsubrp	%st, %st(1)	// 2^(log2(e)*x)
 	ret
 
-2:	testl	$0x200, %eax	// Test sign.
-	jz	3f		// If positive, jump.
-	fstp	%st
+2:	fstp	%st
 	fldl	MO(minus1)	// Set result to -1.0.
 3:	ret
 END(__expm1f)

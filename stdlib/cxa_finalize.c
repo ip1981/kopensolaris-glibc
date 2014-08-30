@@ -1,4 +1,4 @@
-/* Copyright (C) 1999,2001-2003,2005,2006,2009 Free Software Foundation, Inc.
+/* Copyright (C) 1999-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -21,6 +21,7 @@
 #include "exit.h"
 #include <fork.h>
 #include <sysdep.h>
+#include <stdint.h>
 
 /* If D is non-NULL, call all functions registered with `__cxa_atexit'
    with the same dso handle.  Otherwise, if D is NULL, call all of the

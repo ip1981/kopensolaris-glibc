@@ -1,4 +1,4 @@
-/* Copyright (C) 2004 Free Software Foundation, Inc.
+/* Copyright (C) 2004-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -27,4 +27,3 @@ mq_notify (mqd_t mqdes, const struct sigevent *notification)
   return -1;
 }
 stub_warning (mq_notify)
-#include <stub-tag.h>

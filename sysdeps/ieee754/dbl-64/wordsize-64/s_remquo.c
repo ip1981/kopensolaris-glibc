@@ -1,5 +1,5 @@
 /* Compute remainder and a congruent to the quotient.
-   Copyright (C) 1997, 2011 Free Software Foundation, Inc.
+   Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997.
 
@@ -20,7 +20,7 @@
 #include <math.h>
 
 #include <math_private.h>
-
+#include <stdint.h>
 
 static const double zero = 0.0;
 

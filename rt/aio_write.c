@@ -1,5 +1,5 @@
 /* Asynchronous write.  Stub version.
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -32,4 +32,3 @@ aio_write (struct aiocb *aiocbp)
 }
 
 stub_warning (aio_write)
-#include <stub-tag.h>

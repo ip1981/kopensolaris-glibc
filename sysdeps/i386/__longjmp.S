@@ -1,5 +1,5 @@
 /* longjmp for i386.
-   Copyright (C) 1995-2012 Free Software Foundation, Inc.
+   Copyright (C) 1995-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -40,7 +40,7 @@ ENTRY (__longjmp)
 	cfi_offset(%esi, JB_SI*4)
 	cfi_offset(%edi, JB_DI*4)
 	cfi_offset(%ebp, JB_BP*4)
-     	/* Restore registers.  */
+	/* Restore registers.  */
 	movl (JB_BX*4)(%eax), %ebx
 	movl (JB_SI*4)(%eax), %esi
 	movl (JB_DI*4)(%eax), %edi
@@ -59,7 +59,7 @@ ENTRY (__longjmp)
 	/* Save the return address now.  */
 	movl (JB_PC*4)(%ecx), %edx
 	LIBC_PROBE (longjmp, 3, 4@%ecx, -4@%eax, 4@%edx)
-     	/* Restore registers.  */
+	/* Restore registers.  */
 	movl (JB_BX*4)(%ecx), %ebx
 	movl (JB_SI*4)(%ecx), %esi
 	movl (JB_DI*4)(%ecx), %edi
@@ -68,5 +68,5 @@ ENTRY (__longjmp)
 	LIBC_PROBE (longjmp_target, 3, 4@%ecx, -4@%ecx, 4@%edx)
 #endif
 	/* Jump to saved PC.  */
-     	jmp *%edx
+	jmp *%edx
 END (__longjmp)

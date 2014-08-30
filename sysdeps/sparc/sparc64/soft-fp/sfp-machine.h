@@ -1,6 +1,6 @@
 /* Machine-dependent software floating-point definitions.
    Sparc64 userland (_Q_* and _Qp_*) version.
-   Copyright (C) 1997, 1998, 1999, 2006, 2012 Free Software Foundation, Inc.
+   Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Richard Henderson (rth@cygnus.com),
 		  Jakub Jelinek (jj@ultra.linux.cz) and
@@ -19,7 +19,7 @@
    You should have received a copy of the GNU Lesser General Public
    License along with the GNU C Library; if not, see
    <http://www.gnu.org/licenses/>.  */
-   
+
 #include <fpu_control.h>
 #include <fenv.h>
 #include <stdlib.h>
@@ -38,7 +38,7 @@ do {								\
 #ifndef _FP_MUL_MEAT_RESET_FE
 #define _FP_MUL_MEAT_RESET_FE _FPU_SETCW(_fcw)
 #endif
-      
+
 #define _FP_MUL_MEAT_S(R,X,Y)					\
   _FP_MUL_MEAT_1_imm(_FP_WFRACBITS_S,R,X,Y)
 #define _FP_MUL_MEAT_D(R,X,Y)					\
@@ -60,6 +60,7 @@ do {								\
 #define _FP_NANSIGN_Q		0
 
 #define _FP_KEEPNANFRACP 1
+#define _FP_QNANNEGATEDP 0
 
 /* If one NaN is signaling and the other is not,
  * we choose that one, otherwise we choose Y.
@@ -139,6 +140,6 @@ do {								\
 #define QP_NO_EXCEPTIONS					\
   __asm ("fzero %%f62\n\t"					\
 	 "faddd %%f62, %%f62, %%f62" : : : "f62")
-                              
+
 #define QP_CLOBBER "memory", "f52", "f54", "f56", "f58", "f60", "f62"
 #define QP_CLOBBER_CC QP_CLOBBER , "cc"

@@ -1,5 +1,5 @@
 /* Initialization code run first thing by the ELF startup code.  For i386/Hurd.
-   Copyright (C) 1995-2012 Free Software Foundation, Inc.
+   Copyright (C) 1995-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -35,9 +35,6 @@ extern void __mach_init (void);
 extern void __init_misc (int, char **, char **);
 #ifdef USE_NONOPTION_FLAGS
 extern void __getopt_clean_environment (char **);
-#endif
-#ifndef SHARED
-extern void _dl_non_dynamic_init (void) internal_function;
 #endif
 extern void __libc_global_ctors (void);
 
@@ -106,10 +103,6 @@ init1 (int argc, char *arg0, ...)
   char **argv = &arg0;
   char **envp = &argv[argc + 1];
   struct hurd_startup_data *d;
-#ifndef SHARED
-  extern ElfW(Phdr) *_dl_phdr;
-  extern size_t _dl_phnum;
-#endif
 
   while (*envp)
     ++envp;
@@ -121,14 +114,20 @@ init1 (int argc, char *arg0, ...)
   if ((void *) d == argv[0])
     {
 #ifndef SHARED
-      /* We may need to see our own phdrs, e.g. for TLS setup.
-	 Try the usual kludge to find the headers without help from
-	 the exec server.  */
-      extern const void _start;
-      const ElfW(Ehdr) *const ehdr = &_start;
-      _dl_phdr = (ElfW(Phdr) *) ((const void *) ehdr + ehdr->e_phoff);
-      _dl_phnum = ehdr->e_phnum;
-      assert (ehdr->e_phentsize == sizeof (ElfW(Phdr)));
+      /* With a new enough linker (binutils-2.23 or better),
+         the magic __ehdr_start symbol will be available and
+         __libc_start_main will have done this that way already.  */
+      if (_dl_phdr == NULL)
+        {
+          /* We may need to see our own phdrs, e.g. for TLS setup.
+             Try the usual kludge to find the headers without help from
+             the exec server.  */
+          extern const void __executable_start;
+          const ElfW(Ehdr) *const ehdr = &__executable_start;
+          _dl_phdr = (const void *) ehdr + ehdr->e_phoff;
+          _dl_phnum = ehdr->e_phnum;
+          assert (ehdr->e_phentsize == sizeof (ElfW(Phdr)));
+        }
 #endif
       return;
     }

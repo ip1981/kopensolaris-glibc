@@ -1,5 +1,4 @@
-# Copyright (C) 1996-1998,2000-2002,2007,2009,2010,2011,2012
-# Free Software Foundation, Inc.
+# Copyright (C) 1996-2014 Free Software Foundation, Inc.
 # This file is part of the GNU C Library.
 
 # The GNU C Library is free software; you can redistribute it and/or
@@ -38,7 +37,7 @@ install-bin             := getent makedb
 makedb-modules = xmalloc hash-string
 extra-objs		+= $(makedb-modules:=.o)
 
-tests			= test-netdb tst-nss-test1
+tests			= test-netdb tst-nss-test1 test-digits-dots
 xtests			= bug-erange
 
 include ../Makeconfig
@@ -85,12 +84,11 @@ ifeq (yes,$(have-selinux))
 LDLIBS-makedb		:= -lselinux
 endif
 
-# Depend on libc.so so a DT_NEEDED is generated in the shared objects.
-# This ensures they will load libc.so for needed symbols if loaded by
-# a statically-linked program that hasn't already loaded it.
 libnss-libc = $(common-objpfx)linkobj/libc.so
-$(services:%=$(objpfx)libnss_%.so): $(libnss-libc) \
-				    $(common-objpfx)libc_nonshared.a
+# Target-specific variable setting to link objects using deprecated
+# RPC interfaces with the version of libc.so that makes them available
+# for new links:
+$(services:%=$(objpfx)libnss_%.so): libc-for-link = $(libnss-libc)
 
 $(objpfx)libnss_db.so: $(objpfx)libnss_files.so
 
@@ -108,9 +106,10 @@ $(inst_vardbdir)/Makefile: db-Makefile $(+force)
 	$(do-install)
 
 CFLAGS-nss_test1.c = -DNOT_IN_libc=1
-$(objpfx)/libnss_test1.so: $(objpfx)nss_test1.os $(common-objpfx)libc.so \
-			   $(common-objpfx)libc_nonshared.a
+$(objpfx)/libnss_test1.so: $(objpfx)nss_test1.os $(link-libc-deps)
 	$(build-module)
+ifdef libnss_test1.so-version
 $(objpfx)/libnss_test1.so$(libnss_test1.so-version): $(objpfx)/libnss_test1.so
 	$(make-link)
+endif
 $(objpfx)tst-nss-test1.out: $(objpfx)/libnss_test1.so$(libnss_test1.so-version)

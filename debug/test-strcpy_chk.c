@@ -1,5 +1,5 @@
 /* Test and measure __strcpy_chk functions.
-   Copyright (C) 1999, 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1999-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Written by Jakub Jelinek <jakub@redhat.com>, 1999.
 
@@ -20,8 +20,12 @@
 #ifndef STRCPY_RESULT
 # define STRCPY_RESULT(dst, len) dst
 # define TEST_MAIN
+# define TEST_NAME "strcpy_chk"
 # include "../string/test-string.h"
 
+/* This test case implicitly tests the availability of the __chk_fail
+   symbol, which is part of the public ABI and may be used
+   externally. */
 extern void __attribute__ ((noreturn)) __chk_fail (void);
 char *simple_strcpy_chk (char *, const char *, size_t);
 extern char *normal_strcpy (char *, const char *, size_t)
@@ -106,24 +110,6 @@ do_one_test (impl_t *impl, char *dst, const char *src,
       ret = 1;
       return;
     }
-
-  if (HP_TIMING_AVAIL)
-    {
-      hp_timing_t start __attribute ((unused));
-      hp_timing_t stop __attribute ((unused));;
-      hp_timing_t best_time = ~ (hp_timing_t) 0;
-      size_t i;
-
-      for (i = 0; i < 32; ++i)
-	{
-	  HP_TIMING_NOW (start);
-	  CALL (impl, dst, src, dlen);
-	  HP_TIMING_NOW (stop);
-	  HP_TIMING_BEST (best_time, start, stop);
-	}
-
-      printf ("\t%zd", (size_t) best_time);
-    }
 }
 
 static void
@@ -147,14 +133,8 @@ do_test (size_t align1, size_t align2, size_t len, size_t dlen, int max_char)
     s1[i] = 32 + 23 * i % (max_char - 32);
   s1[len] = 0;
 
-  if (HP_TIMING_AVAIL && dlen > len)
-    printf ("Length %4zd, alignment %2zd/%2zd:", len, align1, align2);
-
   FOR_EACH_IMPL (impl, 0)
     do_one_test (impl, s2, s1, len, dlen);
-
-  if (HP_TIMING_AVAIL && dlen > len)
-    putchar ('\n');
 }
 
 static void

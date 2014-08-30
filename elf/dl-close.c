@@ -1,5 +1,5 @@
 /* Close a shared object opened by `_dl_open'.
-   Copyright (C) 1996-2007, 2009, 2010, 2011 Free Software Foundation, Inc.
+   Copyright (C) 1996-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -31,6 +31,7 @@
 #include <sys/mman.h>
 #include <sysdep-cancel.h>
 #include <tls.h>
+#include <stap-probe.h>
 
 
 /* Type of the constructor functions.  */
@@ -118,17 +119,8 @@ _dl_close_worker (struct link_map *map)
   if (map->l_direct_opencount > 0 || map->l_type != lt_loaded
       || dl_close_state != not_pending)
     {
-      if (map->l_direct_opencount == 0)
-	{
-	  if (map->l_type == lt_loaded)
-	    dl_close_state = rerun;
-	  else if (map->l_type == lt_library)
-	    {
-	      struct link_map **oldp = map->l_initfini;
-	      map->l_initfini = map->l_orig_initfini;
-	      _dl_scope_free (oldp);
-	    }
-	}
+      if (map->l_direct_opencount == 0 && map->l_type == lt_loaded)
+	dl_close_state = rerun;
 
       /* There are still references to this object.  Do nothing more.  */
       if (__builtin_expect (GLRO(dl_debug_mask) & DL_DEBUG_FILES, 0))
@@ -191,6 +183,8 @@ _dl_close_worker (struct link_map *map)
       /* Mark all dependencies as used.  */
       if (l->l_initfini != NULL)
 	{
+	  /* We are always the zeroth entry, and since we don't include
+	     ourselves in the dependency analysis start at 1.  */
 	  struct link_map **lp = &l->l_initfini[1];
 	  while (*lp != NULL)
 	    {
@@ -201,6 +195,10 @@ _dl_close_worker (struct link_map *map)
 		  if (!used[(*lp)->l_idx])
 		    {
 		      used[(*lp)->l_idx] = 1;
+		      /* If we marked a new object as used, and we've
+			 already processed it, then we need to go back
+			 and process again from that point forward to
+			 ensure we keep all of its dependencies also.  */
 		      if ((*lp)->l_idx - 1 < done_index)
 			done_index = (*lp)->l_idx - 1;
 		    }
@@ -276,9 +274,8 @@ _dl_close_worker (struct link_map *map)
 
 	      /* Next try the old-style destructor.  */
 	      if (imap->l_info[DT_FINI] != NULL)
-		(*(void (*) (void)) DL_DT_FINI_ADDRESS
-		 (imap, ((void *) imap->l_addr
-			 + imap->l_info[DT_FINI]->d_un.d_ptr))) ();
+		DL_CALL_DT_FINI (imap, ((void *) imap->l_addr
+			 + imap->l_info[DT_FINI]->d_un.d_ptr));
 	    }
 
 #ifdef SHARED
@@ -477,6 +474,7 @@ _dl_close_worker (struct link_map *map)
   struct r_debug *r = _dl_debug_initialize (0, nsid);
   r->r_state = RT_DELETE;
   _dl_debug_state ();
+  LIBC_PROBE (unmap_start, 2, nsid, r);
 
   if (unload_global)
     {
@@ -493,7 +491,7 @@ _dl_close_worker (struct link_map *map)
 	/* Speed up removing most recently added objects.  */
 	j = cnt;
       else
- 	for (i = 0; i < cnt; i++)
+	for (i = 0; i < cnt; i++)
 	  if (ns_msl->r_list[i]->l_removed == 0)
 	    {
 	      if (i != j)
@@ -645,10 +643,12 @@ _dl_close_worker (struct link_map *map)
 	    imap->l_prev->l_next = imap->l_next;
 	  else
 	    {
-#ifdef SHARED
 	      assert (nsid != LM_ID_BASE);
-#endif
 	      ns->_ns_loaded = imap->l_next;
+
+	      /* Update the pointer to the head of the list
+		 we leave for debuggers to examine.  */
+	      r->r_map = (void *) ns->_ns_loaded;
 	    }
 
 	  --ns->_ns_nloaded;
@@ -705,7 +705,7 @@ _dl_close_worker (struct link_map *map)
   if (any_tls)
     {
       if (__builtin_expect (++GL(dl_tls_generation) == 0, 0))
-	_dl_fatal_printf ("TLS generation counter wrapped!  Please report as described in <http://www.gnu.org/software/libc/bugs.html>.\n");
+	_dl_fatal_printf ("TLS generation counter wrapped!  Please report as described in "REPORT_BUGS_TO".\n");
 
       if (tls_free_end == GL(dl_tls_static_used))
 	GL(dl_tls_static_used) = tls_free_start;
@@ -734,18 +734,13 @@ _dl_close_worker (struct link_map *map)
   if (__builtin_expect (ns->_ns_loaded == NULL, 0)
       && nsid == GL(dl_nns) - 1)
     do
-      {
-	--GL(dl_nns);
-#ifndef SHARED
-	if (GL(dl_nns) == 0)
-	  break;
-#endif
-      }
+      --GL(dl_nns);
     while (GL(dl_ns)[GL(dl_nns) - 1]._ns_loaded == NULL);
 
   /* Notify the debugger those objects are finalized and gone.  */
   r->r_state = RT_CONSISTENT;
   _dl_debug_state ();
+  LIBC_PROBE (unmap_complete, 2, nsid, r);
 
   /* Recheck if we need to retry, release the lock.  */
  out:

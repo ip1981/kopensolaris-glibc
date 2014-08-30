@@ -1,8 +1,7 @@
 #! /bin/sh
 # Test character mapping definitions.
-# Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+# Copyright (C) 1999-2014 Free Software Foundation, Inc.
 # This file is part of the GNU C Library.
-#
 
 # The GNU C Library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -18,8 +17,11 @@
 # License along with the GNU C Library; if not, see
 # <http://www.gnu.org/licenses/>.
 
+set -e
+
 common_objpfx=$1
 run_program_prefix=$2
+test_program_prefix=$3
 
 # Generate the necessary locale data.
 I18NPATH=. GCONV_PATH=${common_objpfx}/iconvdata \
@@ -31,7 +33,7 @@ exit 1
 
 # Run the test program.
 LOCPATH=${common_objpfx}localedata GCONV_PATH=${common_objpfx}iconvdata \
-LC_ALL=tt_TT ${run_program_prefix} \
+LC_ALL=tt_TT ${test_program_prefix} \
 ${common_objpfx}localedata/tst-trans > ${common_objpfx}localedata/tst-trans.out
 
 exit $?

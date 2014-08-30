@@ -1,5 +1,5 @@
 /* Machine-specific calling sequence for `mcount' profiling function.  SuperH
-   Copyright (C) 2001-2012 Free Software Foundation, Inc.
+   Copyright (C) 2001-2014 Free Software Foundation, Inc.
    Contributed by NIIBE Yutaka <gniibe@m17n.org>
    This file is part of the GNU C Library.
 
@@ -19,8 +19,8 @@
 
 #include <sysdep.h>
 
-	ASM_GLOBAL_DIRECTIVE C_SYMBOL_NAME(_mcount)
-	ASM_TYPE_DIRECTIVE (C_SYMBOL_NAME(_mcount),function)
+	.globl C_SYMBOL_NAME(_mcount)
+	.type C_SYMBOL_NAME(_mcount),@function
 	cfi_startproc
 	.align	5
 C_LABEL(_mcount)

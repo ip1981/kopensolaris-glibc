@@ -1,4 +1,4 @@
-/* Copyright (C) 1993,1995,1996,1997,1998,2003 Free Software Foundation, Inc.
+/* Copyright (C) 1993-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -28,21 +28,21 @@
 #include "libioP.h"
 #include "stdio.h"
 
+/* fseeko.c defines this as an alias if __OFF_T_MATCHES_OFF64_T.  */
+#ifndef __OFF_T_MATCHES_OFF64_T
+
 int
 fseeko64 (fp, offset, whence)
      _IO_FILE* fp;
      __off64_t offset;
      int whence;
 {
-#ifdef _G_LSEEK64
   int result;
   CHECK_FILE (fp, -1);
   _IO_acquire_lock (fp);
   result = _IO_fseek (fp, offset, whence);
   _IO_release_lock (fp);
   return result;
-#else
-  __set_errno (ENOSYS);
-  return -1;
-#endif
 }
+
+#endif

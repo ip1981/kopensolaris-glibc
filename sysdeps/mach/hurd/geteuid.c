@@ -1,4 +1,4 @@
-/* Copyright (C) 1993, 1994, 1995, 1997 Free Software Foundation, Inc.
+/* Copyright (C) 1993-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -22,7 +22,7 @@
 
 /* Get the effective user ID of the calling process.  */
 uid_t
-__geteuid ()
+__geteuid (void)
 {
   error_t err;
   uid_t euid;

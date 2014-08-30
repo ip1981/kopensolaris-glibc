@@ -1,5 +1,5 @@
 /* Install given context.
-   Copyright (C) 2005-2012 Free Software Foundation, Inc.
+   Copyright (C) 2005-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -41,7 +41,7 @@ ENTRY(__setcontext)
 	not	r1, r1			// r1=0 means r0 = -1 to -4095
 	tst	r1, r1			// i.e. error in linux
 	bf	.Lsetcontext_restore
-.Lsyscall_error:	
+.Lsyscall_error:
 	SYSCALL_ERROR_HANDLER
 .Lpseudo_end:
 	rts

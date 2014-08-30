@@ -1,4 +1,4 @@
-/* Copyright (C) 2008-2012 Free Software Foundation, Inc.
+/* Copyright (C) 2008-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -16,7 +16,6 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include <sysdep.h>
-#include <bp-checks.h>
 #include <stddef.h>
 #include <sys/time.h>
 #include <time.h>
@@ -33,7 +32,7 @@ __gettimeofday (tv, tz)
      struct timeval *tv;
      struct timezone *tz;
 {
-  return INLINE_VSYSCALL (gettimeofday, 2, CHECK_1 (tv), CHECK_1 (tz));
+  return INLINE_VSYSCALL (gettimeofday, 2, tv, tz);
 }
 libc_hidden_def (__gettimeofday)
 weak_alias (__gettimeofday, gettimeofday)

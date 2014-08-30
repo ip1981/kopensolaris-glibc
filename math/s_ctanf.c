@@ -1,5 +1,5 @@
 /* Complex tangent function for float.
-   Copyright (C) 1997-2012 Free Software Foundation, Inc.
+   Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997.
 
@@ -57,7 +57,15 @@ __ctanf (__complex__ float x)
       /* tan(x+iy) = (sin(2x) + i*sinh(2y))/(cos(2x) + cosh(2y))
 	 = (sin(x)*cos(x) + i*sinh(y)*cosh(y)/(cos(x)^2 + sinh(y)^2). */
 
-      __sincosf (__real__ x, &sinrx, &cosrx);
+      if (__builtin_expect (fpclassify(__real__ x) != FP_SUBNORMAL, 1))
+	{
+	  __sincosf (__real__ x, &sinrx, &cosrx);
+	}
+      else
+	{
+	  sinrx = __real__ x;
+	  cosrx = 1.0f;
+	}
 
       if (fabsf (__imag__ x) > t)
 	{
@@ -83,10 +91,22 @@ __ctanf (__complex__ float x)
 	}
       else
 	{
-	  float sinhix = __ieee754_sinhf (__imag__ x);
-	  float coshix = __ieee754_coshf (__imag__ x);
+	  float sinhix, coshix;
+	  if (fabsf (__imag__ x) > FLT_MIN)
+	    {
+	      sinhix = __ieee754_sinhf (__imag__ x);
+	      coshix = __ieee754_coshf (__imag__ x);
+	    }
+	  else
+	    {
+	      sinhix = __imag__ x;
+	      coshix = 1.0f;
+	    }
 
-	  den = cosrx * cosrx + sinhix * sinhix;
+	  if (fabsf (sinhix) > fabsf (cosrx) * FLT_EPSILON)
+	    den = cosrx * cosrx + sinhix * sinhix;
+	  else
+	    den = cosrx * cosrx;
 	  __real__ res = sinrx * cosrx / den;
 	  __imag__ res = sinhix * coshix / den;
 	}

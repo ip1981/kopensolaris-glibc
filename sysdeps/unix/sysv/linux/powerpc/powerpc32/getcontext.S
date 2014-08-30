@@ -1,5 +1,5 @@
 /* Save current context.
-   Copyright (C) 2002, 2004, 2005, 2012 Free Software Foundation, Inc.
+   Copyright (C) 2002-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -32,7 +32,6 @@
 /* Size of ucontext in GLIBC_2.3.4 and later.  */
 #define _UC_SIZE_2_3_4	1184
 
-#ifdef __ASSUME_SWAPCONTEXT_SYSCALL
 	.section ".text";
 ENTRY (__getcontext)
 	li	r4,0
@@ -45,9 +44,6 @@ ENTRY (__getcontext)
 1:
 	b	__syscall_error@local
 END(__getcontext)
-#else
-# include "getcontext-common.S"
-#endif
 
 versioned_symbol (libc, __getcontext, getcontext, GLIBC_2_3_4)
 

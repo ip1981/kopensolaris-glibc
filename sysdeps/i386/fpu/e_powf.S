@@ -1,6 +1,5 @@
 /* ix87 specific implementation of pow function.
-   Copyright (C) 1996-1997, 1999, 2001, 2004, 2005, 2007, 2011-2012
-   Free Software Foundation, Inc.
+   Copyright (C) 1996-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1996.
 
@@ -23,28 +22,28 @@
 	.section .rodata.cst8,"aM",@progbits,8
 
 	.p2align 3
-	ASM_TYPE_DIRECTIVE(one,@object)
+	.type one,@object
 one:	.double 1.0
 	ASM_SIZE_DIRECTIVE(one)
-	ASM_TYPE_DIRECTIVE(limit,@object)
+	.type limit,@object
 limit:	.double 0.29
 	ASM_SIZE_DIRECTIVE(limit)
-	ASM_TYPE_DIRECTIVE(p31,@object)
+	.type p31,@object
 p31:	.byte 0, 0, 0, 0, 0, 0, 0xe0, 0x41
 	ASM_SIZE_DIRECTIVE(p31)
 
 	.section .rodata.cst16,"aM",@progbits,16
 
 	.p2align 3
-	ASM_TYPE_DIRECTIVE(infinity,@object)
+	.type infinity,@object
 inf_zero:
 infinity:
 	.byte 0, 0, 0, 0, 0, 0, 0xf0, 0x7f
 	ASM_SIZE_DIRECTIVE(infinity)
-	ASM_TYPE_DIRECTIVE(zero,@object)
+	.type zero,@object
 zero:	.double 0.0
 	ASM_SIZE_DIRECTIVE(zero)
-	ASM_TYPE_DIRECTIVE(minf_mzero,@object)
+	.type minf_mzero,@object
 minf_mzero:
 minfinity:
 	.byte 0, 0, 0, 0, 0, 0, 0xf0, 0xff
@@ -95,6 +94,9 @@ ENTRY(__ieee754_powf)
 
 	cmpb	$0x05, %ah
 	je	15f		// x is ±inf
+
+	cmpb	$0x01, %ah
+	je	32f		// x is NaN
 
 	fxch			// y : x
 
@@ -181,7 +183,7 @@ ENTRY(__ieee754_powf)
 	f2xm1			// 2^fract(y*log2(x))-1 : int(y*log2(x))
 	faddl	MO(one)		// 2^fract(y*log2(x)) : int(y*log2(x))
 	fscale			// 2^fract(y*log2(x))*2^int(y*log2(x)) : int(y*log2(x))
-	addl	$4, %esp
+32:	addl	$4, %esp
 	cfi_adjust_cfa_offset (-4)
 	fstp	%st(1)		// 2^fract(y*log2(x))*2^int(y*log2(x))
 	ret

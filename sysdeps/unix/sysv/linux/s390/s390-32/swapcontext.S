@@ -1,4 +1,4 @@
-/* Copyright (C) 2002 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Martin Schwidefsky (schwidefsky@de.ibm.com).
 
@@ -33,13 +33,17 @@
   other than the PRESERVED state.  */
 
 ENTRY(__swapcontext)
+	/* While not part of the ABI a system call never clobbers r0
+	   or r1.  So keeping the values here while calling
+	   rt_sigprocmask is ok.  */
 	lr	%r1,%r2
-	lr      %r5,%r3
+	lr      %r0,%r3
 
 	/* sigprocmask (SIG_BLOCK, NULL, &sc->sc_mask).  */
 	la      %r2,SIG_BLOCK
 	slr	%r3,%r3
 	la	%r4,SC_MASK(%r1)
+	lhi	%r5,_NSIG8
 	svc	SYS_ify(rt_sigprocmask)
 
 	/* Store fpu context.  */
@@ -61,22 +65,37 @@ ENTRY(__swapcontext)
 	std     %f14,SC_FPRS+112(%r1)
 	std     %f15,SC_FPRS+120(%r1)
 
-	/* Set __swapcontext return value to 0.  */
-	slr     %r2,%r2
-
 	/* Store access registers.  */
 	stam    %a0,%a15,SC_ACRS(%r1)
 
+	/* Set __swapcontext return value to 0.  */
+	slr     %r2,%r2
+
 	/* Store general purpose registers.  */
 	stm     %r0,%r15,SC_GPRS(%r1)
-	
-	/* sigprocmask (SIG_SETMASK, &sc->sc_mask, NULL).  */
-	la      %r2,SIG_BLOCK
-	la	%r3,SC_MASK(%r5)
+
+	/* Copy uc_flags into the new ucontext_t.  */
+	lr	%r5,%r0
+	l	%r2,SC_FLGS(%r5)
+	st	%r2,SC_FLGS(%r1)
+
+	/* Save/restore the upper halfs if necessary.  */
+	tml	%r2,1   /* UCONTEXT_UC_FLAGS_HIGH_GPRS */
+	jz	0f
+	.machine	"z900"
+	.machinemode	"zarch_nohighgprs"
+	stmh	%r0,%r15,SC_HIGHGPRS(%r1)
+	lmh	%r0,%r15,SC_HIGHGPRS(%r5)
+
+	/* rt_sigprocmask (SIG_SETMASK, &sc->sc_mask, NULL, sigsetsize).  */
+0:	la      %r2,SIG_BLOCK
+	la      %r3,SC_MASK(%r5)
 	slr	%r4,%r4
+	lhi	%r5,_NSIG8
 	svc	SYS_ify(rt_sigprocmask)
 
 	/* Load fpu context.  */
+	lr	%r5,%r0
 	lfpc	SC_FPC(%r5)
 	ld	%f0,SC_FPRS(%r5)
 	ld      %f1,SC_FPRS+8(%r5)
@@ -94,7 +113,7 @@ ENTRY(__swapcontext)
 	ld      %f13,SC_FPRS+104(%r5)
 	ld      %f14,SC_FPRS+112(%r5)
 	ld      %f15,SC_FPRS+120(%r5)
- 
+
 	/* Don't touch %a0, used for thread purposes.  */
 	lam	%a1,%a15,SC_ACRS+4(%r5)
 
@@ -103,5 +122,5 @@ ENTRY(__swapcontext)
 
 	/* Return.  */
 	br	%r14
-END(__swapcontext)	
+END(__swapcontext)
 weak_alias (__swapcontext, swapcontext)

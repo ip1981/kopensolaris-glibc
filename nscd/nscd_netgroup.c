@@ -1,4 +1,4 @@
-/* Copyright (C) 2011 Free Software Foundation, Inc.
+/* Copyright (C) 2011-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@gmail.com>, 2011.
 
@@ -48,7 +48,7 @@ __nscd_setnetgrent (const char *group, struct __netgrent *datap)
 {
   int gc_cycle;
   int nretries = 0;
-  size_t group_len = strlen (group);
+  size_t group_len = strlen (group) + 1;
 
   /* If the mapping is available, try to search there instead of
      communicating with the nscd.  */

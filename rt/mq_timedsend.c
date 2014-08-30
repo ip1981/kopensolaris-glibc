@@ -1,4 +1,4 @@
-/* Copyright (C) 2004 Free Software Foundation, Inc.
+/* Copyright (C) 2004-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -29,4 +29,3 @@ mq_timedsend (mqd_t mqdes, const char *msg_ptr, size_t msg_len,
 }
 hidden_def (mq_timedsend)
 stub_warning (mq_timedsend)
-#include <stub-tag.h>

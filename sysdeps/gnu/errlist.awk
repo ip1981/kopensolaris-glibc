@@ -1,4 +1,4 @@
-# Copyright (C) 1991-1999,2002,2004,2005 Free Software Foundation, Inc.
+# Copyright (C) 1991-2014 Free Software Foundation, Inc.
 # This file is part of the GNU C Library.
 
 # The GNU C Library is free software; you can redistribute it and/or
@@ -99,7 +99,7 @@ errnoh == 4 && $1 == "@end" && $2 == "deftypevr" \
 errnoh == 4 \
   {
     # This magic tag in C comments gets them copied into libc.pot.
-    desc = desc "\nTRANS " $0; next
+    desc = desc "\nTRANS" ($0 != "" ? " " : "") $0; next
   }
 { errnoh=0 }
 END {

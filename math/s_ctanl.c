@@ -1,5 +1,5 @@
 /* Complex tangent function for long double.
-   Copyright (C) 1997-2012 Free Software Foundation, Inc.
+   Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997.
 
@@ -53,11 +53,20 @@ __ctanl (__complex__ long double x)
       long double sinrx, cosrx;
       long double den;
       const int t = (int) ((LDBL_MAX_EXP - 1) * M_LN2l / 2);
+      int rcls = fpclassify (__real__ x);
 
       /* tan(x+iy) = (sin(2x) + i*sinh(2y))/(cos(2x) + cosh(2y))
 	 = (sin(x)*cos(x) + i*sinh(y)*cosh(y)/(cos(x)^2 + sinh(y)^2). */
 
-      __sincosl (__real__ x, &sinrx, &cosrx);
+      if (__builtin_expect (rcls != FP_SUBNORMAL, 1))
+	{
+	  __sincosl (__real__ x, &sinrx, &cosrx);
+	}
+      else
+	{
+	  sinrx = __real__ x;
+	  cosrx = 1.0;
+	}
 
       if (fabsl (__imag__ x) > t)
 	{
@@ -83,10 +92,22 @@ __ctanl (__complex__ long double x)
 	}
       else
 	{
-	  long double sinhix = __ieee754_sinhl (__imag__ x);
-	  long double coshix = __ieee754_coshl (__imag__ x);
+	  long double sinhix, coshix;
+	  if (fabsl (__imag__ x) > LDBL_MIN)
+	    {
+	      sinhix = __ieee754_sinhl (__imag__ x);
+	      coshix = __ieee754_coshl (__imag__ x);
+	    }
+	  else
+	    {
+	      sinhix = __imag__ x;
+	      coshix = 1.0L;
+	    }
 
-	  den = cosrx * cosrx + sinhix * sinhix;
+	  if (fabsl (sinhix) > fabsl (cosrx) * LDBL_EPSILON)
+	    den = cosrx * cosrx + sinhix * sinhix;
+	  else
+	    den = cosrx * cosrx;
 	  __real__ res = sinrx * cosrx / den;
 	  __imag__ res = sinhix * coshix / den;
 	}

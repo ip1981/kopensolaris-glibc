@@ -1,5 +1,5 @@
 /* Compute complex natural logarithm.
-   Copyright (C) 1997-2012 Free Software Foundation, Inc.
+   Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997.
 
@@ -22,6 +22,13 @@
 #include <math_private.h>
 #include <float.h>
 
+/* To avoid spurious underflows, use this definition to treat IBM long
+   double as approximating an IEEE-style format.  */
+#if LDBL_MANT_DIG == 106
+# undef LDBL_EPSILON
+# define LDBL_EPSILON 0x1p-106L
+#endif
+
 __complex__ long double
 __clogl (__complex__ long double x)
 {
@@ -40,27 +47,63 @@ __clogl (__complex__ long double x)
   else if (__builtin_expect (rcls != FP_NAN && icls != FP_NAN, 1))
     {
       /* Neither real nor imaginary part is NaN.  */
-      long double d;
+      long double absx = fabsl (__real__ x), absy = fabsl (__imag__ x);
       int scale = 0;
 
-      if (fabsl (__real__ x) > LDBL_MAX / 2.0L
-	  || fabsl (__imag__ x) > LDBL_MAX / 2.0L)
+      if (absx < absy)
+	{
+	  long double t = absx;
+	  absx = absy;
+	  absy = t;
+	}
+
+      if (absx > LDBL_MAX / 2.0L)
 	{
 	  scale = -1;
-	  __real__ x = __scalbnl (__real__ x, scale);
-	  __imag__ x = __scalbnl (__imag__ x, scale);
+	  absx = __scalbnl (absx, scale);
+	  absy = (absy >= LDBL_MIN * 2.0L ? __scalbnl (absy, scale) : 0.0L);
 	}
-      else if (fabsl (__real__ x) < LDBL_MIN
-	       && fabsl (__imag__ x) < LDBL_MIN)
+      else if (absx < LDBL_MIN && absy < LDBL_MIN)
 	{
 	  scale = LDBL_MANT_DIG;
-	  __real__ x = __scalbnl (__real__ x, scale);
-	  __imag__ x = __scalbnl (__imag__ x, scale);
+	  absx = __scalbnl (absx, scale);
+	  absy = __scalbnl (absy, scale);
 	}
 
-      d = __ieee754_hypotl (__real__ x, __imag__ x);
+      if (absx == 1.0L && scale == 0)
+	{
+	  long double absy2 = absy * absy;
+	  if (absy2 <= LDBL_MIN * 2.0L)
+	    __real__ result = absy2 / 2.0L - absy2 * absy2 / 4.0L;
+	  else
+	    __real__ result = __log1pl (absy2) / 2.0L;
+	}
+      else if (absx > 1.0L && absx < 2.0L && absy < 1.0L && scale == 0)
+	{
+	  long double d2m1 = (absx - 1.0L) * (absx + 1.0L);
+	  if (absy >= LDBL_EPSILON)
+	    d2m1 += absy * absy;
+	  __real__ result = __log1pl (d2m1) / 2.0L;
+	}
+      else if (absx < 1.0L
+	       && absx >= 0.75L
+	       && absy < LDBL_EPSILON / 2.0L
+	       && scale == 0)
+	{
+	  long double d2m1 = (absx - 1.0L) * (absx + 1.0L);
+	  __real__ result = __log1pl (d2m1) / 2.0L;
+	}
+      else if (absx < 1.0L && (absx >= 0.75L || absy >= 0.5L) && scale == 0)
+	{
+	  long double d2m1 = __x2y2m1l (absx, absy);
+	  __real__ result = __log1pl (d2m1) / 2.0L;
+	}
+      else
+	{
+	  long double d = __ieee754_hypotl (absx, absy);
+	  __real__ result = __ieee754_logl (d) - scale * M_LN2l;
+	}
 
-      __real__ result = __ieee754_logl (d) - scale * M_LN2l;
       __imag__ result = __ieee754_atan2l (__imag__ x, __real__ x);
     }
   else

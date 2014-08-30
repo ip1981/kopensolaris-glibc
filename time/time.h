@@ -1,4 +1,4 @@
-/* Copyright (C) 1991-2012 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -367,12 +367,12 @@ extern int timer_create (clockid_t __clock_id,
 /* Delete timer TIMERID.  */
 extern int timer_delete (timer_t __timerid) __THROW;
 
-/* Set timer TIMERID to VALUE, returning old value in OVLAUE.  */
+/* Set timer TIMERID to VALUE, returning old value in OVALUE.  */
 extern int timer_settime (timer_t __timerid, int __flags,
 			  const struct itimerspec *__restrict __value,
 			  struct itimerspec *__restrict __ovalue) __THROW;
 
-/* Get current value of timer TIMERID and store it in VLAUE.  */
+/* Get current value of timer TIMERID and store it in VALUE.  */
 extern int timer_gettime (timer_t __timerid, struct itimerspec *__value)
      __THROW;
 

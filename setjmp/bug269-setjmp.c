@@ -1,4 +1,4 @@
-/* Copyright (C) 2004 Free Software Foundation, Inc.
+/* Copyright (C) 2004-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -29,7 +29,7 @@ int n_x = 6;
 static int g_counter = 0;
 
 int
-f (void) 
+f (void)
 {
   static int counter = 0;
   static int way_point1 = 3;

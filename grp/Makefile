@@ -1,5 +1,4 @@
-# Copyright (C) 1991,1992,1996-2000,2003,2004,2012
-# Free Software Foundation, Inc.
+# Copyright (C) 1991-2014 Free Software Foundation, Inc.
 # This file is part of the GNU C Library.
 
 # The GNU C Library is free software; you can redistribute it and/or
@@ -39,25 +38,24 @@ include ../Rules
 
 ifeq ($(have-thread-library),yes)
 
-CFLAGS-getgrgid_r.c = -DUSE_NSCD=1 -fexceptions
-CFLAGS-getgrnam_r.c = -DUSE_NSCD=1 -fexceptions
+CFLAGS-getgrgid_r.c = -fexceptions
+CFLAGS-getgrnam_r.c = -fexceptions
 CFLAGS-getgrent_r.c = -fexceptions
 CFLAGS-getgrent.c = -fexceptions
 CFLAGS-fgetgrent.c = -fexceptions
-CFLAGS-fgetgrent_r.c = -fexceptions -D_IO_MTSAFE_IO
-CFLAGS-putgrent.c = -fexceptions -D_IO_MTSAFE_IO
-CFLAGS-initgroups.c = -DUSE_NSCD=1 -fexceptions
+CFLAGS-fgetgrent_r.c = -fexceptions $(libio-mtsafe)
+CFLAGS-putgrent.c = -fexceptions $(libio-mtsafe)
+CFLAGS-initgroups.c = -fexceptions
 CFLAGS-getgrgid.c = -fexceptions
 
 endif
 
-ifeq (no,$(cross-compiling))
+ifeq ($(run-built-tests),yes)
 # tst_fgetgrent currently only works with shared libraries
 ifeq (yes,$(build-shared))
 tests: $(objpfx)tst_fgetgrent.out
 $(objpfx)tst_fgetgrent.out: tst_fgetgrent.sh $(objpfx)tst_fgetgrent
-	$(SHELL) -e tst_fgetgrent.sh $(common-objpfx) $(elf-objpfx) \
-		 $(rtld-installed-name)
+	$(SHELL) $< $(common-objpfx) '$(test-program-prefix)'
 
 endif
 endif

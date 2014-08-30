@@ -56,6 +56,7 @@
  *
  */
 
+#include <errno.h>
 #include <math.h>
 #include <math_private.h>
 
@@ -301,7 +302,8 @@ __ieee754_ynl (int n, long double x)
   if (__builtin_expect ((ix == 0x7fff) && ((i0 & 0x7fffffff) != 0), 0))
     return x + x;
   if (__builtin_expect ((ix | i0 | i1) == 0, 0))
-    return -HUGE_VALL + x;  /* -inf and overflow exception.  */
+    /* -inf or inf and divide-by-zero exception.  */
+    return ((n < 0 && (n & 1) != 0) ? 1.0L : -1.0L) / 0.0L;
   if (__builtin_expect (se & 0x8000, 0))
     return zero / (zero * x);
   sign = 1;
@@ -360,7 +362,8 @@ __ieee754_ynl (int n, long double x)
       b = __ieee754_y1l (x);
       /* quit if b is -inf */
       GET_LDOUBLE_WORDS (se, i0, i1, b);
-      for (i = 1; i < n && se != 0xffff; i++)
+      /* Use 0xffffffff since GET_LDOUBLE_WORDS sign-extends SE.  */
+      for (i = 1; i < n && se != 0xffffffff; i++)
 	{
 	  temp = b;
 	  b = ((long double) (i + i) / x) * b - a;
@@ -368,6 +371,9 @@ __ieee754_ynl (int n, long double x)
 	  a = temp;
 	}
     }
+  /* If B is +-Inf, set up errno accordingly.  */
+  if (! __finitel (b))
+    __set_errno (ERANGE);
   if (sign > 0)
     return b;
   else

@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2008, 2011, 2012 Free Software Foundation, Inc.
+# Copyright (C) 1997-2014 Free Software Foundation, Inc.
 # This file is part of the GNU C Library.
 
 # The GNU C Library is free software; you can redistribute it and/or
@@ -267,7 +267,7 @@ endif # build-shared = yes
 
 include ../Rules
 
-ifeq (no,$(cross-compiling))
+ifeq ($(run-built-tests),yes)
 ifeq (yes,$(build-shared))
 tests: $(objpfx)iconv-test.out $(objpfx)tst-tables.out
 ifneq (no,$(PERL))
@@ -299,12 +299,13 @@ $(objpfx)tst-iconv7.out: $(objpfx)gconv-modules \
 $(objpfx)iconv-test.out: run-iconv-test.sh $(objpfx)gconv-modules \
 			 $(addprefix $(objpfx),$(modules.so)) \
 			 $(common-objdir)/iconv/iconv_prog TESTS
-	$(SHELL) -e $< $(common-objdir) > $@
+	$(SHELL) $< $(common-objdir) '$(test-wrapper)' > $@
 
 $(objpfx)tst-tables.out: tst-tables.sh $(objpfx)gconv-modules \
 			 $(addprefix $(objpfx),$(modules.so)) \
 			 $(objpfx)tst-table-from $(objpfx)tst-table-to
-	$(SHELL) $< $(common-objpfx) $(common-objpfx)iconvdata/ > $@
+	$(SHELL) $< $(common-objpfx) $(common-objpfx)iconvdata/ \
+		'$(test-program-prefix)' > $@
 
 do-tests-clean common-mostlyclean: tst-tables-clean
 

@@ -91,6 +91,10 @@ extern ssize_t __libc_sendmsg (int __fd, const struct msghdr *__message,
 extern ssize_t __sendmsg (int __fd, const struct msghdr *__message,
 			  int __flags) attribute_hidden;
 
+extern int __sendmmsg (int __fd, struct mmsghdr *__vmessages,
+                       unsigned int __vlen, int __flags);
+libc_hidden_proto (__sendmmsg)
+
 /* Receive a message as described by MESSAGE from socket FD.
    Returns the number of bytes read or -1 for errors.  */
 extern ssize_t __libc_recvmsg (int __fd, struct msghdr *__message,
@@ -132,11 +136,11 @@ extern int __listen (int __fd, int __n) attribute_hidden;
    new socket's descriptor, or -1 for errors.  */
 extern int __libc_accept (int __fd, __SOCKADDR_ARG __addr,
 			  socklen_t *__restrict __addr_len)
-     __THROW;
+     __THROW attribute_hidden;
 libc_hidden_proto (accept)
 extern int __libc_accept4 (int __fd, __SOCKADDR_ARG __addr,
 			   socklen_t *__restrict __addr_len, int __flags)
-     __THROW;
+     __THROW attribute_hidden;
 
 /* Return the length of a `sockaddr' structure.  */
 #ifdef _HAVE_SA_LEN
@@ -148,7 +152,7 @@ libc_hidden_proto (__libc_sa_len)
 #endif
 
 #ifdef SOCK_CLOEXEC
-extern int __have_sock_cloexec;
+extern int __have_sock_cloexec attribute_hidden;
 /* At lot of other functionality became available at the same time as
    SOCK_CLOEXEC.  Avoid defining separate variables for all of them
    unless it is really necessary.  */

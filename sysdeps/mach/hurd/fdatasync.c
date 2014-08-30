@@ -1,4 +1,4 @@
-/* Copyright (C) 1991, 92, 93, 94, 96, 97 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -26,6 +26,12 @@ fdatasync (int fd)
 {
   error_t err = HURD_DPORT_USE (fd, __file_sync (port, 1, 1));
   if (err)
-    return __hurd_dfail (fd, err);
+    {
+      if (err == EOPNOTSUPP)
+	/* If the file descriptor does not support sync, return EINVAL
+	   as POSIX specifies.  */
+	err = EINVAL;
+      return __hurd_dfail (fd, err);
+    }
   return 0;
 }

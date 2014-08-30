@@ -1,5 +1,4 @@
-/* Copyright (C) 1991,95,96,97,99,2001,2002,2005,2009
-   Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -34,6 +33,12 @@ attribute_hidden
 __run_exit_handlers (int status, struct exit_function_list **listp,
 		     bool run_list_atexit)
 {
+  /* First, call the TLS destructors.  */
+#ifndef SHARED
+  if (&__call_tls_dtors != NULL)
+#endif
+    __call_tls_dtors ();
+
   /* We do it this way to handle recursive calls to exit () made by
      the functions registered with `atexit' and `on_exit'. We call
      everyone on the list and use the status value in the last

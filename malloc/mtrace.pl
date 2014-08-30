@@ -1,7 +1,7 @@
 #! @PERL@
 eval "exec @PERL@ -S $0 $@"
     if 0;
-# Copyright (C) 1997-2011, 2012 Free Software Foundation, Inc.
+# Copyright (C) 1997-2014 Free Software Foundation, Inc.
 # This file is part of the GNU C Library.
 # Contributed by Ulrich Drepper <drepper@gnu.org>, 1997.
 # Based on the mtrace.awk script.
@@ -21,7 +21,8 @@ eval "exec @PERL@ -S $0 $@"
 # <http://www.gnu.org/licenses/>.
 
 $VERSION = "@VERSION@";
-$PACKAGE = "libc";
+$PKGVERSION = "@PKGVERSION@";
+$REPORT_BUGS_TO = '@REPORT_BUGS_TO@';
 $progname = $0;
 
 sub usage {
@@ -30,7 +31,7 @@ sub usage {
     print "  --version    print version number, then exit\n";
     print "\n";
     print "For bug reporting instructions, please see:\n";
-    print "<http://www.gnu.org/software/libc/bugs.html>.\n";
+    print "$REPORT_BUGS_TO.\n";
     exit 0;
 }
 
@@ -43,8 +44,8 @@ arglist: while (@ARGV) {
     if ($ARGV[0] eq "--v" || $ARGV[0] eq "--ve" || $ARGV[0] eq "--ver" ||
 	$ARGV[0] eq "--vers" || $ARGV[0] eq "--versi" ||
 	$ARGV[0] eq "--versio" || $ARGV[0] eq "--version") {
-	print "mtrace (GNU $PACKAGE) $VERSION\n";
-	print "Copyright (C) 2012 Free Software Foundation, Inc.\n";
+	print "mtrace $PKGVERSION$VERSION\n";
+	print "Copyright (C) 2014 Free Software Foundation, Inc.\n";
 	print "This is free software; see the source for copying conditions.  There is NO\n";
 	print "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n";
 	print "Written by Ulrich Drepper <drepper\@gnu.org>\n";

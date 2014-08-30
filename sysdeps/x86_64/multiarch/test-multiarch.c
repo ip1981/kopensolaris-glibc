@@ -1,6 +1,6 @@
 /* Test CPU feature data.
    This file is part of the GNU C Library.
-   Copyright (C) 2012 Free Software Foundation, Inc.
+   Copyright (C) 2012-2014 Free Software Foundation, Inc.
 
    The GNU C Library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -36,7 +36,7 @@ get_cpuinfo (void)
   f = fopen ("/proc/cpuinfo", "r");
   if (f == NULL)
     {
-      printf ("cannot open /proc/cpuinfo");
+      printf ("cannot open /proc/cpuinfo\n");
       exit (1);
     }
 

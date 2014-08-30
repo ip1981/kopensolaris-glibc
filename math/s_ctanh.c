@@ -1,5 +1,5 @@
 /* Complex hyperbole tangent for double.
-   Copyright (C) 1997-2012 Free Software Foundation, Inc.
+   Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997.
 
@@ -53,11 +53,20 @@ __ctanh (__complex__ double x)
       double sinix, cosix;
       double den;
       const int t = (int) ((DBL_MAX_EXP - 1) * M_LN2 / 2);
+      int icls = fpclassify (__imag__ x);
 
       /* tanh(x+iy) = (sinh(2x) + i*sin(2y))/(cosh(2x) + cos(2y))
 	 = (sinh(x)*cosh(x) + i*sin(y)*cos(y))/(sinh(x)^2 + cos(y)^2).  */
 
-      __sincos (__imag__ x, &sinix, &cosix);
+      if (__builtin_expect (icls != FP_SUBNORMAL, 1))
+	{
+	  __sincos (__imag__ x, &sinix, &cosix);
+	}
+      else
+	{
+	  sinix = __imag__ x;
+	  cosix = 1.0;
+	}
 
       if (fabs (__real__ x) > t)
 	{
@@ -83,10 +92,22 @@ __ctanh (__complex__ double x)
 	}
       else
 	{
-	  double sinhrx = __ieee754_sinh (__real__ x);
-	  double coshrx = __ieee754_cosh (__real__ x);
+	  double sinhrx, coshrx;
+	  if (fabs (__real__ x) > DBL_MIN)
+	    {
+	      sinhrx = __ieee754_sinh (__real__ x);
+	      coshrx = __ieee754_cosh (__real__ x);
+	    }
+	  else
+	    {
+	      sinhrx = __real__ x;
+	      coshrx = 1.0;
+	    }
 
-	  den = sinhrx * sinhrx + cosix * cosix;
+	  if (fabs (sinhrx) > fabs (cosix) * DBL_EPSILON)
+	    den = sinhrx * sinhrx + cosix * cosix;
+	  else
+	    den = cosix * cosix;
 	  __real__ res = sinhrx * coshrx / den;
 	  __imag__ res = sinix * cosix / den;
 	}

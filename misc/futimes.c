@@ -1,5 +1,5 @@
 /* futimes -- change access and modification times of open file.  Stub version.
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -30,4 +30,3 @@ __futimes (int fd, const struct timeval tvp[2])
 weak_alias (__futimes, futimes)
 
 stub_warning (futimes)
-#include <stub-tag.h>

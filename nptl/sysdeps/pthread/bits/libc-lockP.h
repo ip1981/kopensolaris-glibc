@@ -1,5 +1,5 @@
 /* Private libc-internal interface for mutex locks.  NPTL version.
-   Copyright (C) 1996-2003, 2005, 2007, 2012 Free Software Foundation, Inc.
+   Copyright (C) 1996-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -146,18 +146,6 @@ typedef pthread_key_t __libc_key_t;
   __libc_maybe_call (__pthread_rwlock_init, (&(NAME), NULL), 0)
 #endif
 
-#define __rtld_lock_init_recursive(NAME) \
-  do {									      \
-    if (__pthread_mutex_init != NULL)					      \
-      {									      \
-	pthread_mutexattr_t __attr;					      \
-	__pthread_mutexattr_init (&__attr);				      \
-	__pthread_mutexattr_settype (&__attr, PTHREAD_MUTEX_RECURSIVE_NP);    \
-	__pthread_mutex_init (&(NAME).mutex, &__attr);			      \
-	__pthread_mutexattr_destroy (&__attr);				      \
-      }									      \
-  } while (0)
-
 /* Finalize the named lock variable, which must be locked.  It cannot be
    used again until __libc_lock_init is called again on it.  This must be
    called on a lock variable before the containing storage is reused.  */
@@ -176,9 +164,12 @@ typedef pthread_key_t __libc_key_t;
 
 /* Lock the named lock variable.  */
 #if !defined NOT_IN_libc || defined IS_IN_libpthread
-# define __libc_lock_lock(NAME) \
+# ifndef __libc_lock_lock
+#  define __libc_lock_lock(NAME) \
   ({ lll_lock (NAME, LLL_PRIVATE); 0; })
+# endif
 #else
+# undef __libc_lock_lock
 # define __libc_lock_lock(NAME) \
   __libc_maybe_call (__pthread_mutex_lock, (&(NAME)), 0)
 #endif
@@ -189,9 +180,12 @@ typedef pthread_key_t __libc_key_t;
 
 /* Try to lock the named lock variable.  */
 #if !defined NOT_IN_libc || defined IS_IN_libpthread
-# define __libc_lock_trylock(NAME) \
+# ifndef __libc_lock_trylock
+#  define __libc_lock_trylock(NAME) \
   lll_trylock (NAME)
+# endif
 #else
+# undef __libc_lock_trylock
 # define __libc_lock_trylock(NAME) \
   __libc_maybe_call (__pthread_mutex_trylock, (&(NAME)), 0)
 #endif
@@ -381,31 +375,30 @@ extern int __pthread_atfork (void (*__prepare) (void),
    single-threaded processes.  */
 #ifndef __NO_WEAK_PTHREAD_ALIASES
 # ifdef weak_extern
-#  include <bp-sym.h>
-weak_extern (BP_SYM (__pthread_mutex_init))
-weak_extern (BP_SYM (__pthread_mutex_destroy))
-weak_extern (BP_SYM (__pthread_mutex_lock))
-weak_extern (BP_SYM (__pthread_mutex_trylock))
-weak_extern (BP_SYM (__pthread_mutex_unlock))
-weak_extern (BP_SYM (__pthread_mutexattr_init))
-weak_extern (BP_SYM (__pthread_mutexattr_destroy))
-weak_extern (BP_SYM (__pthread_mutexattr_settype))
-weak_extern (BP_SYM (__pthread_rwlock_init))
-weak_extern (BP_SYM (__pthread_rwlock_destroy))
-weak_extern (BP_SYM (__pthread_rwlock_rdlock))
-weak_extern (BP_SYM (__pthread_rwlock_tryrdlock))
-weak_extern (BP_SYM (__pthread_rwlock_wrlock))
-weak_extern (BP_SYM (__pthread_rwlock_trywrlock))
-weak_extern (BP_SYM (__pthread_rwlock_unlock))
-weak_extern (BP_SYM (__pthread_key_create))
-weak_extern (BP_SYM (__pthread_setspecific))
-weak_extern (BP_SYM (__pthread_getspecific))
-weak_extern (BP_SYM (__pthread_once))
+weak_extern (__pthread_mutex_init)
+weak_extern (__pthread_mutex_destroy)
+weak_extern (__pthread_mutex_lock)
+weak_extern (__pthread_mutex_trylock)
+weak_extern (__pthread_mutex_unlock)
+weak_extern (__pthread_mutexattr_init)
+weak_extern (__pthread_mutexattr_destroy)
+weak_extern (__pthread_mutexattr_settype)
+weak_extern (__pthread_rwlock_init)
+weak_extern (__pthread_rwlock_destroy)
+weak_extern (__pthread_rwlock_rdlock)
+weak_extern (__pthread_rwlock_tryrdlock)
+weak_extern (__pthread_rwlock_wrlock)
+weak_extern (__pthread_rwlock_trywrlock)
+weak_extern (__pthread_rwlock_unlock)
+weak_extern (__pthread_key_create)
+weak_extern (__pthread_setspecific)
+weak_extern (__pthread_getspecific)
+weak_extern (__pthread_once)
 weak_extern (__pthread_initialize)
 weak_extern (__pthread_atfork)
-weak_extern (BP_SYM (_pthread_cleanup_push_defer))
-weak_extern (BP_SYM (_pthread_cleanup_pop_restore))
-weak_extern (BP_SYM (pthread_setcancelstate))
+weak_extern (_pthread_cleanup_push_defer)
+weak_extern (_pthread_cleanup_pop_restore)
+weak_extern (pthread_setcancelstate)
 # else
 #  pragma weak __pthread_mutex_init
 #  pragma weak __pthread_mutex_destroy

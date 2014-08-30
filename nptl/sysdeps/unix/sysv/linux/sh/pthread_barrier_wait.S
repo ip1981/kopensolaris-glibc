@@ -1,4 +1,4 @@
-/* Copyright (C) 2003-2012 Free Software Foundation, Inc.
+/* Copyright (C) 2003-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -210,7 +210,7 @@ pthread_barrier_wait:
 	bra	7b
 	 mov	r9, r6
 
-9:	
+9:
 	mov	r6, r9
 	mov.l	@(PRIVATE,r8), r5
 	mov	#LLL_SHARED, r0

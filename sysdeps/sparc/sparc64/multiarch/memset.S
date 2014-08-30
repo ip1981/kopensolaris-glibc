@@ -1,5 +1,6 @@
 /* Multiple versions of memset and bzero
-   Copyright (C) 2010, 2011, 2012 Free Software Foundation, Inc.
+   All versions must be listed in ifunc-impl-list.c.
+   Copyright (C) 2010-2014 Free Software Foundation, Inc.
    Contributed by David S. Miller (davem@davemloft.net)
    This file is part of the GNU C Library.
 
@@ -26,8 +27,19 @@ ENTRY(memset)
 # ifdef SHARED
 	SETUP_PIC_REG_LEAF(o3, o5)
 # endif
-	andcc	%o0, HWCAP_SPARC_BLKINIT, %g0
-	be	9f
+	set	HWCAP_SPARC_CRYPTO, %o1
+	andcc	%o0, %o1, %g0
+	be	1f
+	 andcc	%o0, HWCAP_SPARC_BLKINIT, %g0
+# ifdef SHARED
+	sethi	%gdop_hix22(__memset_niagara4), %o1
+	xor	%o1, %gdop_lox10(__memset_niagara4), %o1
+# else
+	set	__memset_niagara4, %o1
+# endif
+	ba	10f
+	 nop
+1:	be	9f
 	 nop
 # ifdef SHARED
 	sethi	%gdop_hix22(__memset_niagara1), %o1
@@ -57,8 +69,19 @@ ENTRY(__bzero)
 # ifdef SHARED
 	SETUP_PIC_REG_LEAF(o3, o5)
 # endif
-	andcc	%o0, HWCAP_SPARC_BLKINIT, %g0
-	be	9f
+	set	HWCAP_SPARC_CRYPTO, %o1
+	andcc	%o0, %o1, %g0
+	be	1f
+	 andcc	%o0, HWCAP_SPARC_BLKINIT, %g0
+# ifdef SHARED
+	sethi	%gdop_hix22(__bzero_niagara4), %o1
+	xor	%o1, %gdop_lox10(__bzero_niagara4), %o1
+# else
+	set	__bzero_niagara4, %o1
+# endif
+	ba	10f
+	 nop
+1:	be	9f
 	 nop
 # ifdef SHARED
 	sethi	%gdop_hix22(__bzero_niagara1), %o1

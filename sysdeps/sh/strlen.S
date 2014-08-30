@@ -1,4 +1,4 @@
-/* Copyright (C) 1999-2012 Free Software Foundation, Inc.
+/* Copyright (C) 1999-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Kazumoto Kojima <kkojima@rr.iij4u.or.jp>
 
@@ -36,17 +36,17 @@ ENTRY(strlen)
 	mov.b	@r4+, r1
 	tst	r1, r1
 	bt	8f
-	add	#1, r2	
+	add	#1, r2
 
 	mov.b	@r4+, r1
 	tst	r1, r1
 	bt	8f
-	add	#1, r2	
+	add	#1, r2
 
 	mov.b	@r4+, r1
 	tst	r1, r1
 	bt	8f
-	add	#1, r2	
+	add	#1, r2
 
 1:
 	mov	#0, r3

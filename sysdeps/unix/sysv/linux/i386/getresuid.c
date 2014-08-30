@@ -1,4 +1,4 @@
-/* Copyright (C) 1998-2012 Free Software Foundation, Inc.
+/* Copyright (C) 1998-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -23,15 +23,13 @@
 
 #include <sysdep.h>
 #include <sys/syscall.h>
-#include <bp-checks.h>
 
 /* Consider moving to syscalls.list.  */
 
 int
 __getresuid (uid_t *ruid, uid_t *euid, uid_t *suid)
 {
-  return INLINE_SYSCALL (getresuid32, 3, CHECK_1 (ruid),
-			 CHECK_1 (euid), CHECK_1 (suid));
+  return INLINE_SYSCALL (getresuid32, 3, ruid, euid, suid);
 }
 libc_hidden_def (__getresuid)
 weak_alias (__getresuid, getresuid)

@@ -13,6 +13,7 @@
  * ====================================================
  */
 
+#include <errno.h>
 #include <math.h>
 #include <math_private.h>
 
@@ -53,7 +54,7 @@ __ieee754_jnf(int n, float x)
 	    b = __ieee754_j1f(x);
 	    for(i=1;i<n;i++){
 		temp = b;
-		b = b*((float)(i+i)/x) - a; /* avoid underflow */
+		b = b*((double)(i+i)/x) - a; /* avoid underflow */
 		a = temp;
 	    }
 	} else {
@@ -195,10 +196,13 @@ __ieee754_ynf(int n, float x)
 	GET_FLOAT_WORD(ib,b);
 	for(i=1;i<n&&ib!=0xff800000;i++){
 	    temp = b;
-	    b = ((float)(i+i)/x)*b - a;
+	    b = ((double)(i+i)/x)*b - a;
 	    GET_FLOAT_WORD(ib,b);
 	    a = temp;
 	}
+	/* If B is +-Inf, set up errno accordingly.  */
+	if (! __finitef (b))
+	  __set_errno (ERANGE);
 	if(sign>0) return b; else return -b;
 }
 strong_alias (__ieee754_ynf, __ynf_finite)

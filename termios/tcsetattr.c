@@ -1,4 +1,4 @@
-/* Copyright (C) 1991,95,96,2000,01,02 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -104,4 +104,3 @@ bad_speed (speed_t speed)
 
 
 stub_warning (tcsetattr)
-#include <stub-tag.h>

@@ -1,4 +1,4 @@
-/* Copyright (c) 1997, 1998, 2004, 2006 Free Software Foundation, Inc.
+/* Copyright (c) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Thorsten Kukuk <kukuk@vt.uni-paderborn.de>, 1997.
 
@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #include <sys/types.h>
 #include <rpc/rpc.h>
 #include <rpcsvc/nis.h>

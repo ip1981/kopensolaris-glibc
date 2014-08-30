@@ -1,4 +1,4 @@
-# Copyright (C) 1996-2006,2011,2012 Free Software Foundation, Inc.
+# Copyright (C) 1996-2014 Free Software Foundation, Inc.
 # This file is part of the GNU C Library.
 
 # The GNU C Library is free software; you can redistribute it and/or
@@ -58,7 +58,8 @@ libm-calls = e_acos e_acosh e_asin e_atan2 e_atanh e_cosh e_exp e_fmod	\
 	     s_catan s_casin s_ccos s_csin s_ctan s_ctanh s_cacos	\
 	     s_casinh s_cacosh s_catanh s_csqrt s_cpow s_cproj s_clog10 \
 	     s_fma s_lrint s_llrint s_lround s_llround e_exp10 w_log2	\
-	     s_isinf_ns $(calls:s_%=m_%)
+	     s_isinf_ns s_issignaling $(calls:s_%=m_%) x2y2m1 k_casinh	\
+	     gamma_product
 
 include ../Makeconfig
 
@@ -86,9 +87,11 @@ long-c-yes = $(calls:=l)
 
 # Rules for the test suite.
 tests = test-matherr test-fenv atest-exp atest-sincos atest-exp2 basic-test \
-	test-misc test-fpucw tst-definitions test-tgmath test-tgmath-ret \
-	bug-nextafter bug-nexttoward bug-tgmath1 test-tgmath-int \
-	test-tgmath2 test-powl tst-CMPLX tst-CMPLX2
+	test-misc test-fpucw test-fpucw-ieee tst-definitions test-tgmath \
+	test-tgmath-ret bug-nextafter bug-nexttoward bug-tgmath1 \
+	test-tgmath-int test-tgmath2 test-powl tst-CMPLX tst-CMPLX2 test-snan \
+	test-fenv-tls $(tests-static)
+tests-static = test-fpucw-static test-fpucw-ieee-static
 # We do the `long double' tests only if this data type is available and
 # distinct from `double'.
 test-longdouble-yes = test-ldouble test-ildoubl
@@ -109,7 +112,8 @@ ulps-file = $(firstword $(wildcard $(sysdirs:%=%/libm-test-ulps)))
 
 $(addprefix $(objpfx), $(libm-tests-generated)): $(objpfx)libm-test.stmp
 
-$(objpfx)libm-test.stmp: $(ulps-file) libm-test.inc gen-libm-test.pl
+$(objpfx)libm-test.stmp: $(ulps-file) libm-test.inc gen-libm-test.pl \
+			 auto-libm-test-out
 	$(make-target-directory)
 	$(PERL) gen-libm-test.pl -u $< -o "$(objpfx)"
 	@echo > $@
@@ -126,6 +130,9 @@ CFLAGS-test-float.c = -fno-inline -ffloat-store -fno-builtin -frounding-math
 CFLAGS-test-double.c = -fno-inline -ffloat-store -fno-builtin -frounding-math
 CFLAGS-test-ldouble.c = -fno-inline -ffloat-store -fno-builtin -frounding-math
 CFLAGS-test-tgmath.c = -fno-builtin
+# The following testcase uses very long lines (>3 million), so it may take a
+# while to compile it. See: http://llvm.org/bugs/show_bug.cgi?id=14106 and
+# http://gcc.gnu.org/bugzilla/show_bug.cgi?id=54402
 CFLAGS-test-tgmath2.c = -fno-builtin
 CFLAGS-test-tgmath-ret.c = -fno-builtin
 CFLAGS-test-powl.c = -fno-builtin
@@ -147,6 +154,33 @@ extra-objs += libieee.a ieee-math.o
 
 include ../Rules
 
+ifneq (no,$(PERL))
+# Run the math programs to automatically generate ULPs files.
+.PHONY: regen-ulps
+
+run-regen-ulps = $(test-wrapper-env) \
+	    GCONV_PATH=$(common-objpfx)iconvdata LC_ALL=C \
+	    $($*-ENV) $(rtld-prefix) $${run}
+
+regen-ulps: $(addprefix $(objpfx),$(libm-tests))
+	rm -f $(objpfx)ULPs; rm -f $(objpfx)NewUlps; \
+	cp $(ulps-file) $(objpfx)libm-test-ulps; \
+	for run in $^; do \
+	  echo "Regenerating ULPs for $${run}"; \
+	  $(run-regen-ulps) -u -o $(objpfx); \
+	  cat $(objpfx)ULPs >> $(objpfx)libm-test-ulps; \
+	  rm $(objpfx)ULPs; \
+	done; \
+	$(PERL) gen-libm-test.pl -o $(objpfx) -n -u $(objpfx)libm-test-ulps; \
+	echo "Automatic regeneration of ULPs complete."; \
+	echo "Difference between the current baseline and the new baseline is:";\
+	diff -urN $(ulps-file) $(objpfx)NewUlps; \
+	echo "Copy $(objpfx)NewUlps to $(ulps-file) (relative to source)."
+else
+regen-ulps:
+	@echo "Automatic regeneration of ULPs requires perl."; \
+	exit 1;
+endif
 
 # The generated sysd-rules file defines rules like this for sources
 # coming from sysdeps/ directories.  These rules find the generic sources.
@@ -186,22 +220,17 @@ $(objpfx)libieee.a: $(objpfx)ieee-math.o
 	$(LN_S) $(<F) $(@F)
 
 ifeq ($(build-shared),yes)
-$(addprefix $(objpfx),$(tests)): $(objpfx)libm.so$(libm.so-version)
+$(addprefix $(objpfx),$(filter-out $(tests-static),$(tests))): $(objpfx)libm.so$(libm.so-version)
+$(addprefix $(objpfx),$(tests-static)): $(objpfx)libm.a
 else
 $(addprefix $(objpfx),$(tests)): $(objpfx)libm.a
-endif
-ifeq ($(build-bounded),yes)
-$(tests:%=$(objpfx)%-bp): $(objpfx)libm_b.a
 endif
 
 gmp-objs = $(patsubst %,$(common-objpfx)stdlib/%.o,\
 		      add_n sub_n cmp addmul_1 mul_1 mul_n divmod_1 \
-		      lshift rshift mp_clz_tab udiv_qrnnd inlines)
+		      lshift rshift mp_clz_tab udiv_qrnnd inlines \
+		      $(gmp-sysdep_routines))
 $(objpfx)atest-exp: $(gmp-objs)
 $(objpfx)atest-sincos: $(gmp-objs)
 $(objpfx)atest-exp2: $(gmp-objs)
-
-# Depend on libc.so so a DT_NEEDED is generated in the shared objects.
-# This ensures they will load libc.so for needed symbols if loaded by
-# a statically-linked program that hasn't already loaded it.
-$(objpfx)libm.so: $(common-objpfx)libc.so $(common-objpfx)libc_nonshared.a
+$(objpfx)test-fenv-tls: $(common-objpfx)nptl/libpthread.so

@@ -1,4 +1,4 @@
-# Copyright (C) 1993-2012 Free Software Foundation, Inc.
+# Copyright (C) 1993-2014 Free Software Foundation, Inc.
 # This file is part of the GNU C Library.
 
 # The GNU C Library is free software; you can redistribute it and/or
@@ -28,7 +28,7 @@ includes += -I$(..)hurd -I$(common-objpfx)hurd/
 # Do not use any assembly code from sysdeps/unix (and subdirectories).
 # This bypasses all the system call stubs and uses any existing posix or
 # generic C files instead.
-inhibit-sysdep-asm += unix*
+inhibit-sysdep-asm += unix.*
 inhibit-unix-syscalls = yes
 
 # Don't try to generate anything from the installed Unix system and its
@@ -167,11 +167,15 @@ $(objpfx)librtld.map: $(rpcuserlibs:.so=_pic.a)
 CFLAGS-dl-load.c = -DEXTERNAL_MAP_FROM_FD
 endif
 
-# We need these libs to link static programs in the libc source tree, too.
-link-libc-static := -Wl,-\( \
+# Override the generic Makeconfig values so we link against the RPC libs.
+link-libc-static := -Wl,--start-group \
 		    $(patsubst %,$(common-objpfx)%.a,\
 			       libc mach/libmachuser hurd/libhurduser) \
-		    $(static-gnulib) -Wl,-\)
+		    $(static-gnulib) -Wl,--end-group
+link-libc-static-tests := -Wl,--start-group \
+		    $(patsubst %,$(common-objpfx)%.a,\
+			       libc mach/libmachuser hurd/libhurduser) \
+		    $(static-gnulib-tests) -Wl,--end-group
 
 ifeq ($(subdir),csu)
 

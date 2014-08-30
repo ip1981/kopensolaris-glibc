@@ -1,4 +1,4 @@
-/* Copyright (c) 1998-2012 Free Software Foundation, Inc.
+/* Copyright (c) 1998-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Thorsten Kukuk <kukuk@suse.de>, 1998.
 
@@ -252,15 +252,6 @@ main (int argc, char **argv)
 	for (i = min_close_fd; i < getdtablesize (); i++)
 	  close (i);
 
-      if (run_mode == RUN_DAEMONIZE)
-	{
-	  pid = fork ();
-	  if (pid == -1)
-	    error (EXIT_FAILURE, errno, _("cannot fork"));
-	  if (pid != 0)
-	    exit (0);
-	}
-
       setsid ();
 
       if (chdir ("/") != 0)
@@ -305,8 +296,10 @@ main (int argc, char **argv)
 # endif
 #endif
 
+#ifdef USE_NSCD
   /* Make sure we do not get recursive calls.  */
   __nss_disable_nscd (register_traced_file);
+#endif
 
   /* Init databases.  */
   nscd_init ();
@@ -449,16 +442,38 @@ parse_opt (int key, char *arg, struct argp_state *state)
 static char *
 more_help (int key, const char *text, void *input)
 {
+  char *tables, *tp = NULL;
+
   switch (key)
     {
     case ARGP_KEY_HELP_EXTRA:
+      {
+	dbtype cnt;
+
+	tables = xmalloc (sizeof (dbnames) + 1);
+	for (cnt = 0; cnt < lastdb; cnt++)
+	  {
+	    strcat (tables, dbnames[cnt]);
+	    strcat (tables, " ");
+	  }
+      }
+
       /* We print some extra information.  */
-      return strdup (gettext ("\
+      if (asprintf (&tp, gettext ("\
+Supported tables:\n\
+%s\n\
+\n\
 For bug reporting instructions, please see:\n\
-<http://www.gnu.org/software/libc/bugs.html>.\n"));
+%s.\n\
+"), tables, REPORT_BUGS_TO) < 0)
+	tp = NULL;
+      free (tables);
+      return tp;
+
     default:
       break;
     }
+
   return (char *) text;
 }
 
@@ -466,12 +481,12 @@ For bug reporting instructions, please see:\n\
 static void
 print_version (FILE *stream, struct argp_state *state)
 {
-  fprintf (stream, "nscd (GNU %s) %s\n", PACKAGE, VERSION);
+  fprintf (stream, "nscd %s%s\n", PKGVERSION, VERSION);
   fprintf (stream, gettext ("\
 Copyright (C) %s Free Software Foundation, Inc.\n\
 This is free software; see the source for copying conditions.  There is NO\n\
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
-"), "2012");
+"), "2014");
   fprintf (stream, gettext ("Written by %s.\n"),
 	   "Thorsten Kukuk and Ulrich Drepper");
 }

@@ -1,4 +1,4 @@
-/* Copyright (C) 1991, 94, 95, 96, 97, 98 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -33,4 +33,3 @@ __libc_sigsetjmp (jmp_buf env, int savemask)
 
 weak_alias (__libc_sigsetjmp, __sigsetjmp)
 stub_warning (__sigsetjmp)
-#include <stub-tag.h>

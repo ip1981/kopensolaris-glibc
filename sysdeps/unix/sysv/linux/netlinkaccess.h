@@ -1,4 +1,4 @@
-/* Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
+/* Copyright (C) 2004-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -18,6 +18,7 @@
 #ifndef _NETLINKACCESS_H
 #define _NETLINKACCESS_H 1
 
+#include <stdint.h>
 #include <asm/types.h>
 #include <linux/netlink.h>
 #include <linux/rtnetlink.h>
@@ -42,13 +43,6 @@ struct netlink_handle
   struct netlink_res *nlm_list;	/* Pointer to list of responses.  */
   struct netlink_res *end_ptr;	/* For faster append of new entries.  */
 };
-
-
-#if __ASSUME_NETLINK_SUPPORT == 0
-extern int __no_netlink_support attribute_hidden;
-#else
-# define __no_netlink_support 0
-#endif
 
 
 extern int __netlink_open (struct netlink_handle *h);

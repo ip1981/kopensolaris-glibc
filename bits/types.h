@@ -1,5 +1,5 @@
 /* bits/types.h -- definitions of __*_t types underlying *_t types.
-   Copyright (C) 2002-2012 Free Software Foundation, Inc.
+   Copyright (C) 2002-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -42,7 +42,7 @@ typedef unsigned int __uint32_t;
 #if __WORDSIZE == 64
 typedef signed long int __int64_t;
 typedef unsigned long int __uint64_t;
-#elif defined __GLIBC_HAVE_LONG_LONG
+#else
 __extension__ typedef signed long long int __int64_t;
 __extension__ typedef unsigned long long int __uint64_t;
 #endif
@@ -51,18 +51,9 @@ __extension__ typedef unsigned long long int __uint64_t;
 #if __WORDSIZE == 64
 typedef long int __quad_t;
 typedef unsigned long int __u_quad_t;
-#elif defined __GLIBC_HAVE_LONG_LONG
+#else
 __extension__ typedef long long int __quad_t;
 __extension__ typedef unsigned long long int __u_quad_t;
-#else
-typedef struct
-{
-  long __val[2];
-} __quad_t;
-typedef struct
-{
-  __u_long __val[2];
-} __u_quad_t;
 #endif
 
 
@@ -150,7 +141,6 @@ __STD_TYPE __USECONDS_T_TYPE __useconds_t; /* Count of microseconds.  */
 __STD_TYPE __SUSECONDS_T_TYPE __suseconds_t; /* Signed count of microseconds.  */
 
 __STD_TYPE __DADDR_T_TYPE __daddr_t;	/* The type of a disk address.  */
-__STD_TYPE __SWBLK_T_TYPE __swblk_t;	/* Type of a swap block maybe?  */
 __STD_TYPE __KEY_T_TYPE __key_t;	/* Type of an IPC key.  */
 
 /* Clock ID used in clock and timer functions.  */

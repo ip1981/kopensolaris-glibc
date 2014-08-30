@@ -1,5 +1,5 @@
 # Makefile for csu code for GNU C library.
-# Copyright (C) 1995-2006, 2010, 2012 Free Software Foundation, Inc.
+# Copyright (C) 1995-2014 Free Software Foundation, Inc.
 # This file is part of the GNU C Library.
 
 # The GNU C Library is free software; you can redistribute it and/or
@@ -53,12 +53,6 @@ install-lib += S$(start-installed-name)
 generated += start.os
 endif
 
-ifeq (yes,$(build-bounded))
-extra-objs += b$(start-installed-name)
-install-lib += b$(start-installed-name)
-generated += start.ob
-endif
-
 ifneq ($(start-installed-name),$(static-start-installed-name))
 extra-objs += $(static-start-installed-name) g$(static-start-installed-name)
 omit-deps += $(patsubst %.o,%,$(static-start-installed-name) \
@@ -97,9 +91,6 @@ $(objpfx)$(start-installed-name): $(objpfx)start.o $(objpfx)abi-note.o \
 	$(link-relocatable)
 $(objpfx)S$(start-installed-name): $(objpfx)start.os $(objpfx)abi-note.o \
 				  $(objpfx)init.o
-	$(link-relocatable)
-$(objpfx)b$(start-installed-name): $(objpfx)start.ob $(objpfx)abi-note.ob \
-				  $(objpfx)init.ob
 	$(link-relocatable)
 endif
 

@@ -1,5 +1,4 @@
-/* Copyright (C) 1995,96,97,98,99,2000,2002,2005,2006
-	Free Software Foundation, Inc.
+/* Copyright (C) 1995-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -25,10 +24,6 @@
 	.text
 
 ENTRY (__mmap)
-
-/* I don't think it is worthwhile trying to use mmap2 whenever it
-   is available.  Only use it when we are sure the syscall exists.  */
-#ifdef __ASSUME_MMAP2_SYSCALL
 
 	/* Save registers.  */
 	pushl %ebp
@@ -74,31 +69,11 @@ L(skip):
 	cfi_adjust_cfa_offset (-4)
 	cfi_restore (ebp)
 
-#else
-
-	/* Save registers.  */
-	movl %ebx, %edx
-	cfi_register (ebx, edx)
-
-	movl $SYS_ify(mmap), %eax	/* System call number in %eax.  */
-
-	lea 4(%esp), %ebx		/* Address of args is 1st arg.  */
-
-	/* Do the system call trap.  */
-	int $0x80
-
-	/* Restore registers.  */
-	movl %edx, %ebx
-	cfi_restore (ebx)
-
-#endif
-
 	/* If 0 > %eax > -4096 there was an error.  */
 	cmpl $-4096, %eax
 	ja SYSCALL_ERROR_LABEL
 
 	/* Successful; return the syscall's value.  */
-L(pseudo_end):
 	ret
 
 PSEUDO_END (__mmap)

@@ -1,5 +1,5 @@
 /* Regular expression tests.
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Jakub Jelinek <jakub@redhat.com>, 2003.
 
@@ -132,7 +132,7 @@ main (int argc, char **argv)
 	{
 	  regex_t re;
 	  int n;
-    
+
 	  if (!pattern_valid)
 	    {
 	      printf ("%zd: No previous valid pattern %s\n", linenum, line);

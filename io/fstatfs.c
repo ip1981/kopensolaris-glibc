@@ -1,5 +1,5 @@
 /* Return information about the filesystem on which FD resides.
-   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1996-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -30,4 +30,3 @@ __fstatfs (int fd, struct statfs *buf)
 stub_warning (fstatfs)
 
 weak_alias (__fstatfs, fstatfs)
-#include <stub-tag.h>

@@ -1,4 +1,4 @@
-/* Copyright (C) 1993-2012 Free Software Foundation, Inc.
+/* Copyright (C) 1993-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -40,7 +40,6 @@ freopen64 (filename, mode, fp)
      const char* mode;
      FILE *fp;
 {
-#ifdef _G_OPEN64
   FILE *result;
   CHECK_FILE (fp, NULL);
   if (!(fp->_flags & _IO_IS_FILEBUF))
@@ -101,8 +100,4 @@ freopen64 (filename, mode, fp)
     free ((char *) gfilename);
   _IO_release_lock (fp);
   return result;
-#else
-  __set_errno (ENOSYS);
-  return NULL;
-#endif
 }

@@ -1,4 +1,4 @@
-/* Copyright (C) 2000, 2005 Free Software Foundation, Inc.
+/* Copyright (C) 2000-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -18,6 +18,7 @@
 
 #include <limits.h>
 #include <atomic.h>
+#include <stdint.h>
 
 #ifndef GETSP
 # warning "GETSP is not defined for this architecture."

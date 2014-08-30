@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2012 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@redhat.com>, 2002.
 
@@ -21,7 +21,8 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <pthreadP.h>
+#include <stdint.h>
+#include "pthreadP.h"
 #include <hp-timing.h>
 #include <ldsodefs.h>
 #include <atomic.h>
@@ -342,6 +343,12 @@ PLATFORM_THREAD_START
 #endif
     }
 
+  /* Call destructors for the thread_local TLS variables.  */
+#ifndef SHARED
+  if (&__call_tls_dtors != NULL)
+#endif
+    __call_tls_dtors ();
+
   /* Run the destructor for the thread-local data.  */
   __nptl_deallocate_tsd ();
 
@@ -432,7 +439,7 @@ PLATFORM_THREAD_START
 #endif
   assert (freesize < pd->stackblock_size);
   if (freesize > PTHREAD_STACK_MIN)
-    madvise (pd->stackblock, freesize - PTHREAD_STACK_MIN, MADV_DONTNEED);
+    __madvise (pd->stackblock, freesize - PTHREAD_STACK_MIN, MADV_DONTNEED);
 
   /* If the thread is detached free the TCB.  */
   if (IS_DETACHED (pd))
@@ -455,7 +462,7 @@ PLATFORM_THREAD_START
   /* We cannot call '_exit' here.  '_exit' will terminate the process.
 
      The 'exit' implementation in the kernel will signal when the
-     process is really dead since 'clone' got passed the CLONE_CLEARTID
+     process is really dead since 'clone' got passed the CLONE_CHILD_CLEARTID
      flag.  The 'tid' field in the TCB will be set to zero.
 
      The exit code is zero since in case all threads exit by calling
@@ -465,15 +472,6 @@ PLATFORM_THREAD_START
   /* NOTREACHED */
   return 0;
 }
-
-
-/* Default thread attributes for the case when the user does not
-   provide any.  */
-static const struct pthread_attr default_attr =
-  {
-    /* Just some value > 0 which gets rounded to the nearest page size.  */
-    .guardsize = 1,
-  };
 
 
 int
@@ -486,18 +484,47 @@ __pthread_create_2_1 (newthread, attr, start_routine, arg)
   STACK_VARIABLES;
 
   const struct pthread_attr *iattr = (struct pthread_attr *) attr;
+  struct pthread_attr default_attr;
+  bool free_cpuset = false;
   if (iattr == NULL)
-    /* Is this the best idea?  On NUMA machines this could mean
-       accessing far-away memory.  */
-    iattr = &default_attr;
+    {
+      lll_lock (__default_pthread_attr_lock, LLL_PRIVATE);
+      default_attr = __default_pthread_attr;
+      size_t cpusetsize = default_attr.cpusetsize;
+      if (cpusetsize > 0)
+	{
+	  cpu_set_t *cpuset;
+	  if (__glibc_likely (__libc_use_alloca (cpusetsize)))
+	    cpuset = __alloca (cpusetsize);
+	  else
+	    {
+	      cpuset = malloc (cpusetsize);
+	      if (cpuset == NULL)
+		{
+		  lll_unlock (__default_pthread_attr_lock, LLL_PRIVATE);
+		  return ENOMEM;
+		}
+	      free_cpuset = true;
+	    }
+	  memcpy (cpuset, default_attr.cpuset, cpusetsize);
+	  default_attr.cpuset = cpuset;
+	}
+      lll_unlock (__default_pthread_attr_lock, LLL_PRIVATE);
+      iattr = &default_attr;
+    }
 
   struct pthread *pd = NULL;
   int err = ALLOCATE_STACK (iattr, &pd);
+  int retval = 0;
+
   if (__builtin_expect (err != 0, 0))
     /* Something went wrong.  Maybe a parameter of the attributes is
        invalid or we could not allocate memory.  Note we have to
        translate error codes.  */
-    return err == ENOMEM ? EAGAIN : err;
+    {
+      retval = err == ENOMEM ? EAGAIN : err;
+      goto out;
+    }
 
 
   /* Initialize the TCB.  All initializations with zero should be
@@ -548,8 +575,7 @@ __pthread_create_2_1 (newthread, attr, start_routine, arg)
 #endif
 
   /* Determine scheduling parameters for the thread.  */
-  if (attr != NULL
-      && __builtin_expect ((iattr->flags & ATTR_FLAG_NOTINHERITSCHED) != 0, 0)
+  if (__builtin_expect ((iattr->flags & ATTR_FLAG_NOTINHERITSCHED) != 0, 0)
       && (iattr->flags & (ATTR_FLAG_SCHED_SET | ATTR_FLAG_POLICY_SET)) != 0)
     {
       INTERNAL_SYSCALL_DECL (scerr);
@@ -598,7 +624,8 @@ __pthread_create_2_1 (newthread, attr, start_routine, arg)
 
 	  __deallocate_stack (pd);
 
-	  return EINVAL;
+	  retval = EINVAL;
+	  goto out;
 	}
     }
 
@@ -613,7 +640,13 @@ __pthread_create_2_1 (newthread, attr, start_routine, arg)
   LIBC_PROBE (pthread_create, 4, newthread, attr, start_routine, arg);
 
   /* Start the thread.  */
-  return create_thread (pd, iattr, STACK_VARIABLES_ARGS);
+  retval = create_thread (pd, iattr, STACK_VARIABLES_ARGS);
+
+ out:
+  if (__glibc_unlikely (free_cpuset))
+    free (default_attr.cpuset);
+
+  return retval;
 }
 versioned_symbol (libpthread, __pthread_create_2_1, pthread_create, GLIBC_2_1);
 

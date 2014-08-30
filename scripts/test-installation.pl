@@ -1,5 +1,5 @@
 #! /usr/bin/perl -w
-# Copyright (C) 1997-2012 Free Software Foundation, Inc.
+# Copyright (C) 1997-2014 Free Software Foundation, Inc.
 # This file is part of the GNU C Library.
 # Contributed by Andreas Jaeger <aj@arthur.rhein-neckar.de>, 1997.
 
@@ -24,6 +24,11 @@ if ($ENV{CC}) {
   $CC = $ENV{CC};
 } else {
   $CC= "gcc";
+}
+if ($ENV{LD_SO}) {
+  $LD_SO = $ENV{LD_SO};
+} else {
+  $LD_SO = "";
 }
 
 sub usage {
@@ -54,7 +59,7 @@ arglist: while (@ARGV) {
       $ARGV[0] eq "--vers" || $ARGV[0] eq "--versi" ||
       $ARGV[0] eq "--versio" || $ARGV[0] eq "--version") {
     print "test-installation (GNU $PACKAGE)\n";
-    print "Copyright (C) 1997, 1998 Free Software Foundation, Inc.\n";
+    print "Copyright (C) 2014 Free Software Foundation, Inc.\n";
     print "This is free software; see the source for copying conditions.  There is NO\n";
     print "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n";
     print "Written by Andreas Jaeger <aj\@arthur.rhein-neckar.de>\n";
@@ -112,6 +117,8 @@ while (<SOVERSIONS>) {
       $link_libs .= " -l$name";
       $versions{$name} = $version;
     }
+  } elsif ($LD_SO ne "") {
+    ($ld_so_name, $ld_so_version) = split ('\.so\.', $LD_SO);
   } else {
     if (/^ld\.so/) {
       ($ld_so_name, $ld_so_version)= /=(.*)\.so\.(.*)$/;

@@ -1,5 +1,5 @@
 /* Store current representation for exceptions.
-   Copyright (C) 1997, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997.
 
@@ -23,8 +23,8 @@
 int
 __fegetexceptflag (fexcept_t *flagp, int excepts)
 {
-  /* This always fails.  */
-  return 1;
+  /* Nothing to do.  */
+  return 0;
 }
 #if SHLIB_COMPAT (libm, GLIBC_2_1, GLIBC_2_2)
 strong_alias (__fegetexceptflag, __old_fegetexceptflag)
@@ -33,4 +33,3 @@ compat_symbol (libm, __old_fegetexceptflag, fegetexceptflag, GLIBC_2_1);
 versioned_symbol (libm, __fegetexceptflag, fegetexceptflag, GLIBC_2_2);
 
 stub_warning (fegetexceptflag)
-#include <stub-tag.h>

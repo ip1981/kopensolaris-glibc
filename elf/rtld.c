@@ -1,5 +1,5 @@
 /* Run time dynamic linker.
-   Copyright (C) 1995-2012 Free Software Foundation, Inc.
+   Copyright (C) 1995-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -39,6 +39,7 @@
 #include <dl-osinfo.h>
 #include <dl-procinfo.h>
 #include <tls.h>
+#include <stap-probe.h>
 #include <stackinfo.h>
 
 #include <assert.h>
@@ -132,8 +133,10 @@ struct rtld_global _rtld_global =
     ._dl_nns = 1,
     ._dl_ns =
     {
+#ifdef _LIBC_REENTRANT
       [LM_ID_BASE] = { ._ns_unique_sym_table
 		       = { .lock = _RTLD_LOCK_RECURSIVE_INITIALIZER } }
+#endif
     }
   };
 /* If we would use strong_alias here the compiler would see a
@@ -249,15 +252,6 @@ extern char _end[] attribute_hidden;
 RTLD_START
 #else
 # error "sysdeps/MACHINE/dl-machine.h fails to define RTLD_START"
-#endif
-
-#ifndef VALIDX
-# define VALIDX(tag) (DT_NUM + DT_THISPROCNUM + DT_VERSIONTAGNUM \
-		      + DT_EXTRANUM + DT_VALTAGIDX (tag))
-#endif
-#ifndef ADDRIDX
-# define ADDRIDX(tag) (DT_NUM + DT_THISPROCNUM + DT_VERSIONTAGNUM \
-		       + DT_EXTRANUM + DT_VALNUM + DT_ADDRTAGIDX (tag))
 #endif
 
 /* This is the second half of _dl_start (below).  It can be inlined safely
@@ -822,8 +816,8 @@ do_preload (char *fname, struct link_map *main_map, const char *where)
   if (__builtin_expect (err_str != NULL, 0))
     {
       _dl_error_printf ("\
-ERROR: ld.so: object '%s' from %s cannot be preloaded: ignored.\n",
-			fname, where);
+ERROR: ld.so: object '%s' from %s cannot be preloaded (%s): ignored.\n",
+			fname, where, err_str);
       /* No need to call free, this is still before
 	 the libc's malloc is used.  */
     }
@@ -879,6 +873,7 @@ security_init (void)
   _dl_random = NULL;
 }
 
+#include "setup-vdso.h"
 
 /* The library search path.  */
 static const char *library_path attribute_relro;
@@ -1090,7 +1085,8 @@ of this helper program; chances are you did not intend to run this program.\n\
       /* Now the map for the main executable is available.  */
       main_map = GL(dl_ns)[LM_ID_BASE]._ns_loaded;
 
-      if (GL(dl_rtld_map).l_info[DT_SONAME] != NULL
+      if (__builtin_expect (mode, normal) == normal
+	  && GL(dl_rtld_map).l_info[DT_SONAME] != NULL
 	  && main_map->l_info[DT_SONAME] != NULL
 	  && strcmp ((const char *) D_PTR (&GL(dl_rtld_map), l_info[DT_STRTAB])
 		     + GL(dl_rtld_map).l_info[DT_SONAME]->d_un.d_val,
@@ -1121,6 +1117,9 @@ of this helper program; chances are you did not intend to run this program.\n\
 	    break;
 	  case AT_ENTRY:
 	    av->a_un.a_val = *user_entry;
+	    break;
+	  case AT_EXECFN:
+	    av->a_un.a_val = (uintptr_t) _dl_argv[0];
 	    break;
 	  }
 #endif
@@ -1334,102 +1333,9 @@ of this helper program; chances are you did not intend to run this program.\n\
     }
 
   struct link_map **first_preload = &GL(dl_rtld_map).l_next;
-#if defined NEED_DL_SYSINFO || defined NEED_DL_SYSINFO_DSO
   /* Set up the data structures for the system-supplied DSO early,
      so they can influence _dl_init_paths.  */
-  if (GLRO(dl_sysinfo_dso) != NULL)
-    {
-      /* Do an abridged version of the work _dl_map_object_from_fd would do
-	 to map in the object.  It's already mapped and prelinked (and
-	 better be, since it's read-only and so we couldn't relocate it).
-	 We just want our data structures to describe it as if we had just
-	 mapped and relocated it normally.  */
-      struct link_map *l = _dl_new_object ((char *) "", "", lt_library, NULL,
-					   0, LM_ID_BASE);
-      if (__builtin_expect (l != NULL, 1))
-	{
-	  static ElfW(Dyn) dyn_temp[DL_RO_DYN_TEMP_CNT] attribute_relro;
-
-	  l->l_phdr = ((const void *) GLRO(dl_sysinfo_dso)
-		       + GLRO(dl_sysinfo_dso)->e_phoff);
-	  l->l_phnum = GLRO(dl_sysinfo_dso)->e_phnum;
-	  for (uint_fast16_t i = 0; i < l->l_phnum; ++i)
-	    {
-	      const ElfW(Phdr) *const ph = &l->l_phdr[i];
-	      if (ph->p_type == PT_DYNAMIC)
-		{
-		  l->l_ld = (void *) ph->p_vaddr;
-		  l->l_ldnum = ph->p_memsz / sizeof (ElfW(Dyn));
-		}
-	      else if (ph->p_type == PT_LOAD)
-		{
-		  if (! l->l_addr)
-		    l->l_addr = ph->p_vaddr;
-		  if (ph->p_vaddr + ph->p_memsz >= l->l_map_end)
-		    l->l_map_end = ph->p_vaddr + ph->p_memsz;
-		  if ((ph->p_flags & PF_X)
-			   && ph->p_vaddr + ph->p_memsz >= l->l_text_end)
-		    l->l_text_end = ph->p_vaddr + ph->p_memsz;
-		}
-	      else
-		/* There must be no TLS segment.  */
-		assert (ph->p_type != PT_TLS);
-	    }
-	  l->l_map_start = (ElfW(Addr)) GLRO(dl_sysinfo_dso);
-	  l->l_addr = l->l_map_start - l->l_addr;
-	  l->l_map_end += l->l_addr;
-	  l->l_text_end += l->l_addr;
-	  l->l_ld = (void *) ((ElfW(Addr)) l->l_ld + l->l_addr);
-	  elf_get_dynamic_info (l, dyn_temp);
-	  _dl_setup_hash (l);
-	  l->l_relocated = 1;
-
-	  /* The vDSO is always used.  */
-	  l->l_used = 1;
-
-	  /* Initialize l_local_scope to contain just this map.  This allows
-	     the use of dl_lookup_symbol_x to resolve symbols within the vdso.
-	     So we create a single entry list pointing to l_real as its only
-	     element */
-	  l->l_local_scope[0]->r_nlist = 1;
-	  l->l_local_scope[0]->r_list = &l->l_real;
-
-	  /* Now that we have the info handy, use the DSO image's soname
-	     so this object can be looked up by name.  Note that we do not
-	     set l_name here.  That field gives the file name of the DSO,
-	     and this DSO is not associated with any file.  */
-	  if (l->l_info[DT_SONAME] != NULL)
-	    {
-	      /* Work around a kernel problem.  The kernel cannot handle
-		 addresses in the vsyscall DSO pages in writev() calls.  */
-	      const char *dsoname = ((char *) D_PTR (l, l_info[DT_STRTAB])
-				     + l->l_info[DT_SONAME]->d_un.d_val);
-	      size_t len = strlen (dsoname);
-	      char *copy = malloc (len);
-	      if (copy == NULL)
-		_dl_fatal_printf ("out of memory\n");
-	      l->l_libname->name = l->l_name = memcpy (copy, dsoname, len);
-	    }
-
-	  /* Add the vDSO to the object list.  */
-	  _dl_add_to_namespace_list (l, LM_ID_BASE);
-
-	  /* Rearrange the list so this DSO appears after rtld_map.  */
-	  assert (l->l_next == NULL);
-	  assert (l->l_prev == main_map);
-	  GL(dl_rtld_map).l_next = l;
-	  l->l_prev = &GL(dl_rtld_map);
-	  first_preload = &l->l_next;
-
-	  /* We have a prelinked DSO preloaded by the system.  */
-	  GLRO(dl_sysinfo_map) = l;
-# ifdef NEED_DL_SYSINFO
-	  if (GLRO(dl_sysinfo) == DL_SYSINFO_DEFAULT)
-	    GLRO(dl_sysinfo) = GLRO(dl_sysinfo_dso)->e_entry + l->l_addr;
-# endif
-	}
-    }
-#endif
+  setup_vdso (main_map, &first_preload);
 
 #ifdef DL_SYSDEP_OSCHECK
   DL_SYSDEP_OSCHECK (_dl_fatal_printf);
@@ -1683,6 +1589,7 @@ ERROR: ld.so: object '%s' cannot be loaded as audit interface: %s; ignored.\n",
   /* We start adding objects.  */
   r->r_state = RT_ADD;
   _dl_debug_state ();
+  LIBC_PROBE (init_start, 2, LM_ID_BASE, r);
 
   /* Auditing checkpoint: we are ready to signal that the initial map
      is being constructed.  */
@@ -1864,7 +1771,7 @@ ERROR: ld.so: object '%s' cannot be loaded as audit interface: %s; ignored.\n",
 	  GL(dl_rtld_map).l_next = (i + 1 < main_map->l_searchlist.r_nlist
 				    ? main_map->l_searchlist.r_list[i + 1]
 				    : NULL);
-#if defined NEED_DL_SYSINFO || defined NEED_DL_SYSINFO_DSO
+#ifdef NEED_DL_SYSINFO_DSO
 	  if (GLRO(dl_sysinfo_map) != NULL
 	      && GL(dl_rtld_map).l_prev->l_next == GLRO(dl_sysinfo_map)
 	      && GL(dl_rtld_map).l_next != GLRO(dl_sysinfo_map))
@@ -1936,10 +1843,8 @@ ERROR: ld.so: object '%s' cannot be loaded as audit interface: %s; ignored.\n",
 	      if (_dl_name_match_p (GLRO(dl_trace_prelink), l))
 		GLRO(dl_trace_prelink_map) = l;
 	      _dl_printf ("\t%s => %s (0x%0*Zx, 0x%0*Zx)",
-			  l->l_libname->name[0] ? l->l_libname->name
-			  : rtld_progname ?: "<main program>",
-			  l->l_name[0] ? l->l_name
-			  : rtld_progname ?: "<main program>",
+			  DSO_FILENAME (l->l_libname->name),
+			  DSO_FILENAME (l->l_name),
 			  (int) sizeof l->l_map_start * 2,
 			  (size_t) l->l_map_start,
 			  (int) sizeof l->l_addr * 2,
@@ -1976,7 +1881,7 @@ ERROR: ld.so: object '%s' cannot be loaded as audit interface: %s; ignored.\n",
 	      if (dyn->d_tag == DT_NEEDED)
 		{
 		  l = l->l_next;
-#if defined NEED_DL_SYSINFO || defined NEED_DL_SYSINFO_DSO
+#ifdef NEED_DL_SYSINFO_DSO
 		  /* Skip the VDSO since it's not part of the list
 		     of objects we brought in via DT_NEEDED entries.  */
 		  if (l == GLRO(dl_sysinfo_map))
@@ -2096,8 +2001,7 @@ ERROR: ld.so: object '%s' cannot be loaded as audit interface: %s; ignored.\n",
 		      first = 0;
 		    }
 
-		  _dl_printf ("\t%s:\n",
-			      map->l_name[0] ? map->l_name : rtld_progname);
+		  _dl_printf ("\t%s:\n", DSO_FILENAME (map->l_name));
 
 		  while (1)
 		    {
@@ -2292,6 +2196,8 @@ ERROR: ld.so: object '%s' cannot be loaded as audit interface: %s; ignored.\n",
 	      lnp->dont_free = 1;
 	      lnp = lnp->next;
 	    }
+	  /* Also allocated with the fake malloc().  */
+	  l->l_free_initfini = 0;
 
 	  if (l != &GL(dl_rtld_map))
 	    _dl_relocate_object (l, l->l_scope, GLRO(dl_lazy) ? RTLD_LAZY : 0,
@@ -2313,10 +2219,6 @@ ERROR: ld.so: object '%s' cannot be loaded as audit interface: %s; ignored.\n",
 	/* We must prepare the profiling.  */
 	_dl_start_profile ();
     }
-
-#ifndef NONTLS_INIT_TP
-# define NONTLS_INIT_TP do { } while (0)
-#endif
 
   if (!was_tls_init_tp_called && GL(dl_tls_max_dtv_idx) > 0)
     ++GL(dl_tls_generation);
@@ -2400,8 +2302,9 @@ ERROR: ld.so: object '%s' cannot be loaded as audit interface: %s; ignored.\n",
   r = _dl_debug_initialize (0, LM_ID_BASE);
   r->r_state = RT_CONSISTENT;
   _dl_debug_state ();
+  LIBC_PROBE (init_complete, 2, LM_ID_BASE, r);
 
-#ifndef MAP_COPY
+#if defined USE_LDCONFIG && !defined MAP_COPY
   /* We must munmap() the cache file.  */
   _dl_unload_cache ();
 #endif
@@ -2417,7 +2320,7 @@ print_unresolved (int errcode __attribute__ ((unused)), const char *objname,
 		  const char *errstring)
 {
   if (objname[0] == '\0')
-    objname = rtld_progname ?: "<main program>";
+    objname = RTLD_PROGNAME;
   _dl_error_printf ("%s	(%s)\n", errstring, objname);
 }
 
@@ -2427,7 +2330,7 @@ static void
 print_missing_version (int errcode __attribute__ ((unused)),
 		       const char *objname, const char *errstring)
 {
-  _dl_error_printf ("%s: %s: %s\n", rtld_progname ?: "<program name unknown>",
+  _dl_error_printf ("%s: %s: %s\n", RTLD_PROGNAME,
 		    objname, errstring);
 }
 

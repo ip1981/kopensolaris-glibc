@@ -1,5 +1,5 @@
 /* Common code for DB-based databases in nss_db module.
-   Copyright (C) 1996-2000, 2011 Free Software Foundation, Inc.
+   Copyright (C) 1996-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -18,6 +18,7 @@
 
 #include <dlfcn.h>
 #include <fcntl.h>
+#include <stdint.h>
 #include <sys/mman.h>
 #include <bits/libc-lock.h>
 #include "nsswitch.h"

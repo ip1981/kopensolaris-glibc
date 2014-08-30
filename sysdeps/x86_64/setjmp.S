@@ -1,5 +1,5 @@
 /* setjmp for x86-64.
-   Copyright (C) 2001-2012 Free Software Foundation, Inc.
+   Copyright (C) 2001-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -61,10 +61,10 @@ ENTRY (__sigsetjmp)
 #else
 	/* Make a tail call to __sigjmp_save; it takes the same args.  */
 # ifdef	PIC
-	jmp C_SYMBOL_NAME (BP_SYM (__sigjmp_save))@PLT
+	jmp C_SYMBOL_NAME (__sigjmp_save)@PLT
 # else
-	jmp BP_SYM (__sigjmp_save)
+	jmp __sigjmp_save
 # endif
 #endif
-END (BP_SYM (__sigsetjmp))
+END (__sigsetjmp)
 hidden_def (__sigsetjmp)

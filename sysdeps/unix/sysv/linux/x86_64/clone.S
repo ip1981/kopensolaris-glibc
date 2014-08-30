@@ -1,4 +1,4 @@
-/* Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+/* Copyright (C) 2001-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -22,8 +22,6 @@
 #define _ERRNO_H	1
 #include <bits/errno.h>
 #include <asm-syntax.h>
-#include <bp-sym.h>
-#include <bp-asm.h>
 
 #define CLONE_VM	0x00000100
 #define CLONE_THREAD	0x00010000
@@ -52,7 +50,7 @@
 
 
         .text
-ENTRY (BP_SYM (__clone))
+ENTRY (__clone)
 	/* Sanity check arguments.  */
 	movq	$-EINVAL,%rax
 	testq	%rdi,%rdi		/* no NULL function pointers */
@@ -84,7 +82,6 @@ ENTRY (BP_SYM (__clone))
 	jl	SYSCALL_ERROR_LABEL
 	jz	L(thread_start)
 
-L(pseudo_end):
 	ret
 
 L(thread_start):
@@ -118,6 +115,6 @@ L(thread_start):
 	cfi_endproc;
 
 	cfi_startproc;
-PSEUDO_END (BP_SYM (__clone))
+PSEUDO_END (__clone)
 
-weak_alias (BP_SYM (__clone), BP_SYM (clone))
+weak_alias (__clone, clone)

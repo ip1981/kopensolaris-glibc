@@ -149,4 +149,9 @@ libc {
   GLIBC_2.16 {
     __getauxval; getauxval;
   }
+  GLIBC_PRIVATE {
+    __madvise;
+    __mktemp;
+    __libc_ifunc_impl_list;
+  }
 }

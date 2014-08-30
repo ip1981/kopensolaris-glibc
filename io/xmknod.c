@@ -1,4 +1,4 @@
-/* Copyright (C) 1991,1993,1995-1997,2002,2005 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -31,12 +31,6 @@ __xmknod (int vers, const char *path, mode_t mode, dev_t *dev)
       return -1;
     }
 
-  if (path == NULL)
-    {
-      __set_errno (EINVAL);
-      return -1;
-    }
-
   __set_errno (ENOSYS);
   return -1;
 }
@@ -44,4 +38,3 @@ stub_warning (__xmknod)
 
 weak_alias (__xmknod, _xmknod)
 libc_hidden_def (__xmknod)
-#include <stub-tag.h>

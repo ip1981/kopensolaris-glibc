@@ -1,4 +1,4 @@
-/* Copyright (C) 2012 Free Software Foundation, Inc.
+/* Copyright (C) 2012-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Marek Polacek <polacek@redhat.com>, 2012.
 
@@ -120,14 +120,12 @@ check_double (void)
 	      double, comparec, CMPLX);
 }
 
-# ifndef NO_LONG_DOUBLE
 static void
 check_long_double (void)
 {
   ALL_CHECKS (0.0l, -0.0l, __builtin_nanl (""), __builtin_infl (),
 	      long double, comparecl, CMPLXL);
 }
-# endif
 #endif
 
 static int
@@ -136,9 +134,7 @@ do_test (void)
 #ifdef CMPLX
   check_float ();
   check_double ();
-# ifndef NO_LONG_DOUBLE
   check_long_double ();
-# endif
 #endif
 
   return result;

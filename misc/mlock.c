@@ -1,5 +1,5 @@
 /* mlock -- guarantee pages are resident in memory.  Stub version.
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -31,4 +31,3 @@ mlock (const void *addr, size_t len)
 }
 
 stub_warning (mlock)
-#include <stub-tag.h>

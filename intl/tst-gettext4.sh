@@ -1,9 +1,8 @@
 #! /bin/sh
 # Test that gettext() in multithreaded applications works correctly if
 # different threads operate in different locales with the same encoding.
-# Copyright (C) 2001, 2002, 2005 Free Software Foundation, Inc.
+# Copyright (C) 2001-2014 Free Software Foundation, Inc.
 # This file is part of the GNU C Library.
-#
 
 # The GNU C Library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -19,8 +18,10 @@
 # License along with the GNU C Library; if not, see
 # <http://www.gnu.org/licenses/>.
 
+set -e
+
 common_objpfx=$1
-run_program_prefix=$2
+test_program_prefix=$2
 objpfx=$3
 
 LC_ALL=C
@@ -38,6 +39,6 @@ export GCONV_PATH
 LOCPATH=${common_objpfx}localedata
 export LOCPATH
 
-${run_program_prefix} ${objpfx}tst-gettext4 > ${objpfx}tst-gettext4.out
+${test_program_prefix} ${objpfx}tst-gettext4 > ${objpfx}tst-gettext4.out
 
 exit $?

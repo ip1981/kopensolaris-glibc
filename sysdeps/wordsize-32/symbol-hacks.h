@@ -1,5 +1,5 @@
 /* Hacks needed for symbol manipulation.
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -15,6 +15,8 @@
    You should have received a copy of the GNU Lesser General Public
    License along with the GNU C Library; if not, see
    <http://www.gnu.org/licenses/>.  */
+
+#include_next "symbol-hacks.h"
 
 /* A very dirty trick: gcc emits references to __divdi3, __udivdi3,
    __moddi3, and __umoddi3.  These functions are exported and

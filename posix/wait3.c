@@ -1,4 +1,4 @@
-/* Copyright (C) 1991, 1993, 1995, 1996, 1997 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -39,4 +39,3 @@ __wait3 (__WAIT_STATUS_DEFN stat_loc, int options, struct rusage *usage)
 stub_warning (wait3)
 
 weak_alias (__wait3, wait3)
-#include <stub-tag.h>

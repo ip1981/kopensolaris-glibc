@@ -1,5 +1,5 @@
 /* Reentrant function to return the current login name.  Hurd version.
-   Copyright (C) 1996, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1996-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -29,13 +29,20 @@ getlogin_r (name, name_len)
      char *name;
      size_t name_len;
 {
-  static char login[1024];	/* XXX */
+  string_t login;
   error_t err;
 
   if (err = __USEPORT (PROC, __proc_getlogin (port, login)))
     return errno = err;
 
-  strncpy (name, login, name_len);
+  size_t len = __strnlen (login, sizeof login - 1) + 1;
+  if (len > name_len)
+    {
+      errno = ERANGE;
+      return errno;
+    }
+
+  memcpy (name, login, len);
   return 0;
 }
 libc_hidden_def (getlogin_r)

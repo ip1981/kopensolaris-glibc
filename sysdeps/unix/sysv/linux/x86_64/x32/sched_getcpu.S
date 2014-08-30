@@ -1,4 +1,4 @@
-/* Copyright (C) 2012 Free Software Foundation, Inc.
+/* Copyright (C) 2012-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -44,7 +44,6 @@ ENTRY (sched_getcpu)
 	jae	SYSCALL_ERROR_LABEL
 
 	mov	%edx, %eax
-L(pseudo_end):
 	ret
 PSEUDO_END(sched_getcpu)
 #endif

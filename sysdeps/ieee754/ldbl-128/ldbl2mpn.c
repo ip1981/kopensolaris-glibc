@@ -1,5 +1,4 @@
-/* Copyright (C) 1995,1996,1997,1998,1999,2002,2003
-	Free Software Foundation, Inc.
+/* Copyright (C) 1995-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -70,7 +69,7 @@ __mpn_extract_long_double (mp_ptr res_ptr, mp_size_t size,
       else
 	{
           /* It is a denormal number, meaning it has no implicit leading
-  	     one bit, and its exponent is in fact the format minimum.  */
+	     one bit, and its exponent is in fact the format minimum.  */
 	  int cnt;
 
 #if N == 2

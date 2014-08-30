@@ -1,5 +1,5 @@
 /* Optimized memcpy implementation for PowerPC A2.
-   Copyright (C) 2010, 2011, 2012 Free Software Foundation, Inc.
+   Copyright (C) 2010-2014 Free Software Foundation, Inc.
    Contributed by Michael Brutman <brutman@us.ibm.com>.
    This file is part of the GNU C Library.
 
@@ -18,14 +18,12 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include <sysdep.h>
-#include <bp-sym.h>
-#include <bp-asm.h>
 
 #define PREFETCH_AHEAD 4        /* no cache lines SRC prefetching ahead  */
 #define ZERO_AHEAD 2            /* no cache lines DST zeroing ahead  */
 
 	.machine  a2
-EALIGN (BP_SYM (memcpy), 5, 0)
+EALIGN (memcpy, 5, 0)
 	CALL_MCOUNT
 
 	dcbt    0,r4            /* Prefetch ONE SRC cacheline  */
@@ -525,5 +523,5 @@ L(endloop2_128):
 	b       L(lessthancacheline)
 
 
-END (BP_SYM (memcpy))
+END (memcpy)
 libc_hidden_builtin_def (memcpy)

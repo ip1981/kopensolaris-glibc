@@ -1,6 +1,5 @@
 /* BSD `setjmp' entry point to `sigsetjmp (..., 1)'.  x86-64 version.
-   Copyright (C) 1994, 1995, 1996, 1997, 2000, 2001, 2005
-   Free Software Foundation, Inc.
+   Copyright (C) 1994-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -25,15 +24,13 @@
 #define _ASM
 #define _SETJMP_H
 #include <bits/setjmp.h>
-#include "bp-sym.h"
-#include "bp-asm.h"
 
-ENTRY (BP_SYM (setjmp))
+ENTRY (setjmp)
 	/* Set up arguments, we only need to set the 2nd arg.  */
 	movl $1, %esi
 #ifdef	PIC
 	jmp HIDDEN_JUMPTARGET (__sigsetjmp)
 #else
-	jmp BP_SYM (__sigsetjmp)
+	jmp __sigsetjmp
 #endif
-END (BP_SYM (setjmp))
+END (setjmp)

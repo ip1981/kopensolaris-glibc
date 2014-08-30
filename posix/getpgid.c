@@ -1,4 +1,4 @@
-/* Copyright (C) 1991,1995,1996,1997,1998,2002 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -29,4 +29,3 @@ libc_hidden_def (__getpgid)
 weak_alias (__getpgid, getpgid)
 
 stub_warning (getpgid)
-#include <stub-tag.h>

@@ -1,6 +1,5 @@
 /* System-specific socket constants and types.  Linux version.
-   Copyright (C) 1991, 1992, 1994-2001, 2004, 2006-2010, 2011, 2012
-   Free Software Foundation, Inc.
+   Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -80,7 +79,8 @@ typedef __socklen_t socklen_t;
 #define PF_CAIF		37	/* CAIF sockets.  */
 #define PF_ALG		38	/* Algorithm sockets.  */
 #define PF_NFC		39	/* NFC sockets.  */
-#define	PF_MAX		40	/* For now..  */
+#define PF_VSOCK	40	/* vSockets.  */
+#define	PF_MAX		41	/* For now..  */
 
 /* Address families.  */
 #define	AF_UNSPEC	PF_UNSPEC
@@ -124,6 +124,7 @@ typedef __socklen_t socklen_t;
 #define AF_CAIF		PF_CAIF
 #define AF_ALG		PF_ALG
 #define AF_NFC		PF_NFC
+#define AF_VSOCK	PF_VSOCK
 #define	AF_MAX		PF_MAX
 
 /* Socket level values.  Others are defined in the appropriate headers.
@@ -208,6 +209,8 @@ enum
 #define	MSG_MORE	MSG_MORE
     MSG_WAITFORONE	= 0x10000, /* Wait for at least one packet to return.*/
 #define MSG_WAITFORONE	MSG_WAITFORONE
+    MSG_FASTOPEN	= 0x20000000, /* Send data in TCP SYN.  */
+#define MSG_FASTOPEN	MSG_FASTOPEN
 
     MSG_CMSG_CLOEXEC	= 0x40000000	/* Set close_on_exit for file
 					   descriptor received through
@@ -234,16 +237,6 @@ struct msghdr
 
     int msg_flags;		/* Flags on received message.  */
   };
-
-#ifdef __USE_GNU
-/* For `recvmmsg' and 'sendmmsg'.  */
-struct mmsghdr
-  {
-    struct msghdr msg_hdr;	/* Actual message header.  */
-    unsigned int msg_len;	/* Number of received or sent bytes
-				   for the entry.  */
-  };
-#endif
 
 /* Structure used for storage of ancillary data object information.  */
 struct cmsghdr
@@ -388,28 +381,5 @@ struct linger
     int l_onoff;		/* Nonzero to linger on close.  */
     int l_linger;		/* Time to linger.  */
   };
-
-
-__BEGIN_DECLS
-
-#ifdef __USE_GNU
-/* Receive up to VLEN messages as described by VMESSAGES from socket FD.
-   Returns the number of bytes read or -1 for errors.
-
-   This function is a cancellation point and therefore not marked with
-   __THROW.  */
-extern int recvmmsg (int __fd, struct mmsghdr *__vmessages,
-		     unsigned int __vlen, int __flags,
-		     const struct timespec *__tmo);
-
-/* Send a VLEN messages as described by VMESSAGES to socket FD.
-   Return the number of datagrams successfully written or -1 for errors.
-This function is a cancellation point and therefore not marked with
-   __THROW.  */
-extern int sendmmsg (int __fd, struct mmsghdr *__vmessages,
-		     unsigned int __vlen, int __flags);
-#endif
-
-__END_DECLS
 
 #endif	/* bits/socket.h */

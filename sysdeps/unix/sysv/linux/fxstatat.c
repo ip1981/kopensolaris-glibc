@@ -1,4 +1,4 @@
-/* Copyright (C) 2005, 2006, 2007, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -23,12 +23,12 @@
 #include <fcntl.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/stat.h>
 #include <kernel_stat.h>
 
 #include <sysdep.h>
 #include <sys/syscall.h>
-#include <bp-checks.h>
 #include <kernel-features.h>
 
 #include <xstatconv.h>
@@ -108,11 +108,11 @@ __fxstatat (int vers, int fd, const char *file, struct stat *st, int flag)
   if (vers == _STAT_VER_KERNEL)
     {
       if (flag & AT_SYMLINK_NOFOLLOW)
-	result = INTERNAL_SYSCALL (lstat, err, 2, CHECK_STRING (file),
-				   CHECK_1 ((struct kernel_stat *) st));
+	result = INTERNAL_SYSCALL (lstat, err, 2, file,
+				   (struct kernel_stat *) st);
       else
-	result = INTERNAL_SYSCALL (stat, err, 2, CHECK_STRING (file),
-				   CHECK_1 ((struct kernel_stat *) st));
+	result = INTERNAL_SYSCALL (stat, err, 2, file,
+				   (struct kernel_stat *) st);
 
       if (__builtin_expect (!INTERNAL_SYSCALL_ERROR_P (result, err), 1))
 	return result;
@@ -125,11 +125,9 @@ __fxstatat (int vers, int fd, const char *file, struct stat *st, int flag)
     }
 #else
   if (flag & AT_SYMLINK_NOFOLLOW)
-    result = INTERNAL_SYSCALL (lstat, err, 2, CHECK_STRING (file),
-			       __ptrvalue (&kst));
+    result = INTERNAL_SYSCALL (lstat, err, 2, file, &kst);
   else
-    result = INTERNAL_SYSCALL (stat, err, 2, CHECK_STRING (file),
-			       __ptrvalue (&kst));
+    result = INTERNAL_SYSCALL (stat, err, 2, file, &kst);
 
   if (__builtin_expect (!INTERNAL_SYSCALL_ERROR_P (result, err), 1))
     return __xstat_conv (vers, &kst, st);

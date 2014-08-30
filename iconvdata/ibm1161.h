@@ -1,5 +1,5 @@
 /* Mapping table for IBM1161.
-   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2001-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Masahide Washizawa <washi@jp.ibm.com>, 2001.
 
@@ -16,6 +16,8 @@
    You should have received a copy of the GNU Lesser General Public
    License along with the GNU C Library; if not, see
    <http://www.gnu.org/licenses/>.  */
+
+#include <stdint.h>
 
 static const uint32_t to_ucs4[256] =
 {

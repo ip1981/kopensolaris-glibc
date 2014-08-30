@@ -1,5 +1,5 @@
 /* Selective file content synch'ing.
-   Copyright (C) 2006, 2007, 2009, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2006-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -48,6 +48,4 @@ sync_file_range (int fd, __off64_t from, __off64_t to, unsigned int flags)
   return -1;
 }
 stub_warning (sync_file_range)
-
-# include <stub-tag.h>
 #endif

@@ -1,4 +1,4 @@
-# Copyright (C) 2002-2008,2009,2010,2012 Free Software Foundation, Inc.
+# Copyright (C) 2002-2014 Free Software Foundation, Inc.
 # This file is part of the GNU C Library.
 
 # The GNU C Library is free software; you can redistribute it and/or
@@ -125,7 +125,8 @@ libpthread-routines = nptl-init vars events version \
 		      pthread_mutexattr_setprioceiling tpp \
 		      pthread_mutex_getprioceiling \
 		      pthread_mutex_setprioceiling \
-		      pthread_setname pthread_getname
+		      pthread_setname pthread_getname \
+		      pthread_setattr_default_np pthread_getattr_default_np
 #		      pthread_setuid pthread_seteuid pthread_setreuid \
 #		      pthread_setresuid \
 #		      pthread_setgid pthread_setegid pthread_setregid \
@@ -191,22 +192,28 @@ CFLAGS-sigwait.c = -fexceptions -fasynchronous-unwind-tables
 CFLAGS-msgrcv.c = -fexceptions -fasynchronous-unwind-tables
 CFLAGS-msgsnd.c = -fexceptions -fasynchronous-unwind-tables
 CFLAGS-tcdrain.c = -fexceptions -fasynchronous-unwind-tables
+CFLAGS-open.c = -fexceptions -fasynchronous-unwind-tables
+CFLAGS-open64.c = -fexceptions -fasynchronous-unwind-tables
+CFLAGS-pause.c = -fexceptions -fasynchronous-unwind-tables
+CFLAGS-recv.c = -fexceptions -fasynchronous-unwind-tables
+CFLAGS-send.c = -fexceptions -fasynchronous-unwind-tables
 
 CFLAGS-pt-system.c = -fexceptions
 
 
 tests = tst-typesizes \
-	tst-attr1 tst-attr2 tst-attr3 \
+	tst-attr1 tst-attr2 tst-attr3 tst-default-attr \
 	tst-mutex1 tst-mutex2 tst-mutex3 tst-mutex4 tst-mutex5 tst-mutex6 \
 	tst-mutex7 tst-mutex8 tst-mutex9 tst-mutex5a tst-mutex7a \
 	tst-mutexpi1 tst-mutexpi2 tst-mutexpi3 tst-mutexpi4 tst-mutexpi5 \
 	tst-mutexpi5a tst-mutexpi6 tst-mutexpi7 tst-mutexpi7a tst-mutexpi8 \
 	tst-mutexpi9 \
-	tst-spin1 tst-spin2 tst-spin3 \
+	tst-spin1 tst-spin2 tst-spin3 tst-spin4 \
 	tst-cond1 tst-cond2 tst-cond3 tst-cond4 tst-cond5 tst-cond6 tst-cond7 \
 	tst-cond8 tst-cond9 tst-cond10 tst-cond11 tst-cond12 tst-cond13 \
 	tst-cond14 tst-cond15 tst-cond16 tst-cond17 tst-cond18 tst-cond19 \
-	tst-cond20 tst-cond21 tst-cond22 tst-cond23 \
+	tst-cond20 tst-cond21 tst-cond22 tst-cond23 tst-cond24 tst-cond25 \
+	tst-cond-except \
 	tst-robust1 tst-robust2 tst-robust3 tst-robust4 tst-robust5 \
 	tst-robust6 tst-robust7 tst-robust8 tst-robust9 \
 	tst-robustpi1 tst-robustpi2 tst-robustpi3 tst-robustpi4 tst-robustpi5 \
@@ -217,7 +224,7 @@ tests = tst-typesizes \
 	tst-once1 tst-once2 tst-once3 tst-once4 \
 	tst-key1 tst-key2 tst-key3 tst-key4 \
 	tst-sem1 tst-sem2 tst-sem3 tst-sem4 tst-sem5 tst-sem6 tst-sem7 \
-	tst-sem8 tst-sem9 tst-sem10 tst-sem11 tst-sem12 tst-sem13 \
+	tst-sem8 tst-sem9 tst-sem10 tst-sem11 tst-sem12 tst-sem13 tst-sem14 \
 	tst-barrier1 tst-barrier2 tst-barrier3 tst-barrier4 \
 	tst-align tst-align2 tst-align3 \
 	tst-basic1 tst-basic2 tst-basic3 tst-basic4 tst-basic5 tst-basic6 \
@@ -245,7 +252,8 @@ tests = tst-typesizes \
 	tst-exec1 tst-exec2 tst-exec3 tst-exec4 \
 	tst-exit1 tst-exit2 tst-exit3 \
 	tst-stdio1 tst-stdio2 \
-	tst-stack1 tst-stack2 tst-stack3 \
+	tst-stack1 tst-stack2 tst-stack3 tst-pthread-getattr \
+	tst-pthread-attr-affinity \
 	tst-unload \
 	tst-dlsym1 \
 	tst-sysconf \
@@ -256,24 +264,23 @@ tests = tst-typesizes \
 	tst-context1 \
 	tst-sched1 \
 	tst-backtrace1 \
-	tst-oddstacklimit \
 	tst-abstime \
 	tst-vfork1 tst-vfork2 tst-vfork1x tst-vfork2x \
 	tst-getpid1 tst-getpid2 tst-getpid3 \
 	tst-initializers1 $(patsubst %,tst-initializers1-%,c89 gnu89 c99 gnu99)
 xtests = tst-setuid1 tst-setuid1-static tst-mutexpp1 tst-mutexpp6 tst-mutexpp10
+test-srcs = tst-oddstacklimit
 
 # Files which must not be linked with libpthread.
 tests-nolibpthread = tst-unload
-
-# This sets the stack resource limit to 1023kb, which is not a multiple
-# of the page size since every architecture's page size is > 1k.
-tst-oddstacklimit-ENV = ; ulimit -s 1023;
 
 gen-as-const-headers = pthread-errnos.sym
 
 LDFLAGS-pthread.so = -Wl,--enable-new-dtags,-z,nodelete,-z,initfirst
 
+# GCC-4.9 compiles 'sprintf(NULL, ...)' into UD2 on x86_64 without -fno-builtin
+CFLAGS-tst-cleanup2.c = -fno-builtin
+CFLAGS-tst-cleanupx2.c = -fno-builtin
 
 include ../Makeconfig
 
@@ -341,15 +348,20 @@ extra-objs += $(crti-objs) $(crtn-objs)
 extra-objs += pt-crti.o
 endif
 
-CFLAGS-flockfile.c = -D_IO_MTSAFE_IO
-CFLAGS-ftrylockfile.c = -D_IO_MTSAFE_IO
-CFLAGS-funlockfile.c = -D_IO_MTSAFE_IO
+CFLAGS-flockfile.c = $(libio-mtsafe)
+CFLAGS-ftrylockfile.c = $(libio-mtsafe)
+CFLAGS-funlockfile.c = $(libio-mtsafe)
 
 link-libc-static := $(common-objpfx)libc.a $(static-gnulib) \
 		    $(common-objpfx)libc.a
 
-tests-static += tst-locale1 tst-locale2 tst-stackguard1-static
-tests += tst-stackguard1-static
+tests-static += tst-locale1 tst-locale2 tst-stackguard1-static \
+		tst-cancel21-static tst-cancel24-static tst-cond8-static \
+		tst-mutex8-static tst-mutexpi8-static tst-sem11-static \
+		tst-sem12-static
+tests += tst-stackguard1-static tst-cancel21-static tst-cancel24-static \
+	 tst-cond8-static tst-mutex8-static tst-mutexpi8-static \
+	 tst-sem11-static tst-sem12-static
 xtests-static += tst-setuid1-static
 
 # These tests are linked with libc before libpthread
@@ -431,16 +443,21 @@ CFLAGS-tst-initializers1-c99.c = $(CFLAGS-tst-initializers1-<)
 CFLAGS-tst-initializers1-gnu89.c = $(CFLAGS-tst-initializers1-<)
 CFLAGS-tst-initializers1-gnu99.c = $(CFLAGS-tst-initializers1-<)
 
-tst-cancel7-ARGS = --command "$(built-program-cmd)"
+tst-cancel7-ARGS = --command "exec $(host-test-program-cmd)"
 tst-cancelx7-ARGS = $(tst-cancel7-ARGS)
 tst-umask1-ARGS = $(objpfx)tst-umask1.temp
+
+# In this test, we create a CLONE_VM "thread" that shares TLS storage
+# with the original thread. Both threads then race in ld.so with lazy PLT
+# resolution. Avoid this race by disabling lazy binding. BZ #11214.
+tst-getpid2-ENV = LD_BIND_NOW=1
 
 $(objpfx)tst-atfork2: $(libdl) $(shared-thread-library)
 LDFLAGS-tst-atfork2 = -rdynamic
 tst-atfork2-ENV = MALLOC_TRACE=$(objpfx)tst-atfork2.mtrace
 $(objpfx)tst-atfork2mod.so: $(shared-thread-library)
 
-ifeq ($(cross-compiling),no)
+ifeq ($(run-built-tests),yes)
 tests: $(objpfx)tst-stack3-mem
 endif
 tst-stack3-ENV = MALLOC_TRACE=$(objpfx)tst-stack3.mtrace
@@ -464,15 +481,15 @@ LDFLAGS-tst-tls5 = $(no-as-needed)
 LDFLAGS-tst-tls5mod.so = -Wl,-soname,tst-tls5mod.so
 
 ifeq ($(build-shared),yes)
-ifeq ($(cross-compiling),no)
+ifeq ($(run-built-tests),yes)
 tests: $(objpfx)tst-tls6.out
 endif
 $(objpfx)tst-tls6.out: tst-tls6.sh $(objpfx)tst-tls5 \
 		       $(objpfx)tst-tls5moda.so $(objpfx)tst-tls5modb.so \
 		       $(objpfx)tst-tls5modc.so $(objpfx)tst-tls5modd.so \
 		       $(objpfx)tst-tls5mode.so $(objpfx)tst-tls5modf.so
-	$(SHELL) -e tst-tls6.sh $(common-objpfx) $(elf-objpfx) \
-		    $(rtld-installed-name)
+	$(BASH) $< $(common-objpfx) '$(test-via-rtld-prefix)' \
+	  '$(test-wrapper-env)'
 endif
 
 $(objpfx)tst-dlsym1: $(libdl) $(shared-thread-library)
@@ -480,46 +497,26 @@ $(objpfx)tst-dlsym1: $(libdl) $(shared-thread-library)
 $(objpfx)tst-fini1: $(shared-thread-library) $(objpfx)tst-fini1mod.so
 
 ifeq (yes,$(build-shared))
-$(objpfx)tst-cond11: $(common-objpfx)rt/librt.so
-$(objpfx)tst-cond19: $(common-objpfx)rt/librt.so
-$(objpfx)tst-sem5: $(common-objpfx)rt/librt.so
-$(objpfx)tst-cancel17: $(common-objpfx)rt/librt.so
-$(objpfx)tst-cancelx17: $(common-objpfx)rt/librt.so
-$(objpfx)tst-cancel18: $(common-objpfx)rt/librt.so
-$(objpfx)tst-cancelx18: $(common-objpfx)rt/librt.so
-$(objpfx)tst-clock2: $(common-objpfx)rt/librt.so
-$(objpfx)tst-rwlock14: $(common-objpfx)rt/librt.so
+librt = $(common-objpfx)rt/librt.so
+else
+librt = $(common-objpfx)rt/librt.a
+endif
+
+$(objpfx)tst-cancel17: $(librt)
+$(objpfx)tst-cancelx17: $(librt)
 $(objpfx)tst-_res1mod2.so: $(objpfx)tst-_res1mod1.so
 LDFLAGS-tst-_res1mod1.so = -Wl,-soname,tst-_res1mod1.so
 LDFLAGS-tst-_res1mod2.so = -Wl,-soname,tst-_res1mod2.so
 $(objpfx)tst-_res1: $(objpfx)tst-_res1mod1.so $(objpfx)tst-_res1mod2.so \
 		    $(shared-thread-library)
-else
-$(objpfx)tst-cond11: $(common-objpfx)rt/librt.a
-$(objpfx)tst-cond19: $(common-objpfx)rt/librt.a
-$(objpfx)tst-sem5: $(common-objpfx)rt/librt.a
-$(objpfx)tst-cancel17: $(common-objpfx)rt/librt.a
-$(objpfx)tst-cancelx17: $(common-objpfx)rt/librt.a
-$(objpfx)tst-cancel18: $(common-objpfx)rt/librt.a
-$(objpfx)tst-cancelx18: $(common-objpfx)rt/librt.a
-$(objpfx)tst-clock2: $(common-objpfx)rt/librt.a
-$(objpfx)tst-rwlock14: $(common-objpfx)rt/librt.a
-endif
 
-LDFLAGS-tst-cancel24 = $(no-as-needed) -lstdc++
+LDLIBS-tst-cancel24 = $(no-as-needed) -lstdc++
+LDLIBS-tst-cancel24-static = $(LDLIBS-tst-cancel24)
 
 extra-B-pthread.so = -B$(common-objpfx)nptl/
 $(objpfx)libpthread.so: $(addprefix $(objpfx),$(crti-objs) $(crtn-objs))
 $(objpfx)libpthread.so: +preinit += $(addprefix $(objpfx),$(crti-objs))
 $(objpfx)libpthread.so: +postinit += $(addprefix $(objpfx),$(crtn-objs))
-
-# Depend on libc.so so a DT_NEEDED is generated in the shared objects.
-# This ensures they will load libc.so for needed symbols if loaded by
-# a statically-linked program that hasn't already loaded it.
-# Depend on ld.so too to get proper versions of ld.so symbols.
-$(objpfx)libpthread.so: $(common-objpfx)libc.so \
-			$(common-objpfx)libc_nonshared.a \
-			$(elfobjdir)/ld.so
 
 # Make sure we link with the thread library.
 ifeq ($(build-shared),yes)
@@ -574,18 +571,19 @@ generated += banner.h
 LDFLAGS-pthread.so += -e __nptl_main
 endif
 
-ifeq (no,$(cross-compiling))
+ifeq ($(run-built-tests),yes)
 ifeq (yes,$(build-shared))
 tests: $(objpfx)tst-cancel-wrappers.out
 $(objpfx)tst-cancel-wrappers.out: tst-cancel-wrappers.sh
-	$(SHELL) $< $(common-objpfx)libc_pic.a \
+	$(SHELL) $< '$(NM)' \
+		    $(common-objpfx)libc_pic.a \
 		    $(common-objpfx)libc.a \
 		    $(objpfx)libpthread_pic.a \
 		    $(objpfx)libpthread.a > $@
 endif
 endif
 
-tst-exec4-ARGS = $(built-program-cmd)
+tst-exec4-ARGS = $(host-test-program-cmd)
 
 $(objpfx)tst-execstack: $(libdl)
 $(objpfx)tst-execstack.out: $(objpfx)tst-execstack-mod.so
@@ -593,8 +591,15 @@ LDFLAGS-tst-execstack = -Wl,-z,noexecstack
 
 $(objpfx)tst-fini1mod.so: $(shared-thread-library)
 
-tst-stackguard1-ARGS = --command "$(built-program-cmd) --child"
+tst-stackguard1-ARGS = --command "$(host-test-program-cmd) --child"
 tst-stackguard1-static-ARGS = --command "$(objpfx)tst-stackguard1-static --child"
+
+ifeq ($(run-built-tests),yes)
+tests: $(objpfx)tst-oddstacklimit.out
+
+$(objpfx)tst-oddstacklimit.out: $(objpfx)tst-oddstacklimit $(objpfx)tst-basic1
+	$(test-program-prefix) $< --command '$(host-test-program-cmd)' > $@
+endif
 
 # The tests here better do not run in parallel
 ifneq ($(filter %tests,$(MAKECMDGOALS)),)

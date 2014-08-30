@@ -1,5 +1,5 @@
 /* Complex tangent function for double.
-   Copyright (C) 1997-2012 Free Software Foundation, Inc.
+   Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997.
 
@@ -53,11 +53,20 @@ __ctan (__complex__ double x)
       double sinrx, cosrx;
       double den;
       const int t = (int) ((DBL_MAX_EXP - 1) * M_LN2 / 2);
+      int rcls = fpclassify (__real__ x);
 
       /* tan(x+iy) = (sin(2x) + i*sinh(2y))/(cos(2x) + cosh(2y))
 	 = (sin(x)*cos(x) + i*sinh(y)*cosh(y)/(cos(x)^2 + sinh(y)^2). */
 
-      __sincos (__real__ x, &sinrx, &cosrx);
+      if (__builtin_expect (rcls != FP_SUBNORMAL, 1))
+	{
+	  __sincos (__real__ x, &sinrx, &cosrx);
+	}
+      else
+	{
+	  sinrx = __real__ x;
+	  cosrx = 1.0;
+	}
 
       if (fabs (__imag__ x) > t)
 	{
@@ -83,10 +92,22 @@ __ctan (__complex__ double x)
 	}
       else
 	{
-	  double sinhix = __ieee754_sinh (__imag__ x);
-	  double coshix = __ieee754_cosh (__imag__ x);
+	  double sinhix, coshix;
+	  if (fabs (__imag__ x) > DBL_MIN)
+	    {
+	      sinhix = __ieee754_sinh (__imag__ x);
+	      coshix = __ieee754_cosh (__imag__ x);
+	    }
+	  else
+	    {
+	      sinhix = __imag__ x;
+	      coshix = 1.0;
+	    }
 
-	  den = cosrx * cosrx + sinhix * sinhix;
+	  if (fabs (sinhix) > fabs (cosrx) * DBL_EPSILON)
+	    den = cosrx * cosrx + sinhix * sinhix;
+	  else
+	    den = cosrx * cosrx;
 	  __real__ res = sinrx * cosrx / den;
 	  __imag__ res = sinhix * coshix / den;
 	}

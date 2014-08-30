@@ -1,5 +1,5 @@
 /* Constants for fenv_bits.h.
-   Copyright (C) 1997 Free Software Foundation, Inc.
+   Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -16,17 +16,17 @@
    License along with the GNU C Library; if not, see
    <http://www.gnu.org/licenses/>.  */
 
-/* We want to specify the bit pattern of the __fe_*_env constants, so 
+/* We want to specify the bit pattern of the __fe_*_env constants, so
    pretend they're really `long long' instead of `double'.  */
 
 /* If the default argument is used we use this value.  */
-const unsigned long long __fe_dfl_env __attribute__ ((aligned (8))) = 
+const unsigned long long __fe_dfl_env __attribute__ ((aligned (8))) =
 0xfff8000000000000ULL;
 
 /* Floating-point environment where none of the exceptions are masked.  */
-const unsigned long long __fe_enabled_env __attribute__ ((aligned (8))) = 
+const unsigned long long __fe_enabled_env __attribute__ ((aligned (8))) =
 0xfff80000000000f8ULL;
 
 /* Floating-point environment with the NI bit set.  */
-const unsigned long long __fe_nonieee_env __attribute__ ((aligned (8))) = 
+const unsigned long long __fe_nonieee_env __attribute__ ((aligned (8))) =
 0xfff8000000000004ULL;

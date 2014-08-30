@@ -1,4 +1,4 @@
-/* Copyright (C) 2002, 2003, 2007, 2008, 2011 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@redhat.com>, 2002.
 
@@ -35,7 +35,7 @@ unsigned long int *__fork_generation_pointer;
 
 
 
-/* The single linked list of all currently registered for handlers.  */
+/* The single linked list of all currently registered fork handlers.  */
 struct fork_handler *__fork_handlers;
 
 

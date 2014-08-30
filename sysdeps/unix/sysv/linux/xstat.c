@@ -1,5 +1,5 @@
 /* xstat using old-style Unix stat system call.
-   Copyright (C) 1991,1995-1998,2000,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -27,7 +27,6 @@
 
 #include <sysdep.h>
 #include <sys/syscall.h>
-#include <bp-checks.h>
 
 #include <xstatconv.h>
 
@@ -36,8 +35,7 @@ int
 __xstat (int vers, const char *name, struct stat *buf)
 {
   if (vers == _STAT_VER_KERNEL)
-    return INLINE_SYSCALL (stat, 2, CHECK_STRING (name),
-			   CHECK_1 ((struct kernel_stat *) buf));
+    return INLINE_SYSCALL (stat, 2, name, (struct kernel_stat *) buf);
 
 #ifdef STAT_IS_KERNEL_STAT
   errno = EINVAL;
@@ -46,8 +44,7 @@ __xstat (int vers, const char *name, struct stat *buf)
   struct kernel_stat kbuf;
   int result;
 
-  result = INLINE_SYSCALL (stat, 2, CHECK_STRING (name),
-			   __ptrvalue (&kbuf));
+  result = INLINE_SYSCALL (stat, 2, name, &kbuf);
   if (result == 0)
     result = __xstat_conv (vers, &kbuf, buf);
 

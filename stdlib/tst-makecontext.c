@@ -1,4 +1,4 @@
-/* Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
+/* Copyright (C) 2006-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -35,7 +35,9 @@ cf (int i)
       printf ("i %d thr %d\n", i, thr);
       exit (1);
     }
-  exit (0);
+
+  /* Since uc_link below has been set to NULL, setcontext is supposed to
+     terminate the process normally after this function returns.  */
 }
 
 int

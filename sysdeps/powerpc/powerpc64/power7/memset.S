@@ -1,5 +1,5 @@
 /* Optimized memset implementation for PowerPC64/POWER7.
-   Copyright (C) 2010 Free Software Foundation, Inc.
+   Copyright (C) 2010-2014 Free Software Foundation, Inc.
    Contributed by Luis Machado <luisgpm@br.ibm.com>.
    This file is part of the GNU C Library.
 
@@ -18,14 +18,12 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include <sysdep.h>
-#include <bp-sym.h>
-#include <bp-asm.h>
 
 /* __ptr_t [r3] memset (__ptr_t s [r3], int c [r4], size_t n [r5]));
    Returns 's'.  */
 
 	.machine power7
-EALIGN (BP_SYM (memset), 5, 0)
+EALIGN (memset, 5, 0)
 	CALL_MCOUNT 3
 
 L(_memset):
@@ -34,8 +32,8 @@ L(_memset):
 	mr	10,3
 
 	/* Replicate byte to word.  */
-	rlwimi	4,4,8,16,23
-	rlwimi	4,4,16,0,15
+	insrdi	4,4,8,48
+	insrdi	4,4,16,32
 	ble	cr6,L(small)	/* If length <= 8, use short copy code.  */
 
 	neg	0,3
@@ -323,7 +321,7 @@ L(medium):
 	clrldi	0,0,62
 	beq	L(medium_aligned)
 
-	/* Force 4-bytes alignment for SRC.  */
+	/* Force 4-bytes alignment for DST.  */
 	mtocrf	0x01,0
 	subf	5,0,5
 1:	/* Copy 1 byte.  */
@@ -382,16 +380,18 @@ L(small):
 	stw	4,4(10)
 	blr
 
-END_GEN_TB (BP_SYM (memset),TB_TOCLESS)
+END_GEN_TB (memset,TB_TOCLESS)
 libc_hidden_builtin_def (memset)
 
+#ifndef NO_BZERO_IMPL
 /* Copied from bzero.S to prevent the linker from inserting a stub
    between bzero and memset.  */
-ENTRY (BP_SYM (__bzero))
+ENTRY (__bzero)
 	CALL_MCOUNT 3
 	mr	r5,r4
 	li	r4,0
 	b	L(_memset)
-END_GEN_TB (BP_SYM (__bzero),TB_TOCLESS)
+END_GEN_TB (__bzero,TB_TOCLESS)
 
-weak_alias (BP_SYM (__bzero), BP_SYM (bzero))
+weak_alias (__bzero, bzero)
+#endif

@@ -1,5 +1,5 @@
 /* Save current context and install the given one.
-   Copyright (C) 2005-2012 Free Software Foundation, Inc.
+   Copyright (C) 2005-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -75,12 +75,12 @@ ENTRY(__swapcontext)
 	not	r1, r1			// r1=0 means r0 = -1 to -4095
 	tst	r1, r1			// i.e. error in linux
 	bf	.Lswapcontext_restore
-.Lsyscall_error:	
+.Lsyscall_error:
 	SYSCALL_ERROR_HANDLER
 .Lpseudo_end:
 	rts
 	 nop
-.Lswapcontext_restore:	
+.Lswapcontext_restore:
 	mov	r8, r0
 	add	#(oPC), r0
 	mov.l	@r0+, r2
@@ -126,7 +126,7 @@ ENTRY(__swapcontext)
 	cfi_adjust_cfa_offset(-4)
 	jmp	@r0
 	 mov.l	@r15+, r0
-	
+
 PSEUDO_END(__swapcontext)
 
 weak_alias (__swapcontext, swapcontext)

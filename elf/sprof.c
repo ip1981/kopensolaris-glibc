@@ -1,5 +1,5 @@
 /* Read and display shared object profiling data.
-   Copyright (C) 1997-2011, 2012 Free Software Foundation, Inc.
+   Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997.
 
@@ -32,6 +32,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdint.h>
 #include <ldsodefs.h>
 #include <sys/gmon.h>
 #include <sys/gmon_out.h>
@@ -363,13 +364,16 @@ parse_opt (int key, char *arg, struct argp_state *state)
 static char *
 more_help (int key, const char *text, void *input)
 {
+  char *tp = NULL;
   switch (key)
     {
     case ARGP_KEY_HELP_EXTRA:
       /* We print some extra information.  */
-      return strdup (gettext ("\
+      if (asprintf (&tp, gettext ("\
 For bug reporting instructions, please see:\n\
-<http://www.gnu.org/software/libc/bugs.html>.\n"));
+%s.\n"), REPORT_BUGS_TO) < 0)
+	return NULL;
+      return tp;
     default:
       break;
     }
@@ -381,13 +385,13 @@ For bug reporting instructions, please see:\n\
 static void
 print_version (FILE *stream, struct argp_state *state)
 {
-  fprintf (stream, "sprof (GNU %s) %s\n", PACKAGE, VERSION);
+  fprintf (stream, "sprof %s%s\n", PKGVERSION, VERSION);
   fprintf (stream, gettext ("\
 Copyright (C) %s Free Software Foundation, Inc.\n\
 This is free software; see the source for copying conditions.  There is NO\n\
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
 "),
-	   "2012");
+	   "2014");
   fprintf (stream, gettext ("Written by %s.\n"), "Ulrich Drepper");
 }
 
@@ -741,7 +745,7 @@ load_profdata (const char *name, struct shobj *shobj)
 {
   struct profdata *result;
   int fd;
-  struct stat st;
+  struct stat64 st;
   void *addr;
   uint32_t *narcsp;
   size_t fromlimit;
@@ -780,7 +784,7 @@ load_profdata (const char *name, struct shobj *shobj)
 
   /* We have found the file, now make sure it is the right one for the
      data file.  */
-  if (fstat (fd, &st) < 0)
+  if (fstat64 (fd, &st) < 0)
     {
       error (0, errno, _("while stat'ing profiling data file"));
       close (fd);
@@ -1360,7 +1364,7 @@ generate_call_graph (struct profdata *profdata)
 	    runp = runp->next;
 	  }
 
-	/* Info abount the function itself.  */
+	/* Info about the function itself.  */
 	n = printf ("[%Zu]", cnt);
 	printf ("%*s%5.1f%8.2f%8.2f%9" PRIdMAX "         %s [%Zd]\n",
 		(int) (7 - n), " ",

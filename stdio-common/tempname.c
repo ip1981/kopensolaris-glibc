@@ -1,4 +1,4 @@
-/* Copyright (C) 1991, 92, 93, 95-99, 2007, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -57,4 +57,3 @@ __gen_tempname (tmpl, suffixlen, flags, kind)
 }
 
 stub_warning (__gen_tempname)
-#include <stub-tag.h>

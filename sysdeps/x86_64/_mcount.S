@@ -1,5 +1,5 @@
 /* Machine-specific calling sequence for `mcount' profiling function.  x86-64 version.
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002-2014 Free Software Foundation, Inc.
    Contributed by Andreas Jaeger <aj@suse.de>.
    This file is part of the GNU C Library.
 
@@ -24,8 +24,8 @@
 
 #include <sysdep.h>
 
-	ASM_GLOBAL_DIRECTIVE C_SYMBOL_NAME(_mcount)
-	ASM_TYPE_DIRECTIVE(C_SYMBOL_NAME(_mcount), @function)
+	.globl C_SYMBOL_NAME(_mcount)
+	.type C_SYMBOL_NAME(_mcount), @function
 	.align ALIGNARG(4)
 C_LABEL(_mcount)
 	/* Allocate space for 7 registers.  */
@@ -65,8 +65,8 @@ C_LABEL(_mcount)
 #undef mcount
 weak_alias (_mcount, mcount)
 
-	ASM_GLOBAL_DIRECTIVE C_SYMBOL_NAME(__fentry__)
-	ASM_TYPE_DIRECTIVE(C_SYMBOL_NAME(__fentry__), @function)
+	.globl C_SYMBOL_NAME(__fentry__)
+	.type C_SYMBOL_NAME(__fentry__), @function
 	.align ALIGNARG(4)
 C_LABEL(__fentry__)
 	/* Allocate space for 7 registers.  */

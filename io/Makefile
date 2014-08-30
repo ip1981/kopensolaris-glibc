@@ -1,4 +1,4 @@
-# Copyright (C) 1992-2003,2005-2008,2011,2012 Free Software Foundation, Inc.
+# Copyright (C) 1992-2014 Free Software Foundation, Inc.
 # This file is part of the GNU C Library.
 
 # The GNU C Library is free software; you can redistribute it and/or
@@ -36,10 +36,10 @@ routines :=								\
 	statvfs fstatvfs statvfs64 fstatvfs64				\
 	umask chmod fchmod lchmod fchmodat				\
 	mkdir mkdirat							\
-	open open64 openat openat64 close				\
+	open open_2 open64 open64_2 openat openat_2 openat64 openat64_2	\
 	read write lseek lseek64 access euidaccess faccessat		\
 	fcntl flock lockf lockf64					\
-	dup dup2 dup3 pipe pipe2					\
+	close dup dup2 dup3 pipe pipe2					\
 	creat creat64							\
 	chdir fchdir							\
 	getcwd getwd getdirname						\
@@ -73,6 +73,8 @@ tests		:= test-utime test-stat test-stat2 test-lfs tst-getcwd \
 
 include ../Rules
 
+CFLAGS-open.c = -fexceptions -fasynchronous-unwind-tables
+CFLAGS-open64.c = -fexceptions -fasynchronous-unwind-tables
 CFLAGS-fcntl.c = -fexceptions -fasynchronous-unwind-tables
 CFLAGS-poll.c = -fexceptions -fasynchronous-unwind-tables
 CFLAGS-ppoll.c = -fexceptions -fasynchronous-unwind-tables
@@ -98,10 +100,9 @@ test-stat2-ARGS = Makefile . $(objpfx)test-stat2
 
 tst-statvfs-ARGS = $(objpfx)tst-statvfs tst-statvfs.c /tmp
 
-ifeq ($(cross-compiling),no)
+ifeq ($(run-built-tests),yes)
 tests: $(objpfx)ftwtest.out
 
-$(objpfx)ftwtest.out: $(objpfx)ftwtest
-	$(SHELL) -e ftwtest-sh $(shell cd $(common-objpfx). && pwd)/ \
-		 $(shell cd $(<D) && pwd)/$(<F) > $@
+$(objpfx)ftwtest.out: ftwtest-sh $(objpfx)ftwtest
+	$(SHELL) $< $(common-objpfx) '$(test-program-cmd)' > $@
 endif

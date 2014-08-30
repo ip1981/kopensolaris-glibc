@@ -1,5 +1,5 @@
 /* bits/typesizes.h -- underlying types for *_t.  Linux/x86-64 version.
-   Copyright (C) 2012 Free Software Foundation, Inc.
+   Copyright (C) 2012-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -65,13 +65,22 @@
 #define __USECONDS_T_TYPE	__U32_TYPE
 #define __SUSECONDS_T_TYPE	__SYSCALL_SLONG_TYPE
 #define __DADDR_T_TYPE		__S32_TYPE
-#define __SWBLK_T_TYPE		__SYSCALL_SLONG_TYPE
 #define __KEY_T_TYPE		__S32_TYPE
 #define __CLOCKID_T_TYPE	__S32_TYPE
 #define __TIMER_T_TYPE		void *
 #define __BLKSIZE_T_TYPE	__SYSCALL_SLONG_TYPE
 #define __FSID_T_TYPE		struct { int __val[2]; }
 #define __SSIZE_T_TYPE		__SWORD_TYPE
+
+#ifdef __x86_64__
+/* Tell the libc code that off_t and off64_t are actually the same type
+   for all ABI purposes, even if possibly expressed as different base types
+   for C type-checking purposes.  */
+# define __OFF_T_MATCHES_OFF64_T	1
+
+/* Same for ino_t and ino64_t.  */
+# define __INO_T_MATCHES_INO64_T	1
+#endif
 
 /* Number of descriptors that can fit in an `fd_set'.  */
 #define __FD_SETSIZE		1024

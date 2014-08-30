@@ -1,5 +1,4 @@
-/* Copyright (C) 1991, 1993, 1996, 1997, 1998, 1999, 2000, 2006
-   Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -31,8 +30,8 @@ ENTRY(__longjmp)
 	PTR_DEMANGLE (%g3, %g3, %g4)
 #endif
 	mov %o0, %g1		/* ENV in %g1 */
-     	orcc %o1, %g0, %g2	/* VAL in %g2 */
-     	be,a 0f			/* Branch if zero; else skip delay slot.  */
+	orcc %o1, %g0, %g2	/* VAL in %g2 */
+	be,a 0f			/* Branch if zero; else skip delay slot.  */
 	 mov 1, %g2		/* Delay slot only hit if zero: VAL = 1.  */
 0:
 	xor %fp, %g3, %o0

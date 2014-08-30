@@ -1,5 +1,5 @@
 /* Expression parsing for plural form selection.
-   Copyright (C) 2000, 2001, 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2000-2014 Free Software Foundation, Inc.
    Written by Ulrich Drepper <drepper@cygnus.com>, 2000.
    This file is part of the GNU C Library.
 
@@ -72,7 +72,7 @@ static struct expression plone;
 struct expression GERMANIC_PLURAL;
 
 static void
-init_germanic_plural ()
+init_germanic_plural (void)
 {
   if (plone.val.num == 0)
     {

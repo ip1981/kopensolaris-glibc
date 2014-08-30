@@ -1,5 +1,5 @@
 /* Relocate a shared object and resolve its references to other loaded objects.
-   Copyright (C) 1995-2012 Free Software Foundation, Inc.
+   Copyright (C) 1995-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -185,8 +185,7 @@ _dl_relocate_object (struct link_map *l, struct r_scope_elem *scope[],
 
   if (__builtin_expect (GLRO(dl_debug_mask) & DL_DEBUG_RELOC, 0))
     _dl_debug_printf ("\nrelocation processing: %s%s\n",
-		      l->l_name[0] ? l->l_name : rtld_progname,
-		      lazy ? " (lazy)" : "");
+		      DSO_FILENAME (l->l_name), lazy ? " (lazy)" : "");
 
   /* DT_TEXTREL is now in level 2 and might phase out at some time.
      But we rewrite the DT_FLAGS entry to a DT_TEXTREL entry to make
@@ -276,7 +275,7 @@ _dl_relocate_object (struct link_map *l, struct r_scope_elem *scope[],
 	    errstring = N_("%s: no PLTREL found in object %s\n");
 	  fatal:
 	    _dl_fatal_printf (errstring,
-			      rtld_progname ?: "<program name unknown>",
+			      RTLD_PROGNAME,
 			      l->l_name);
 	  }
 

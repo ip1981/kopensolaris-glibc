@@ -34,7 +34,12 @@ extra-objs += $(foreach o,$(filter-out .os .oS,$(object-suffixes-$(lib))),\
 					   $($(lib)-shared-only-routines),\
 					   $(all-$(lib)-routines))))
 ifneq (,$(filter .os,$(object-suffixes-$(lib))))
-extra-objs += $(all-$(lib)-routines:%=%.os)
+extra-objs += $(patsubst %,%.os,$(filter-out $($(lib)-static-only-routines),\
+					     $(all-$(lib)-routines)))
+endif
+ifneq (,$(filter .oS,$(object-suffixes-$(lib))))
+extra-objs += $(patsubst %,%.oS,$(filter $($(lib)-static-only-routines),\
+					 $(all-$(lib)-routines)))
 endif
 alltypes-$(lib) := $(foreach o,$(object-suffixes-$(lib)),\
 			     $(objpfx)$(patsubst %,$(libtype$o),\
@@ -85,7 +90,7 @@ $(objpfx)$(patsubst %,$(libtype.oS),$(lib:lib%=%)): \
 	$(build-extra-lib)
 endif
 
-ifeq ($(versioning),yes)
+ifeq ($(build-shared),yes)
 # Add the version script to the dependencies of the shared library.
 $(objpfx)$(lib).so: $(firstword $($(lib)-map) \
 				$(addprefix $(common-objpfx), \

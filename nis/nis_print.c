@@ -1,4 +1,4 @@
-/* Copyright (c) 1997, 1998, 1999, 2004 Free Software Foundation, Inc.
+/* Copyright (c) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Thorsten Kukuk <kukuk@vt.uni-paderborn.de>, 1997.
 
@@ -19,6 +19,7 @@
 #include <time.h>
 #include <string.h>
 #include <libintl.h>
+#include <stdint.h>
 
 #include <rpcsvc/nis.h>
 
@@ -289,7 +290,7 @@ nis_print_link (const link_obj *obj)
   fputs (_("Linked Object Type : "), stdout);
   nis_print_objtype (obj->li_rtype);
   printf (_("Linked to : %s\n"), obj->li_name);
-  /* XXX Print the attributs here, if they exists */
+  /* XXX Print the attributes here, if they exists */
 }
 libnsl_hidden_def (nis_print_link)
 

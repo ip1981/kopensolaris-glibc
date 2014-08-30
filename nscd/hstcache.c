@@ -1,5 +1,5 @@
 /* Cache handling for host lookup.
-   Copyright (C) 1998-2008, 2009, 2011, 2012 Free Software Foundation, Inc.
+   Copyright (C) 1998-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1998.
 
@@ -29,6 +29,7 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+#include <stdint.h>
 #include <arpa/inet.h>
 #include <arpa/nameser.h>
 #include <sys/mman.h>

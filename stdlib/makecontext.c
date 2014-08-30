@@ -1,4 +1,4 @@
-/* Copyright (C) 1998 Free Software Foundation, Inc.
+/* Copyright (C) 1998-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -26,4 +26,3 @@ makecontext (ucontext_t *ucp, void (*func) (void), int argc, ...)
 
 
 stub_warning (makecontext)
-#include <stub-tag.h>

@@ -1,5 +1,5 @@
 /* Optimized strlen implementation for PowerPC64/POWER7 using cmpb insn.
-   Copyright (C) 2010 Free Software Foundation, Inc.
+   Copyright (C) 2010-2014 Free Software Foundation, Inc.
    Contributed by Luis Machado <luisgpm@br.ibm.com>.
    This file is part of the GNU C Library.
 
@@ -18,12 +18,10 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include <sysdep.h>
-#include <bp-sym.h>
-#include <bp-asm.h>
 
 /* int [r3] strlen (char *s [r3])  */
 	.machine  power7
-ENTRY (BP_SYM (strlen))
+ENTRY (strlen)
 	CALL_MCOUNT 1
 	dcbt	0,r3
 	clrrdi	r4,r3,3	      /* Align the address to doubleword boundary.  */
@@ -32,7 +30,11 @@ ENTRY (BP_SYM (strlen))
 				 with cmpb.  */
 	li	r5,-1	      /* MASK = 0xffffffffffffffff.  */
 	ld	r12,0(r4)     /* Load doubleword from memory.  */
+#ifdef __LITTLE_ENDIAN__
+	sld	r5,r5,r6
+#else
 	srd	r5,r5,r6      /* MASK = MASK >> padding.  */
+#endif
 	orc	r9,r12,r5     /* Mask bits that are not part of the string.  */
 	cmpb	r10,r9,r0     /* Check for null bytes in DWORD1.  */
 	cmpdi	cr7,r10,0     /* If r10 == 0, no null's have been found.  */
@@ -50,9 +52,6 @@ ENTRY (BP_SYM (strlen))
 	cmpb	r10,r12,r0
 	cmpdi	cr7,r10,0
 	bne	cr7,L(done)
-	b	L(loop)	      /* We branch here (rather than falling through)
-				 to skip the nops due to heavy alignment
-				 of the loop below.  */
 
 	/* Main loop to look for the end of the string.  Since it's a
 	   small loop (< 8 instructions), align it to 32-bytes.  */
@@ -89,10 +88,16 @@ L(loop):
 	   0xff in the same position as the null byte in the original
 	   doubleword from the string.  Use that to calculate the length.  */
 L(done):
-	cntlzd	r0,r10	      /* Count leading zeroes before the match.  */
+#ifdef __LITTLE_ENDIAN__
+	addi	r9, r10, -1   /* Form a mask from trailing zeros.  */
+	andc	r9, r9, r10
+	popcntd r0, r9	      /* Count the bits in the mask.  */
+#else
+	cntlzd	r0,r10	      /* Count leading zeros before the match.  */
+#endif
 	subf	r5,r3,r4
-	srdi	r0,r0,3	      /* Convert leading zeroes to bytes.  */
+	srdi	r0,r0,3	      /* Convert leading/trailing zeros to bytes.  */
 	add	r3,r5,r0      /* Compute final length.  */
 	blr
-END (BP_SYM (strlen))
+END (strlen)
 libc_hidden_builtin_def (strlen)

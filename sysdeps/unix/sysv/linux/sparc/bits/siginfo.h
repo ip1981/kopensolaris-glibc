@@ -1,5 +1,5 @@
 /* siginfo_t, sigevent and constants.  Linux/SPARC version.
-   Copyright (C) 1997-2002, 2003, 2011, 2012 Free Software Foundation, Inc.
+   Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -96,6 +96,7 @@ typedef struct
 	  {
 	    void *si_addr;	/* Faulting insn/memory ref.  */
 	    int si_trapno;
+	    short int si_addr_lsb;	/* Valid LSB of the reported address.  */
 	  } _sigfault;
 
 	/* SIGPOLL.  */
@@ -104,6 +105,14 @@ typedef struct
 	    int si_band;	/* Band event for SIGPOLL.  */
 	    int si_fd;
 	  } _sigpoll;
+
+	/* SIGSYS.  */
+	struct
+	  {
+	    void *_call_addr;	/* Calling user insn.  */
+	    int _syscall;	/* Triggering system call number.  */
+	    unsigned int _arch; /* AUDIT_ARCH_* of syscall.  */
+	  } _sigsys;
       } _sifields;
   } siginfo_t;
 
@@ -121,8 +130,12 @@ typedef struct
 # define si_ptr		_sifields._rt.si_sigval.sival_ptr
 # define si_addr	_sifields._sigfault.si_addr
 # define si_trapno	_sifields._sigfault.si_trapno
+# define si_addr_lsb	_sifields._sigfault.si_addr_lsb
 # define si_band	_sifields._sigpoll.si_band
 # define si_fd		_sifields._sigpoll.si_fd
+# define si_call_addr 	_sifields._sigsys._call_addr
+# define si_syscall	_sifields._sigsys._syscall
+# define si_arch	_sifields._sigsys._arch
 
 
 /* Values for `si_code'.  Positive values are reserved for kernel-generated
@@ -208,8 +221,12 @@ enum
 # define BUS_ADRALN	BUS_ADRALN
   BUS_ADRERR,			/* Non-existant physical address.  */
 # define BUS_ADRERR	BUS_ADRERR
-  BUS_OBJERR			/* Object specific hardware error.  */
+  BUS_OBJERR,			/* Object specific hardware error.  */
 # define BUS_OBJERR	BUS_OBJERR
+  BUS_MCEERR_AR,		/* Hardware memory error: action required.  */
+# define BUS_MCEERR_AR	BUS_MCEERR_AR
+  BUS_MCEERR_AO			/* Hardware memory error: action optional.  */
+# define BUS_MCEERR_AO	BUS_MCEERR_AO
 };
 
 /* `si_code' values for SIGTRAP signal.  */

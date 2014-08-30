@@ -1,5 +1,5 @@
 /* Clear given exceptions in current floating-point environment.
-   Copyright (C) 1997-2012 Free Software Foundation, Inc.
+   Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997.
 
@@ -30,7 +30,7 @@ __feclearexcept (int excepts)
 strong_alias (__feclearexcept, __old_feclearexcept)
 compat_symbol (libm, __old_feclearexcept, feclearexcept, GLIBC_2_1);
 #endif
+libm_hidden_ver (__feclearexcept, feclearexcept)
 versioned_symbol (libm, __feclearexcept, feclearexcept, GLIBC_2_2);
 
 stub_warning (feclearexcept)
-#include <stub-tag.h>

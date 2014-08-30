@@ -1,5 +1,4 @@
-/* Copyright (C) 2003, 2004, 2006, 2007, 2008, 2009
-   Free Software Foundation, Inc.
+/* Copyright (C) 2003-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -71,7 +70,7 @@
       : (fl))								      \
    : ((fl) | (((private) ^ FUTEX_PRIVATE_FLAG)				      \
 	      & THREAD_GETMEM (THREAD_SELF, header.private_futex))))
-# endif	      
+# endif
 #endif
 
 #ifndef __ASSEMBLER__
@@ -389,7 +388,7 @@ extern int __lll_unlock_wake (int *__futex, int private) attribute_hidden;
 #define lll_islocked(futex) \
   (futex != LLL_LOCK_INITIALIZER)
 
-/* The kernel notifies a process with uses CLONE_CLEARTID via futex
+/* The kernel notifies a process which uses CLONE_CHILD_CLEARTID via futex
    wakeup when the clone terminates.  The memory location contains the
    thread ID while the clone is running and is reset to zero
    afterwards.  */

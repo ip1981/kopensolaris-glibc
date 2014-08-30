@@ -155,7 +155,7 @@ evSubTime(struct timespec *res, const struct timespec *minuend,
 	}
 }
 
-static inline int
+static int
 evCmpTime(struct timespec a, struct timespec b) {
 	long x = a.tv_sec - b.tv_sec;
 
@@ -164,7 +164,7 @@ evCmpTime(struct timespec a, struct timespec b) {
 	return (x < 0L ? (-1) : x > 0L ? (1) : (0));
 }
 
-static inline void
+static void
 evNowTime(struct timespec *res) {
 	struct timeval now;
 
@@ -441,7 +441,7 @@ __libc_res_nsend(res_state statp, const u_char *buf, int buflen,
 				    malloc(sizeof (struct sockaddr_in6));
 			if (EXT(statp).nsaddrs[n] != NULL) {
 				memset (mempcpy(EXT(statp).nsaddrs[n],
-						&statp->nsaddr_list[n],
+						&statp->nsaddr_list[ns],
 						sizeof (struct sockaddr_in)),
 					'\0',
 					sizeof (struct sockaddr_in6)
@@ -875,7 +875,7 @@ send_vc(res_state statp,
 		}
 	}
 	/*
-	 * If the calling applicating has bailed out of
+	 * If the calling application has bailed out of
 	 * a previous call and failed to arrange to have
 	 * the circuit closed or the server has got
 	 * itself confused, then drop the packet and
@@ -1129,7 +1129,7 @@ send_dg(res_state statp,
 		    reqs[1].msg_hdr.msg_control = NULL;
 		    reqs[1].msg_hdr.msg_controllen = 0;
 
-		    int ndg = sendmmsg (pfd[0].fd, reqs, 2, MSG_NOSIGNAL);
+		    int ndg = __sendmmsg (pfd[0].fd, reqs, 2, MSG_NOSIGNAL);
 		    if (__builtin_expect (ndg == 2, 1))
 		      {
 			if (reqs[0].msg_len != buflen
@@ -1229,8 +1229,11 @@ send_dg(res_state statp,
 		    /* Yes, we test ANSCP here.  If we have two buffers
 		       both will be allocatable.  */
 		    && anscp
+#ifdef FIONREAD
 		    && (ioctl (pfd[0].fd, FIONREAD, thisresplenp) < 0
-			|| *thisanssizp < *thisresplenp)) {
+			|| *thisanssizp < *thisresplenp)
+#endif
+                    ) {
 			u_char *newp = malloc (MAXPACKET);
 			if (newp != NULL) {
 				*anssizp = MAXPACKET;

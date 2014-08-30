@@ -1,5 +1,5 @@
 /* `ptrace' debugger support interface.  Linux version.
-   Copyright (C) 1996-1999,2000,2006,2007,2011 Free Software Foundation, Inc.
+   Copyright (C) 1996-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -20,6 +20,7 @@
 #define _SYS_PTRACE_H	1
 
 #include <features.h>
+#include <bits/types.h>
 
 __BEGIN_DECLS
 
@@ -145,7 +146,11 @@ enum __ptrace_request
 #define PTRACE_INTERRUPT PTRACE_INTERRUPT
 
   /* Wait for next group event.  */
-  PTRACE_LISTEN = 0x4208
+  PTRACE_LISTEN = 0x4208,
+#define PTRACE_LISTEN PTRACE_LISTEN
+
+  PTRACE_PEEKSIGINFO = 0x4209
+#define PTRACE_PEEKSIGINFO PTRACE_PEEKSIGINFO
 };
 
 
@@ -165,7 +170,9 @@ enum __ptrace_setoptions
   PTRACE_O_TRACEEXEC	= 0x00000010,
   PTRACE_O_TRACEVFORKDONE = 0x00000020,
   PTRACE_O_TRACEEXIT	= 0x00000040,
-  PTRACE_O_MASK		= 0x0000007f
+  PTRACE_O_TRACESECCOMP = 0x00000080,
+  PTRACE_O_EXITKILL	= 0x00100000,
+  PTRACE_O_MASK		= 0x001000ff
 };
 
 /* Wait extended result codes for the above trace options.  */
@@ -176,7 +183,22 @@ enum __ptrace_eventcodes
   PTRACE_EVENT_CLONE	= 3,
   PTRACE_EVENT_EXEC	= 4,
   PTRACE_EVENT_VFORK_DONE = 5,
-  PTRACE_EVENT_EXIT	= 6
+  PTRACE_EVENT_EXIT	= 6,
+  PTRACE_EVENT_SECCOMP  = 7
+};
+
+/* Arguments for PTRACE_PEEKSIGINFO.  */
+struct __ptrace_peeksiginfo_args
+{
+  __uint64_t off;	/* From which siginfo to start.  */
+  __uint32_t flags;	/* Flags for peeksiginfo.  */
+  __int32_t nr;		/* How many siginfos to take.  */
+};
+
+enum __ptrace_peeksiginfo_flags
+{
+  /* Read signals from a shared (process wide) queue.  */
+  PTRACE_PEEKSIGINFO_SHARED = (1 << 0)
 };
 
 /* Perform process tracing functions.  REQUEST is one of the values

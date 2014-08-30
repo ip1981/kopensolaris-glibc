@@ -1,5 +1,5 @@
 /* Install given floating-point environment and raise exceptions.
-   Copyright (C) 1997,99,2000,01,07,2010,2012 Free Software Foundation, Inc.
+   Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997.
 
@@ -18,7 +18,6 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include <fenv.h>
-#include <bp-sym.h>
 #include <unistd.h>
 #include <dl-procinfo.h>
 #include <ldsodefs.h>
@@ -53,8 +52,8 @@ __feupdateenv (const fenv_t *envp)
 #include <shlib-compat.h>
 #if SHLIB_COMPAT (libm, GLIBC_2_1, GLIBC_2_2)
 strong_alias (__feupdateenv, __old_feupdateenv)
-compat_symbol (libm, BP_SYM (__old_feupdateenv), BP_SYM (feupdateenv), GLIBC_2_1);
+compat_symbol (libm, __old_feupdateenv, feupdateenv, GLIBC_2_1);
 #endif
 
 libm_hidden_ver (__feupdateenv, feupdateenv)
-versioned_symbol (libm, BP_SYM (__feupdateenv), BP_SYM (feupdateenv), GLIBC_2_2);
+versioned_symbol (libm, __feupdateenv, feupdateenv, GLIBC_2_2);

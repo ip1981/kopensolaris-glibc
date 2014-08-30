@@ -1,6 +1,6 @@
 /* Machine-dependent software floating-point definitions.
    Sparc userland (_Q_*) version.
-   Copyright (C) 1997,1998,1999,2002,2006,2012 Free Software Foundation, Inc.
+   Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Richard Henderson (rth@cygnus.com),
 		  Jakub Jelinek (jj@ultra.linux.cz) and
@@ -47,6 +47,7 @@
 #define _FP_NANSIGN_Q		0
 
 #define _FP_KEEPNANFRACP 1
+#define _FP_QNANNEGATEDP 0
 
 /* If one NaN is signaling and the other is not,
  * we choose that one, otherwise we choose X.

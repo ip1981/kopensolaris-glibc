@@ -1,5 +1,5 @@
 /* Get thread information.
-   Copyright (C) 1999-2003,2007,2009 Free Software Foundation, Inc.
+   Copyright (C) 1999-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@redhat.com>, 1999.
 
@@ -19,6 +19,7 @@
 
 #include <stddef.h>
 #include <string.h>
+#include <stdint.h>
 #include "thread_dbP.h"
 
 

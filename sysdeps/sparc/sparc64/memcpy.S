@@ -1,6 +1,6 @@
 /* Copy SIZE bytes from SRC to DEST.
    For UltraSPARC.
-   Copyright (C) 1996, 97, 98, 99, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1996-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by David S. Miller (davem@caip.rutgers.edu) and
 		  Jakub Jelinek (jakub@redhat.com).
@@ -385,7 +385,7 @@ ENTRY(memcpy)
 210:
 #ifndef USE_BPR
 	srl		%o2, 0, %o2			/* IEU1				*/
-#endif	
+#endif
 	brz,pn		%o2, 209b			/* CTI		Group		*/
 218:	 cmp		%o2, 15				/* IEU1				*/
 	bleu,pn		%xcc, 208b			/* CTI		Group		*/

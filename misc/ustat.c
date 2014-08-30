@@ -1,5 +1,5 @@
 /* Return info on filesystem.
-   Copyright (C) 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1995-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -29,4 +29,3 @@ ustat (dev, ust)
   return -1;
 }
 stub_warning (ustat)
-#include <stub-tag.h>

@@ -1,4 +1,4 @@
-/* Copyright (C) 1991, 1993, 1995, 1997, 2002 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -21,7 +21,7 @@
 
 /* Get the process ID of the calling process.  */
 pid_t
-__getpid ()
+__getpid (void)
 {
   /* Assumes atomic word fetch and store, so doesn't lock _hurd_pid_lock.  */
   return _hurd_pid;

@@ -1,5 +1,5 @@
 /* Quad-precision floating point e^x.
-   Copyright (C) 1999, 2011 Free Software Foundation, Inc.
+   Copyright (C) 1999-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Jakub Jelinek <jj@ultra.linux.cz>
    Partly based on double-precision code
@@ -117,7 +117,7 @@ static const long double C[] = {
 #define TWO15 C[11]
  32768.0L,
 
-/* Chebyshev polynom coeficients for (exp(x)-1)/x */
+/* Chebyshev polynom coefficients for (exp(x)-1)/x */
 #define P1 C[12]
 #define P2 C[13]
 #define P3 C[14]
@@ -215,7 +215,7 @@ __ieee754_expl (long double x)
 	  ex3_u.d = (result - ex2_u.d) - x22 * ex2_u.d;
 	  ex2_u.d = result;
 	  ex3_u.ieee.exponent += LDBL_MANT_DIG + 15 + IEEE854_LONG_DOUBLE_BIAS
-	  			 - ex2_u.ieee.exponent;
+				 - ex2_u.ieee.exponent;
 	  n_i = abs (ex3_u.d);
 	  n_i = (n_i + 1) / 2;
 	  fesetenv (&oldenv);

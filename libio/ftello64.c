@@ -1,5 +1,4 @@
-/* Copyright (C) 1993, 1995-2001, 2002, 2003, 2004
-   Free Software Foundation, Inc.
+/* Copyright (C) 1993-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -30,12 +29,12 @@
 #include <libioP.h>
 #include <errno.h>
 
+#ifndef __OFF_T_MATCHES_OFF64_T
 
 off64_t
 ftello64 (fp)
      _IO_FILE *fp;
 {
-#ifdef _G_LSEEK64
   _IO_off64_t pos;
   CHECK_FILE (fp, -1L);
   _IO_acquire_lock (fp);
@@ -55,8 +54,6 @@ ftello64 (fp)
       return -1L;
     }
   return pos;
-#else
-  __set_errno (ENOSYS);
-  return -1;
-#endif
 }
+
+#endif

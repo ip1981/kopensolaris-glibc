@@ -1,8 +1,7 @@
 #! /bin/sh
 # Test of transliteration in gettext functions.
-# Copyright (C) 2000, 2002, 2005 Free Software Foundation, Inc.
+# Copyright (C) 2000-2014 Free Software Foundation, Inc.
 # This file is part of the GNU C Library.
-#
 
 # The GNU C Library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -18,8 +17,11 @@
 # License along with the GNU C Library; if not, see
 # <http://www.gnu.org/licenses/>.
 
+set -e
+
 common_objpfx=$1
-objpfx=$2
+test_program_prefix=$2
+objpfx=$3
 
 LC_ALL=C
 export LC_ALL
@@ -35,7 +37,7 @@ export GCONV_PATH
 LOCPATH=${common_objpfx}localedata
 export LOCPATH
 
-${common_objpfx}elf/ld.so --library-path $common_objpfx \
+${test_program_prefix} \
 ${objpfx}tst-translit > ${objpfx}tst-translit.out ${objpfx}domaindir
 
 exit $?

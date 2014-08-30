@@ -1,4 +1,4 @@
-/* Copyright (C) 2003 Free Software Foundation, Inc.
+/* Copyright (C) 2003-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -30,5 +30,4 @@ __remap_file_pages (void *start, size_t size, int prot, size_t pgoff,
 }
 
 stub_warning (remap_file_pages)
-#include <stub-tag.h>
 weak_alias (__remap_file_pages, remap_file_pages)

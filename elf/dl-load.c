@@ -1,5 +1,5 @@
 /* Map in a shared object's segments from the file.
-   Copyright (C) 1995-2012 Free Software Foundation, Inc.
+   Copyright (C) 1995-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -35,6 +35,7 @@
 #include <stackinfo.h>
 #include <caller.h>
 #include <sysdep.h>
+#include <stap-probe.h>
 
 #include <dl-dst.h>
 
@@ -323,7 +324,7 @@ _dl_dst_substitute (struct link_map *l, const char *name, char *result,
   const char *const start = name;
 
   /* Now fill the result path.  While copying over the string we keep
-     track of the start of the last path element.  When we come accross
+     track of the start of the last path element.  When we come across
      a DST we copy over the value or (if the value is not available)
      leave the entire path element out.  */
   char *wp = result;
@@ -341,13 +342,7 @@ _dl_dst_substitute (struct link_map *l, const char *name, char *result,
 	  if ((len = is_dst (start, name, "ORIGIN", is_path,
 			     INTUSE(__libc_enable_secure))) != 0)
 	    {
-#ifndef SHARED
-	      if (l == NULL)
-		repl = _dl_get_origin ();
-	      else
-#endif
-		repl = l->l_origin;
-
+	      repl = l->l_origin;
 	      check_for_trusted = (INTUSE(__libc_enable_secure)
 				   && l->l_type == lt_executable);
 	    }
@@ -486,14 +481,19 @@ static size_t max_dirnamelen;
 
 static struct r_search_path_elem **
 fillin_rpath (char *rpath, struct r_search_path_elem **result, const char *sep,
-	      int check_trusted, const char *what, const char *where)
+	      int check_trusted, const char *what, const char *where,
+	      struct link_map *l)
 {
   char *cp;
   size_t nelems = 0;
+  char *to_free;
 
   while ((cp = __strsep (&rpath, sep)) != NULL)
     {
       struct r_search_path_elem *dirp;
+
+      to_free = cp = expand_dynamic_string_token (l, cp, 1);
+
       size_t len = strlen (cp);
 
       /* `strsep' can pass an empty string.  This has to be
@@ -514,7 +514,10 @@ fillin_rpath (char *rpath, struct r_search_path_elem **result, const char *sep,
 
       /* Make sure we don't use untrusted directories if we run SUID.  */
       if (__builtin_expect (check_trusted, 0) && !is_trusted_path (cp, len))
-	continue;
+	{
+	  free (to_free);
+	  continue;
+	}
 
       /* See if this directory is already known.  */
       for (dirp = GL(dl_all_dirs); dirp != NULL; dirp = dirp->next)
@@ -575,6 +578,7 @@ fillin_rpath (char *rpath, struct r_search_path_elem **result, const char *sep,
 	  /* Put it in the result array.  */
 	  result[nelems++] = dirp;
 	}
+      free (to_free);
     }
 
   /* Terminate the array.  */
@@ -630,9 +634,8 @@ decompose_rpath (struct r_search_path_struct *sps,
       while (*inhp != '\0');
     }
 
-  /* Make a writable copy.  At the same time expand possible dynamic
-     string tokens.  */
-  copy = expand_dynamic_string_token (l, rpath, 1);
+  /* Make a writable copy.  */
+  copy = local_strdup (rpath);
   if (copy == NULL)
     {
       errstring = N_("cannot create RUNPATH/RPATH copy");
@@ -665,7 +668,7 @@ decompose_rpath (struct r_search_path_struct *sps,
       _dl_signal_error (ENOMEM, NULL, NULL, errstring);
     }
 
-  fillin_rpath (copy, result, ":", 0, what, where);
+  fillin_rpath (copy, result, ":", 0, what, where, l);
 
   /* Free the copied RPATH string.  `fillin_rpath' make own copies if
      necessary.  */
@@ -713,9 +716,7 @@ _dl_init_paths (const char *llp)
   const char *strp;
   struct r_search_path_elem *pelem, **aelem;
   size_t round_size;
-#ifdef SHARED
-  struct link_map *l;
-#endif
+  struct link_map __attribute__ ((unused)) *l = NULL;
   /* Initialize to please the compiler.  */
   const char *errstring = NULL;
 
@@ -796,6 +797,9 @@ _dl_init_paths (const char *llp)
 			   (const void *) (D_PTR (l, l_info[DT_STRTAB])
 					   + l->l_info[DT_RUNPATH]->d_un.d_val),
 			   l, "RUNPATH");
+	  /* During rtld init the memory is allocated by the stub malloc,
+	     prevent any attempt to free it by the normal malloc.  */
+	  l->l_runpath_dirs.malloced = 0;
 
 	  /* The RPATH is ignored.  */
 	  l->l_rpath_dirs.dirs = (void *) -1;
@@ -812,6 +816,9 @@ _dl_init_paths (const char *llp)
 			       (const void *) (D_PTR (l, l_info[DT_STRTAB])
 					       + l->l_info[DT_RPATH]->d_un.d_val),
 			       l, "RPATH");
+	      /* During rtld init the memory is allocated by the stub
+		 malloc, prevent any attempt to free it by the normal
+		 malloc.  */
 	      l->l_rpath_dirs.malloced = 0;
 	    }
 	  else
@@ -864,7 +871,7 @@ _dl_init_paths (const char *llp)
 
       (void) fillin_rpath (llp_tmp, env_path_list.dirs, ":;",
 			   INTUSE(__libc_enable_secure), "LD_LIBRARY_PATH",
-			   NULL);
+			   NULL, l);
 
       if (env_path_list.dirs[0] == NULL)
 	{
@@ -882,7 +889,7 @@ _dl_init_paths (const char *llp)
 static void
 __attribute__ ((noreturn, noinline))
 lose (int code, int fd, const char *name, char *realname, struct link_map *l,
-      const char *msg, struct r_debug *r)
+      const char *msg, struct r_debug *r, Lmid_t nsid)
 {
   /* The file might already be closed.  */
   if (fd != -1)
@@ -896,6 +903,7 @@ lose (int code, int fd, const char *name, char *realname, struct link_map *l,
     {
       r->r_state = RT_CONSISTENT;
       _dl_debug_state ();
+      LIBC_PROBE (map_failed, 2, nsid, r);
     }
 
   _dl_signal_error (code, name, NULL, msg);
@@ -934,7 +942,7 @@ _dl_map_object_from_fd (const char *name, int fd, struct filebuf *fbp,
       errval = errno;
     call_lose:
       lose (errval, fd, name, realname, l, errstring,
-	    make_consistent ? r : NULL);
+	    make_consistent ? r : NULL, nsid);
     }
 
   /* Look again to see if the real name matched another already loaded.  */
@@ -1041,6 +1049,7 @@ _dl_map_object_from_fd (const char *name, int fd, struct filebuf *fbp,
 	 linking has not been used before.  */
       r->r_state = RT_ADD;
       _dl_debug_state ();
+      LIBC_PROBE (map_start, 2, nsid, r);
       make_consistent = true;
     }
   else
@@ -1087,7 +1096,7 @@ _dl_map_object_from_fd (const char *name, int fd, struct filebuf *fbp,
     struct loadcmd
       {
 	ElfW(Addr) mapstart, mapend, dataend, allocend;
-	off_t mapoff;
+	ElfW(Off) mapoff;
 	int prot;
       } loadcmds[l->l_phnum], *c;
     size_t nloadcmds = 0;
@@ -1191,9 +1200,11 @@ _dl_map_object_from_fd (const char *name, int fd, struct filebuf *fbp,
 	       was executed directly.  The setup will happen later.  */
 	    break;
 
+# ifdef _LIBC_REENTRANT
 	  /* In a static binary there is no way to tell if we dynamically
 	     loaded libpthread.  */
 	  if (GL(dl_error_catch_tsd) == &_dl_initial_error_catch_tsd)
+# endif
 #endif
 	    {
 	      /* We have not yet loaded libpthread.
@@ -1342,11 +1353,12 @@ cannot allocate TLS data structures for initial thread");
 	  l->l_text_end = l->l_addr + c->mapend;
 
 	if (l->l_phdr == 0
-	    && (ElfW(Off)) c->mapoff <= header->e_phoff
+	    && c->mapoff <= header->e_phoff
 	    && ((size_t) (c->mapend - c->mapstart + c->mapoff)
 		>= header->e_phoff + header->e_phnum * sizeof (ElfW(Phdr))))
 	  /* Found the program header in this segment.  */
-	  l->l_phdr = (void *) (c->mapstart + header->e_phoff - c->mapoff);
+	  l->l_phdr = (void *) (uintptr_t) (c->mapstart + header->e_phoff
+					    - c->mapoff);
 
 	if (c->allocend > c->dataend)
 	  {
@@ -1481,7 +1493,11 @@ cannot allocate TLS data structures for initial thread");
 	  if (__builtin_expect (p + s <= relro_end, 1))
 	    {
 	      /* The variable lies in the region protected by RELRO.  */
-	      __mprotect ((void *) p, s, PROT_READ|PROT_WRITE);
+	      if (__mprotect ((void *) p, s, PROT_READ|PROT_WRITE) < 0)
+		{
+		  errstring = N_("cannot change memory protections");
+		  goto call_lose_errno;
+		}
 	      __stack_prot |= PROT_READ|PROT_WRITE|PROT_EXEC;
 	      __mprotect ((void *) p, s, PROT_READ);
 	    }
@@ -1575,6 +1591,10 @@ cannot enable executable stack as shared object requires");
     add_name_to_object (l, ((const char *) D_PTR (l, l_info[DT_STRTAB])
 			    + l->l_info[DT_SONAME]->d_un.d_val));
 
+#ifdef DL_AFTER_LOAD
+  DL_AFTER_LOAD (l);
+#endif
+
   /* Now that the object is fully initialized add it to the object list.  */
   _dl_add_to_namespace_list (l, nsid);
 
@@ -1635,7 +1655,7 @@ print_search_path (struct r_search_path_elem **list,
 
   if (name != NULL)
     _dl_debug_printf_c ("\t\t(%s from file %s)\n", what,
-			name[0] ? name : rtld_progname);
+			DSO_FILENAME (name));
   else
     _dl_debug_printf_c ("\t\t(%s)\n", what);
 }
@@ -1714,13 +1734,23 @@ open_verify (const char *name, struct filebuf *fbp, struct link_map *loader,
       unsigned int osversion;
       size_t maplength;
 
-      /* We successfully openened the file.  Now verify it is a file
+      /* We successfully opened the file.  Now verify it is a file
 	 we can use.  */
       __set_errno (0);
-      fbp->len = __libc_read (fd, fbp->buf, sizeof (fbp->buf));
+      fbp->len = 0;
+      assert (sizeof (fbp->buf) > sizeof (ElfW(Ehdr)));
+      /* Read in the header.  */
+      do
+        {
+          ssize_t retlen = __libc_read (fd, fbp->buf + fbp->len,
+					sizeof (fbp->buf) - fbp->len);
+	  if (retlen <= 0)
+	    break;
+	  fbp->len += retlen;
+	}
+      while (__builtin_expect (fbp->len < sizeof (ElfW(Ehdr)), 0));
 
       /* This is where the ELF header is loaded.  */
-      assert (sizeof (fbp->buf) > sizeof (ElfW(Ehdr)));
       ehdr = (ElfW(Ehdr) *) fbp->buf;
 
       /* Now run the tests.  */
@@ -1736,7 +1766,7 @@ open_verify (const char *name, struct filebuf *fbp, struct link_map *loader,
 	      name = strdupa (realname);
 	      free (realname);
 	    }
-	  lose (errval, fd, name, NULL, NULL, errstring, NULL);
+	  lose (errval, fd, name, NULL, NULL, errstring, NULL, 0);
 	}
 
       /* See whether the ELF header is what we expect.  */
@@ -2098,8 +2128,7 @@ _dl_map_object (struct link_map *loader, const char *name,
     _dl_debug_printf ((mode & __RTLD_CALLMAP) == 0
 		      ? "\nfile=%s [%lu];  needed by %s [%lu]\n"
 		      : "\nfile=%s [%lu];  dynamically loaded by %s [%lu]\n",
-		      name, nsid, loader->l_name[0]
-		      ? loader->l_name : rtld_progname, loader->l_ns);
+		      name, nsid, DSO_FILENAME (loader->l_name), loader->l_ns);
 
 #ifdef SHARED
   /* Give the auditing libraries a chance to change the name before we
@@ -2192,6 +2221,7 @@ _dl_map_object (struct link_map *loader, const char *name,
 			&loader->l_runpath_dirs, &realname, &fb, loader,
 			LA_SER_RUNPATH, &found_other_class);
 
+#ifdef USE_LDCONFIG
       if (fd == -1
 	  && (__builtin_expect (! (mode & __RTLD_SECURE), 1)
 	      || ! INTUSE(__libc_enable_secure))
@@ -2203,23 +2233,17 @@ _dl_map_object (struct link_map *loader, const char *name,
 
 	  if (cached != NULL)
 	    {
-#ifdef SHARED
 	      // XXX Correct to unconditionally default to namespace 0?
 	      l = (loader
 		   ?: GL(dl_ns)[LM_ID_BASE]._ns_loaded
-		   ?: &GL(dl_rtld_map));
-#else
-	      l = loader;
-#endif
+# ifdef SHARED
+		   ?: &GL(dl_rtld_map)
+# endif
+		  );
 
 	      /* If the loader has the DF_1_NODEFLIB flag set we must not
 		 use a cache entry from any of these directories.  */
-	      if (
-#ifndef SHARED
-		  /* 'l' is always != NULL for dynamically linked objects.  */
-		  l != NULL &&
-#endif
-		  __builtin_expect (l->l_flags_1 & DF_1_NODEFLIB, 0))
+	      if (__builtin_expect (l->l_flags_1 & DF_1_NODEFLIB, 0))
 		{
 		  const char *dirp = system_dirs;
 		  unsigned int cnt = 0;
@@ -2256,6 +2280,7 @@ _dl_map_object (struct link_map *loader, const char *name,
 		}
 	    }
 	}
+#endif
 
       /* Finally, try the default path.  */
       if (fd == -1

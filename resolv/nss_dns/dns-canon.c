@@ -1,4 +1,4 @@
-/* Copyright (C) 2004, 2006, 2008 Free Software Foundation, Inc.
+/* Copyright (C) 2004-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@redhat.com>, 2004.
 
@@ -20,6 +20,7 @@
 #include <netdb.h>
 #include <resolv.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <arpa/nameser.h>
 #include <nsswitch.h>
 

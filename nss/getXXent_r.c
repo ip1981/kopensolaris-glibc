@@ -1,4 +1,4 @@
-/* Copyright (C) 1996-2000,2002,2004,2007, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 1996-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1996.
 
@@ -207,6 +207,6 @@ do_default_symbol_version (NEW (REENTRANT_GETNAME),
 			   REENTRANT_GETNAME, GLIBC_2_1_2);
 #endif
 
-static_link_warning (SETFUNC_NAME)
-static_link_warning (ENDFUNC_NAME)
-static_link_warning (REENTRANT_GETNAME)
+nss_interface_function (SETFUNC_NAME)
+nss_interface_function (ENDFUNC_NAME)
+nss_interface_function (REENTRANT_GETNAME)

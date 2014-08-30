@@ -1,4 +1,4 @@
-/* Copyright (C) 1991, 1995, 1996, 1997, 2002 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -45,4 +45,3 @@ stub_warning (read)
 weak_alias (__libc_read, __read)
 libc_hidden_weak (__read)
 weak_alias (__libc_read, read)
-#include <stub-tag.h>

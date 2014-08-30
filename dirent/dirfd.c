@@ -1,5 +1,5 @@
 /* Return the file descriptor used by a DIR stream.  Stub version.
-   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1995-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -29,4 +29,3 @@ dirfd (dirp)
 }
 
 stub_warning (dirfd)
-#include <stub-tag.h>

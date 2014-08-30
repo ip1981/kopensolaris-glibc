@@ -1,103 +1,35 @@
 
-# as_fn_set_status STATUS
-# -----------------------
-# Set $? to STATUS, without forking.
-as_fn_set_status ()
+# ac_fn_c_check_header_compile LINENO HEADER VAR INCLUDES
+# -------------------------------------------------------
+# Tests whether HEADER exists and can be compiled using the include files in
+# INCLUDES, setting the cache variable VAR accordingly.
+ac_fn_c_check_header_compile ()
 {
-  return $1
-} # as_fn_set_status
-
-# as_fn_exit STATUS
-# -----------------
-# Exit the shell with STATUS, even in a "trap 0" or "set -e" context.
-as_fn_exit ()
-{
-  set +e
-  as_fn_set_status $1
-  exit $1
-} # as_fn_exit
-# as_fn_arith ARG...
-# ------------------
-# Perform arithmetic evaluation on the ARGs, and store the result in the
-# global $as_val. Take advantage of shells that can avoid forks. The arguments
-# must be portable across $(()) and expr.
-if (eval "test \$(( 1 + 1 )) = 2") 2>/dev/null; then :
-  eval 'as_fn_arith ()
-  {
-    as_val=$(( $* ))
-  }'
+  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $2" >&5
+$as_echo_n "checking for $2... " >&6; }
+if eval \${$3+:} false; then :
+  $as_echo_n "(cached) " >&6
 else
-  as_fn_arith ()
-  {
-    as_val=`expr "$@" || test $? -eq 1`
-  }
-fi # as_fn_arith
-
-if expr a : '\(a\)' >/dev/null 2>&1 &&
-   test "X`expr 00001 : '.*\(...\)'`" = X001; then
-  as_expr=expr
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$4
+#include <$2>
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  eval "$3=yes"
 else
-  as_expr=false
+  eval "$3=no"
 fi
-
-if (basename -- /) >/dev/null 2>&1 && test "X`basename -- / 2>&1`" = "X/"; then
-  as_basename=basename
-else
-  as_basename=false
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
+eval ac_res=\$$3
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
 
-as_me=`$as_basename -- "$0" ||
-$as_expr X/"$0" : '.*/\([^/][^/]*\)/*$' \| \
-	 X"$0" : 'X\(//\)$' \| \
-	 X"$0" : 'X\(/\)' \| . 2>/dev/null ||
-$as_echo X/"$0" |
-    sed '/^.*\/\([^/][^/]*\)\/*$/{
-	    s//\1/
-	    q
-	  }
-	  /^X\/\(\/\/\)$/{
-	    s//\1/
-	    q
-	  }
-	  /^X\/\(\/\).*/{
-	    s//\1/
-	    q
-	  }
-	  s/.*/./; q'`
-
-
-  as_lineno_1=$LINENO as_lineno_1a=$LINENO
-  as_lineno_2=$LINENO as_lineno_2a=$LINENO
-  eval 'test "x$as_lineno_1'$as_run'" != "x$as_lineno_2'$as_run'" &&
-  test "x`expr $as_lineno_1'$as_run' + 1`" = "x$as_lineno_2'$as_run'"' || {
-  # Blame Lee E. McMahon (1931-1989) for sed's syntax.  :-)
-  sed -n '
-    p
-    /[$]LINENO/=
-  ' <$as_myself |
-    sed '
-      s/[$]LINENO.*/&-/
-      t lineno
-      b
-      :lineno
-      N
-      :loop
-      s/[$]LINENO\([^'$as_cr_alnum'_].*\n\)\(.*\)/\2\1\2/
-      t loop
-      s/-\n.*//
-    ' >$as_me.lineno &&
-  chmod +x "$as_me.lineno" ||
-    { $as_echo "$as_me: error: cannot create $as_me.lineno; rerun with a POSIX shell" >&2; as_fn_exit 1; }
-
-  # Don't try to exec as it changes $[0], causing all sort of problems
-  # (the dirname of $[0] is not the place where we might find the
-  # original and so on.  Autoconf is especially sensitive to this).
-  . "./$as_me.lineno"
-  # Exit status is that of the last command.
-  exit
-}
-
-# This file is generated from configure.in by Autoconf.  DO NOT EDIT!
+} # ac_fn_c_check_header_compile
+# This file is generated from configure.ac by Autoconf.  DO NOT EDIT!
  # Local configure fragment for sysdeps/unix/sysv/linux.
 
 # Don't bother trying to generate any glue code to be compatible with the
@@ -284,37 +216,37 @@ test -n "$arch_minimum_kernel" ||
 case "$machine" in
   i386*)
     libc_cv_gcc_unwind_find_fde=yes
-    arch_minimum_kernel=2.4.0
+    arch_minimum_kernel=2.6.16
     ;;
-  powerpc/powerpc32)
+  x86_64/x32)
+    arch_minimum_kernel=3.4.0
+    ;;
+  powerpc/powerpc32*)
     libc_cv_gcc_unwind_find_fde=yes
-    arch_minimum_kernel=2.4.0
-    ;;
-  powerpc/powerpc64)
-    arch_minimum_kernel=2.4.21
+    arch_minimum_kernel=2.6.16
     ;;
   s390/s390-32)
     libc_cv_gcc_unwind_find_fde=yes
-    arch_minimum_kernel=2.4.0
+    arch_minimum_kernel=2.6.16
     ;;
   s390/s390-64)
     libc_cv_gcc_unwind_find_fde=yes
-    arch_minimum_kernel=2.4.0
+    arch_minimum_kernel=2.6.16
     ;;
   sh*)
-    arch_minimum_kernel=2.4.0
+    arch_minimum_kernel=2.6.16
     libc_cv_gcc_unwind_find_fde=yes
     ;;
   sparc/sparc64*)
     libc_cv_gcc_unwind_find_fde=yes
-    arch_minimum_kernel=2.4.21
+    arch_minimum_kernel=2.6.16
     ;;
   sparc*)
     libc_cv_gcc_unwind_find_fde=yes
-    arch_minimum_kernel=2.4.0
+    arch_minimum_kernel=2.6.16
     ;;
   *)
-    arch_minimum_kernel=2.4.0
+    arch_minimum_kernel=2.6.16
     ;;
 esac
 if test -n "$minimum_kernel"; then
@@ -365,6 +297,17 @@ else
   as_fn_error $? "*** The available kernel headers are older than the requested
 *** compatible kernel version" "$LINENO" 5
 fi
+
+# Until we start requiring 2.6.37+ headers, we need to check for the
+# availability of linux/fanotify.h for testing purposes.
+ac_fn_c_check_header_compile "$LINENO" "linux/fanotify.h" "ac_cv_header_linux_fanotify_h" "/* No default includes.  */
+"
+if test "x$ac_cv_header_linux_fanotify_h" = xyes; then :
+  $as_echo "#define HAVE_LINUX_FANOTIFY_H 1" >>confdefs.h
+
+fi
+
+
 
 # The result of the above test for the use of the FDE code is invalid if
 # the user overrides the decision about the minimum ABI.

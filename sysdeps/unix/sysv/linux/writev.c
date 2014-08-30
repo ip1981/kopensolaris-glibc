@@ -1,5 +1,5 @@
 /* writev supports all Linux kernels >= 2.0.
-   Copyright (C) 1997,1998,2000,2002,2003,2009 Free Software Foundation, Inc.
+   Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -23,7 +23,6 @@
 
 #include <sysdep-cancel.h>
 #include <sys/syscall.h>
-#include <bp-checks.h>
 #include <kernel-features.h>
 
 #ifndef __ASSUME_COMPLETE_READV_WRITEV
@@ -47,12 +46,12 @@ __libc_writev (fd, vector, count)
   ssize_t result;
 
   if (SINGLE_THREAD_P)
-    result = INLINE_SYSCALL (writev, 3, fd, CHECK_N (vector, count), count);
+    result = INLINE_SYSCALL (writev, 3, fd, vector, count);
   else
     {
       int oldtype = LIBC_CANCEL_ASYNC ();
 
-      result = INLINE_SYSCALL (writev, 3, fd, CHECK_N (vector, count), count);
+      result = INLINE_SYSCALL (writev, 3, fd, vector, count);
 
       LIBC_CANCEL_RESET (oldtype);
     }

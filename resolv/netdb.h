@@ -1,4 +1,4 @@
-  /* Copyright (C) 1996-2004, 2009-2011, 2012 Free Software Foundation, Inc.
+  /* Copyright (C) 1996-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -76,7 +76,7 @@ extern int *__h_errno_location (void) __THROW __attribute__ ((__const__));
 # define NO_ADDRESS	NO_DATA	/* No address, look for MX record.  */
 #endif
 
-#ifdef __USE_XOPEN2K
+#if defined __USE_XOPEN2K || defined __USE_XOPEN_EXTENDED
 /* Highest reserved Internet port number.  */
 # define IPPORT_RESERVED	1024
 #endif
@@ -586,7 +586,7 @@ struct gaicb
   struct addrinfo *ar_result;	/* Pointer to result.  */
   /* The following are internal elements.  */
   int __return;
-  int __unused[5];
+  int __glibc_reserved[5];
 };
 
 /* Lookup mode.  */

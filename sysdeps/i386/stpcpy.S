@@ -1,7 +1,6 @@
 /* Copy SRC to DEST returning the address of the terminating '\0' in DEST.
    For Intel 80x86, x>=3.
-   Copyright (C) 1994, 1995, 1996, 1997, 2000, 2002, 2004
-   Free Software Foundation, Inc.
+   Copyright (C) 1994-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper (drepper@gnu.ai.mit.edu).
 
@@ -24,22 +23,17 @@
 
 #include <sysdep.h>
 #include "asm-syntax.h"
-#include "bp-sym.h"
-#include "bp-asm.h"
 
-#define PARMS	LINKAGE		/* no space for saved regs */
+#define PARMS	4		/* no space for saved regs */
 #define RTN	PARMS
-#define DEST	RTN+RTN_SIZE
-#define SRC	DEST+PTR_SIZE
+#define DEST	RTN
+#define SRC	DEST+4
 
 	.text
-ENTRY (BP_SYM (__stpcpy))
-	ENTER
+ENTRY (__stpcpy)
 
 	movl DEST(%esp), %eax
 	movl SRC(%esp), %ecx
-	CHECK_BOUNDS_LOW (%eax, DEST(%esp))
-	CHECK_BOUNDS_LOW (%ecx, SRC(%esp))
 	subl %eax, %ecx		/* magic: reduce number of loop variants
 				   to one using addressing mode */
 
@@ -85,13 +79,10 @@ L(1):	addl $4, %eax		/* increment loop counter */
 L(4):	incl %eax
 L(3):	incl %eax
 L(2):
-	CHECK_BOUNDS_HIGH (%eax, DEST(%esp), jb)
-	RETURN_BOUNDED_POINTER (DEST(%esp))
 
-	LEAVE
-	RET_PTR
-END (BP_SYM (__stpcpy))
+	ret
+END (__stpcpy)
 
-weak_alias (BP_SYM (__stpcpy), BP_SYM (stpcpy))
+weak_alias (__stpcpy, stpcpy)
 libc_hidden_def (__stpcpy)
 libc_hidden_builtin_def (stpcpy)

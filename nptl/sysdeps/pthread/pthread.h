@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2011, 2012 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -83,27 +83,39 @@ enum
 
 
 /* Mutex initializers.  */
+#if __PTHREAD_MUTEX_HAVE_ELISION == 1 /* 64bit layout.  */
+#define __PTHREAD_SPINS 0, 0
+#elif __PTHREAD_MUTEX_HAVE_ELISION == 2 /* 32bit layout.  */
+#define __PTHREAD_SPINS { 0, 0 }
+#else
+#define __PTHREAD_SPINS 0
+#endif
+
 #ifdef __PTHREAD_MUTEX_HAVE_PREV
 # define PTHREAD_MUTEX_INITIALIZER \
-  { { 0, 0, 0, 0, 0, 0, { 0, 0 } } }
+  { { 0, 0, 0, 0, 0, __PTHREAD_SPINS, { 0, 0 } } }
 # ifdef __USE_GNU
 #  define PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP \
-  { { 0, 0, 0, 0, PTHREAD_MUTEX_RECURSIVE_NP, 0, { 0, 0 } } }
+  { { 0, 0, 0, 0, PTHREAD_MUTEX_RECURSIVE_NP, __PTHREAD_SPINS, { 0, 0 } } }
 #  define PTHREAD_ERRORCHECK_MUTEX_INITIALIZER_NP \
-  { { 0, 0, 0, 0, PTHREAD_MUTEX_ERRORCHECK_NP, 0, { 0, 0 } } }
+  { { 0, 0, 0, 0, PTHREAD_MUTEX_ERRORCHECK_NP, __PTHREAD_SPINS, { 0, 0 } } }
 #  define PTHREAD_ADAPTIVE_MUTEX_INITIALIZER_NP \
-  { { 0, 0, 0, 0, PTHREAD_MUTEX_ADAPTIVE_NP, 0, { 0, 0 } } }
+  { { 0, 0, 0, 0, PTHREAD_MUTEX_ADAPTIVE_NP, __PTHREAD_SPINS, { 0, 0 } } }
+#  define PTHREAD_ADAPTIVE_MUTEX_INITIALIZER_NP \
+  { { 0, 0, 0, 0, PTHREAD_MUTEX_ADAPTIVE_NP, __PTHREAD_SPINS, { 0, 0 } } }
+
 # endif
 #else
 # define PTHREAD_MUTEX_INITIALIZER \
-  { { 0, 0, 0, 0, 0, { 0 } } }
+  { { 0, 0, 0, 0, 0, { __PTHREAD_SPINS } } }
 # ifdef __USE_GNU
 #  define PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP \
-  { { 0, 0, 0, PTHREAD_MUTEX_RECURSIVE_NP, 0, { 0 } } }
+  { { 0, 0, 0, PTHREAD_MUTEX_RECURSIVE_NP, 0, { __PTHREAD_SPINS } } }
 #  define PTHREAD_ERRORCHECK_MUTEX_INITIALIZER_NP \
-  { { 0, 0, 0, PTHREAD_MUTEX_ERRORCHECK_NP, 0, { 0 } } }
+  { { 0, 0, 0, PTHREAD_MUTEX_ERRORCHECK_NP, 0, { __PTHREAD_SPINS } } }
 #  define PTHREAD_ADAPTIVE_MUTEX_INITIALIZER_NP \
-  { { 0, 0, 0, PTHREAD_MUTEX_ADAPTIVE_NP, 0, { 0 } } }
+  { { 0, 0, 0, PTHREAD_MUTEX_ADAPTIVE_NP, 0, { __PTHREAD_SPINS } } }
+
 # endif
 #endif
 
@@ -404,6 +416,14 @@ extern int pthread_attr_getaffinity_np (const pthread_attr_t *__attr,
 					cpu_set_t *__cpuset)
      __THROW __nonnull ((1, 3));
 
+/* Get the default attributes used by pthread_create in this process.  */
+extern int pthread_getattr_default_np (pthread_attr_t *__attr)
+     __THROW __nonnull ((1));
+
+/* Set the default attributes to be used by pthread_create in this
+   process.  */
+extern int pthread_setattr_default_np (const pthread_attr_t *__attr)
+     __THROW __nonnull ((1));
 
 /* Initialize thread attribute *ATTR with attributes corresponding to the
    already running thread TH.  It shall be called on uninitialized ATTR
@@ -694,7 +714,7 @@ extern void __pthread_unregister_cancel (__pthread_unwind_buf_t *__buf)
     void *__cancel_arg = (arg);						      \
     int __not_first_call = __sigsetjmp ((struct __jmp_buf_tag *) (void *)     \
 					__cancel_buf.__cancel_jmp_buf, 0);    \
-    if (__glibc_unlikely (__not_first_call))			      \
+    if (__glibc_unlikely (__not_first_call))				      \
       {									      \
 	__cancel_routine (__cancel_arg);				      \
 	__pthread_unwind_next (&__cancel_buf);				      \
@@ -731,7 +751,7 @@ extern void __pthread_unwind_next (__pthread_unwind_buf_t *__buf)
 
 /* Function used in the macros.  */
 struct __jmp_buf_tag;
-extern int __sigsetjmp (struct __jmp_buf_tag *__env, int __savemask) __THROW;
+extern int __sigsetjmp (struct __jmp_buf_tag *__env, int __savemask) __THROWNL;
 
 
 /* Mutex handling.  */
@@ -1014,13 +1034,13 @@ extern int pthread_condattr_setpshared (pthread_condattr_t *__attr,
 					int __pshared) __THROW __nonnull ((1));
 
 #ifdef __USE_XOPEN2K
-/* Get the clock selected for the conditon variable attribute ATTR.  */
+/* Get the clock selected for the condition variable attribute ATTR.  */
 extern int pthread_condattr_getclock (const pthread_condattr_t *
 				      __restrict __attr,
 				      __clockid_t *__restrict __clock_id)
      __THROW __nonnull ((1, 2));
 
-/* Set the clock selected for the conditon variable attribute ATTR.  */
+/* Set the clock selected for the condition variable attribute ATTR.  */
 extern int pthread_condattr_setclock (pthread_condattr_t *__attr,
 				      __clockid_t __clock_id)
      __THROW __nonnull ((1));

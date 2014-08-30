@@ -1,6 +1,5 @@
 /* Load the dependencies of a mapped object.
-   Copyright (C) 1996-2003, 2004, 2005, 2006, 2007, 2010, 2011
-   Free Software Foundation, Inc.
+   Copyright (C) 1996-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -156,9 +155,7 @@ _dl_map_object_deps (struct link_map *map,
   const char *errstring;
   const char *objname;
 
-  auto inline void preload (struct link_map *map);
-
-  inline void preload (struct link_map *map)
+  void preload (struct link_map *map)
     {
       known[nlist].done = 0;
       known[nlist].map = map;
@@ -313,8 +310,7 @@ _dl_map_object_deps (struct link_map *map,
 		      _dl_debug_printf ("load auxiliary object=%s"
 					" requested by file=%s\n",
 					name,
-					l->l_name[0]
-					? l->l_name : rtld_progname);
+					DSO_FILENAME (l->l_name));
 
 		    /* We must be prepared that the addressed shared
 		       object is not available.  */
@@ -340,8 +336,7 @@ _dl_map_object_deps (struct link_map *map,
 		      _dl_debug_printf ("load filtered object=%s"
 					" requested by file=%s\n",
 					name,
-					l->l_name[0]
-					? l->l_name : rtld_progname);
+					DSO_FILENAME (l->l_name));
 
 		    /* For filter objects the dependency must be available.  */
 		    bool malloced;
@@ -488,6 +483,7 @@ _dl_map_object_deps (struct link_map *map,
 		  nneeded * sizeof needed[0]);
 	  atomic_write_barrier ();
 	  l->l_initfini = l_initfini;
+	  l->l_free_initfini = 1;
 	}
 
       /* If we have no auxiliary objects just go on to the next map.  */
@@ -599,7 +595,6 @@ Filters not supported with LD_TRACE_PRELINKING"));
 	if (list[i]->l_reserved)
 	  {
 	    /* Need to allocate new array of relocation dependencies.  */
-	    struct link_map_reldeps *l_reldeps;
 	    l_reldeps = malloc (sizeof (*l_reldeps)
 				+ map->l_reldepsmax
 				  * sizeof (struct link_map *));
@@ -632,7 +627,7 @@ Filters not supported with LD_TRACE_PRELINKING"));
       /* We can skip looking for the binary itself which is at the front
 	 of the search list.  */
       i = 1;
-      char seen[nlist];
+      uint16_t seen[nlist];
       memset (seen, 0, nlist * sizeof (seen[0]));
       while (1)
 	{
@@ -658,13 +653,13 @@ Filters not supported with LD_TRACE_PRELINKING"));
 			       (k - i) * sizeof (l_initfini[0]));
 		      l_initfini[k] = thisp;
 
-		      if (seen[i + 1] > 1)
+		      if (seen[i + 1] > nlist - i)
 			{
 			  ++i;
 			  goto next_clear;
 			}
 
-		      char this_seen = seen[i];
+		      uint16_t this_seen = seen[i];
 		      memmove (&seen[i], &seen[i + 1],
 			       (k - i) * sizeof (seen[0]));
 		      seen[k] = this_seen;
@@ -688,6 +683,7 @@ Filters not supported with LD_TRACE_PRELINKING"));
   l_initfini[nlist] = NULL;
   atomic_write_barrier ();
   map->l_initfini = l_initfini;
+  map->l_free_initfini = 1;
   if (l_reldeps != NULL)
     {
       atomic_write_barrier ();
@@ -696,7 +692,7 @@ Filters not supported with LD_TRACE_PRELINKING"));
       _dl_scope_free (old_l_reldeps);
     }
   if (old_l_initfini != NULL)
-      map->l_orig_initfini = old_l_initfini;
+    _dl_scope_free (old_l_initfini);
 
   if (errno_reason)
     _dl_signal_error (errno_reason == -1 ? 0 : errno_reason, objname,

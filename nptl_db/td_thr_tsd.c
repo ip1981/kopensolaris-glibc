@@ -1,5 +1,5 @@
 /* Get a thread-specific data pointer for a thread.
-   Copyright (C) 1999,2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 1999-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@redhat.com>, 1999.
 
@@ -17,6 +17,7 @@
    License along with the GNU C Library; if not, see
    <http://www.gnu.org/licenses/>.  */
 
+#include <stdint.h>
 #include "thread_dbP.h"
 
 

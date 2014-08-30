@@ -1,5 +1,5 @@
 /* Definition for thread-local data handling.  nptl/i386 version.
-   Copyright (C) 2002-2007, 2009, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2002-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -26,6 +26,7 @@
 # include <stdint.h>
 # include <stdlib.h>
 # include <sysdep.h>
+# include <libc-internal.h>
 # include <kernel-features.h>
 
 
@@ -55,10 +56,12 @@ typedef struct
 #ifndef __ASSUME_PRIVATE_FUTEX
   int private_futex;
 #else
-  int __unused1;
+  int __glibc_reserved1;
 #endif
   /* Reservation of some values for the TM ABI.  */
-  void *__private_tm[5];
+  void *__private_tm[4];
+  /* GCC split stack support.  */
+  void *__private_ss;
 } tcbhead_t;
 
 # define TLS_MULTIPLE_THREADS_IN_TCB 1
@@ -347,7 +350,7 @@ union user_desc_init
 									      \
 	 asm volatile ("movl %%eax,%%gs:%P1\n\t"			      \
 		       "movl %%edx,%%gs:%P2" :				      \
-		       : "A" (value),					      \
+		       : "A" ((uint64_t) cast_to_integer (value)),	      \
 			 "i" (offsetof (struct pthread, member)),	      \
 			 "i" (offsetof (struct pthread, member) + 4));	      \
        }})
@@ -374,7 +377,7 @@ union user_desc_init
 									      \
 	 asm volatile ("movl %%eax,%%gs:%P1(,%2,8)\n\t"			      \
 		       "movl %%edx,%%gs:4+%P1(,%2,8)" :			      \
-		       : "A" (value),					      \
+		       : "A" ((uint64_t) cast_to_integer (value)),	      \
 			 "i" (offsetof (struct pthread, member)),	      \
 			 "r" (idx));					      \
        }})

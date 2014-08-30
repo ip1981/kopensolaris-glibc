@@ -1,4 +1,4 @@
-/* Copyright (C) 2003, 2004, 2006, 2011 Free Software Foundation, Inc.
+/* Copyright (C) 2003-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@redhat.com>, 2003.
 
@@ -18,10 +18,13 @@
 
 #include <errno.h>
 #include <pthread.h>
+#include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/mman.h>
+#include <sys/time.h>
 #include <sys/wait.h>
 #include <sys/time.h>
 

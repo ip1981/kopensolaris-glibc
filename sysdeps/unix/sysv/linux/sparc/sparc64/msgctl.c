@@ -1,4 +1,4 @@
-/* Copyright (C) 1995, 1997, 1998, 2000 Free Software Foundation, Inc.
+/* Copyright (C) 1995-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@gnu.ai.mit.edu>, August 1995.
 
@@ -22,7 +22,6 @@
 
 #include <sysdep.h>
 #include <sys/syscall.h>
-#include <bp-checks.h>
 
 /* Allows to control internal state and destruction of message queue
    objects.  */
@@ -33,5 +32,5 @@ msgctl (msqid, cmd, buf)
      int cmd;
      struct msqid_ds *buf;
 {
-  return INLINE_SYSCALL (ipc, 5, IPCOP_msgctl, msqid, cmd, 0, CHECK_1 (buf));
+  return INLINE_SYSCALL (ipc, 5, IPCOP_msgctl, msqid, cmd, 0, buf);
 }

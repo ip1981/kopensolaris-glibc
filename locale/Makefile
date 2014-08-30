@@ -1,5 +1,4 @@
-# Copyright (C) 1991,1992,1995-2003,2005,2009,2011,2012
-# Free Software Foundation, Inc.
+# Copyright (C) 1991-2014 Free Software Foundation, Inc.
 # This file is part of the GNU C Library.
 
 # The GNU C Library is free software; you can redistribute it and/or
@@ -59,6 +58,8 @@ GPERFFLAGS = -acCgopt -k1,2,5,9,$$ -L ANSI-C
 
 include ../Rules
 
+CFLAGS-md5.c = -I../crypt
+
 programs/%-kw.h: programs/%-kw.gperf
 	cd programs \
 	&& $(GPERF) $(GPERFFLAGS) -N $(@F:-kw.h=_hash) $(<F) > $(@F).new
@@ -97,9 +98,3 @@ cpp-srcs-left := $(addsuffix .c,$(localedef-modules) $(localedef-aux) \
 				$(locale-modules) $(lib-modules))
 lib := locale-programs
 include $(patsubst %,$(..)cppflags-iterator.mk,$(cpp-srcs-left))
-
-# Depend on libc.so so a DT_NEEDED is generated in the shared objects.
-# This ensures they will load libc.so for needed symbols if loaded by
-# a statically-linked program that hasn't already loaded it.
-$(objpfx)libBrokenLocale.so: $(common-objpfx)libc.so \
-			     $(common-objpfx)libc_nonshared.a

@@ -1,5 +1,5 @@
 /* Test and measure strcpy functions.
-   Copyright (C) 1999, 2002, 2003, 2005, 2011, 2012 Free Software Foundation, Inc.
+   Copyright (C) 1999-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Written by Jakub Jelinek <jakub@redhat.com>, 1999.
    Added wcscpy support by Liubov Dmitrieva <liubov.dmitrieva@gmail.com>, 2011
@@ -42,6 +42,11 @@
 #ifndef STRCPY_RESULT
 # define STRCPY_RESULT(dst, len) dst
 # define TEST_MAIN
+# ifndef WIDE
+#  define TEST_NAME "strcpy"
+# else
+#  define TEST_NAME "wcscpy"
+# endif
 # include "test-string.h"
 # ifndef WIDE
 #  define SIMPLE_STRCPY simple_strcpy
@@ -87,24 +92,6 @@ do_one_test (impl_t *impl, CHAR *dst, const CHAR *src,
       ret = 1;
       return;
     }
-
-  if (HP_TIMING_AVAIL)
-    {
-      hp_timing_t start __attribute ((unused));
-      hp_timing_t stop __attribute ((unused));;
-      hp_timing_t best_time = ~ (hp_timing_t) 0;
-      size_t i;
-
-      for (i = 0; i < 32; ++i)
-	{
-	  HP_TIMING_NOW (start);
-	  CALL (impl, dst, src);
-	  HP_TIMING_NOW (stop);
-	  HP_TIMING_BEST (best_time, start, stop);
-	}
-
-      printf ("\t%zd", (size_t) best_time);
-    }
 }
 
 static void
@@ -130,14 +117,8 @@ do_test (size_t align1, size_t align2, size_t len, int max_char)
     s1[i] = 32 + 23 * i % (max_char - 32);
   s1[len] = 0;
 
-  if (HP_TIMING_AVAIL)
-    printf ("Length %4zd, alignments in bytes %2zd/%2zd:", len, align1 * sizeof(CHAR), align2 * sizeof(CHAR));
-
   FOR_EACH_IMPL (impl, 0)
     do_one_test (impl, s2, s1, len);
-
-  if (HP_TIMING_AVAIL)
-    putchar ('\n');
 }
 
 static void

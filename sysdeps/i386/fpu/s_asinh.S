@@ -1,5 +1,5 @@
 /* ix87 specific implementation of arcsinh.
-   Copyright (C) 1996-1997, 2005, 2012 Free Software Foundation, Inc.
+   Copyright (C) 1996-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1996.
 
@@ -22,13 +22,13 @@
 	.section .rodata
 
 	.align ALIGNARG(4)
-	ASM_TYPE_DIRECTIVE(huge,@object)
+	.type huge,@object
 huge:	.double 1e+300
 	ASM_SIZE_DIRECTIVE(huge)
-	ASM_TYPE_DIRECTIVE(one,@object)
+	.type one,@object
 one:	.double 1.0
 	ASM_SIZE_DIRECTIVE(one)
-	ASM_TYPE_DIRECTIVE(limit,@object)
+	.type limit,@object
 limit:	.double 0.29
 	ASM_SIZE_DIRECTIVE(limit)
 

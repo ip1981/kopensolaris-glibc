@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2012 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Jakub Jelinek <jakub@redhat.com>, 2005.
 
@@ -24,6 +24,7 @@
 #include <string.h>
 #include <sys/wait.h>
 #include <stackguard-macros.h>
+#include <tls.h>
 #include <unistd.h>
 
 static const char *command;
@@ -189,7 +190,7 @@ do_test (void)
      the 16 runs, something is very wrong.  */
   int ndifferences = 0;
   int ndefaults = 0;
-  for (i = 0; i < N; ++i) 
+  for (i = 0; i < N; ++i)
     {
       if (child_stack_chk_guards[i] != child_stack_chk_guards[i+1])
 	ndifferences++;

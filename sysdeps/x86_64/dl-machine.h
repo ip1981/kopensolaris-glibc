@@ -1,5 +1,5 @@
 /* Machine-dependent ELF dynamic relocation inline functions.  x86-64 version.
-   Copyright (C) 2001-2012 Free Software Foundation, Inc.
+   Copyright (C) 2001-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Andreas Jaeger <aj@suse.de>.
 
@@ -41,13 +41,9 @@ elf_machine_matches_host (const ElfW(Ehdr) *ehdr)
 static inline ElfW(Addr) __attribute__ ((unused))
 elf_machine_dynamic (void)
 {
-  ElfW(Addr) addr;
-
-  /* This works because we have our GOT address available in the small PIC
-     model.  */
-  addr = (ElfW(Addr)) &_DYNAMIC;
-
-  return addr;
+  /* This produces an IP-relative reloc which is resolved at link time. */
+  extern const ElfW(Addr) _GLOBAL_OFFSET_TABLE_[] attribute_hidden;
+  return _GLOBAL_OFFSET_TABLE_[0];
 }
 
 
@@ -55,31 +51,11 @@ elf_machine_dynamic (void)
 static inline ElfW(Addr) __attribute__ ((unused))
 elf_machine_load_address (void)
 {
-  ElfW(Addr) addr;
-
-  /* The easy way is just the same as on x86:
-       leaq _dl_start, %0
-       leaq _dl_start(%%rip), %1
-       subq %0, %1
-     but this does not work with binutils since we then have
-     a R_X86_64_32S relocation in a shared lib.
-
-     Instead we store the address of _dl_start in the data section
-     and compare it with the current value that we can get via
-     an RIP relative addressing mode.  Note that this is the address
-     of _dl_start before any relocation performed at runtime.  In case
-     the binary is prelinked the resulting "address" is actually a
-     load offset which is zero if the binary was loaded at the address
-     it is prelinked for.  */
-
-  asm ("lea _dl_start(%%rip), %0\n\t"
-       "sub 1f(%%rip), %0\n\t"
-       ".section\t.data.rel.ro\n"
-       "1:\t" ASM_ADDR " _dl_start\n\t"
-       ".previous\n\t"
-       : "=r" (addr) : : "cc");
-
-  return addr;
+  /* Compute the difference between the runtime address of _DYNAMIC as seen
+     by an IP-relative reference, and the link-time address found in the
+     special unrelocated first GOT entry.  */
+  extern ElfW(Dyn) _DYNAMIC[] attribute_hidden;
+  return (ElfW(Addr)) &_DYNAMIC - elf_machine_dynamic ();
 }
 
 /* Set up the loaded object described by L so its unrelocated PLT
@@ -310,6 +286,21 @@ elf_machine_rela (struct link_map *map, const ElfW(Rela) *reloc,
 
       switch (r_type)
 	{
+# ifndef RTLD_BOOTSTRAP
+#  ifdef __ILP32__
+	case R_X86_64_SIZE64:
+	  /* Set to symbol size plus addend.  */
+	  *(Elf64_Addr *) (uintptr_t) reloc_addr
+	    = (Elf64_Addr) sym->st_size + reloc->r_addend;
+	  break;
+
+	case R_X86_64_SIZE32:
+#  else
+	case R_X86_64_SIZE64:
+#  endif
+	  /* Set to symbol size plus addend.  */
+	  value = sym->st_size;
+# endif
 	case R_X86_64_GLOB_DAT:
 	case R_X86_64_JUMP_SLOT:
 	  *reloc_addr = value + reloc->r_addend;
@@ -418,6 +409,11 @@ elf_machine_rela (struct link_map *map, const ElfW(Rela) *reloc,
 	     relocation updates the whole 64-bit entry.  */
 	  *(Elf64_Addr *) reloc_addr = (Elf64_Addr) value + reloc->r_addend;
 	  break;
+#  ifndef __ILP32__
+	case R_X86_64_SIZE32:
+	  /* Set to symbol size plus addend.  */
+	  value = sym->st_size;
+#  endif
 	case R_X86_64_32:
 	  value += reloc->r_addend;
 	  *(unsigned int *) reloc_addr = value;
@@ -434,9 +430,7 @@ elf_machine_rela (struct link_map *map, const ElfW(Rela) *reloc,
 #  endif
 	      strtab = (const char *) D_PTR (map, l_info[DT_STRTAB]);
 
-	      _dl_error_printf (fmt,
-				rtld_progname ?: "<program name unknown>",
-				strtab + refsym->st_name);
+	      _dl_error_printf (fmt, RTLD_PROGNAME, strtab + refsym->st_name);
 	    }
 	  break;
 #  ifndef RESOLVE_CONFLICT_FIND_MAP

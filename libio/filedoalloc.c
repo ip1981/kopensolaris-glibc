@@ -1,4 +1,4 @@
-/* Copyright (C) 1993, 1997, 2001-2002, 2011-2012 Free Software Foundation, Inc.
+/* Copyright (C) 1993-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -96,7 +96,7 @@ _IO_file_doallocate (fp)
 {
   _IO_size_t size;
   char *p;
-  struct _G_stat64 st;
+  struct stat64 st;
 
 #ifndef _LIBC
   /* If _IO_cleanup_registration_needed is non-zero, we should call the

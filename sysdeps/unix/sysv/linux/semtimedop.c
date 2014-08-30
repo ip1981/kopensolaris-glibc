@@ -1,4 +1,4 @@
-/* Copyright (C) 1995, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+/* Copyright (C) 1995-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, August 1995.
 
@@ -22,7 +22,6 @@
 
 #include <sysdep.h>
 #include <sys/syscall.h>
-#include <bp-checks.h>
 
 /* Perform user-defined atomical operation of array of semaphores.  */
 
@@ -34,6 +33,6 @@ semtimedop (semid, sops, nsops, timeout)
      const struct timespec *timeout;
 {
   return INLINE_SYSCALL (ipc, 6, IPCOP_semtimedop,
-			 semid, (int) nsops, 0, CHECK_N (sops, nsops),
+			 semid, (int) nsops, 0, sops,
 			 timeout);
 }

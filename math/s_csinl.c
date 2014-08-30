@@ -1,5 +1,5 @@
 /* Complex sine function for long double.
-   Copyright (C) 1997-2012 Free Software Foundation, Inc.
+   Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997.
 
@@ -42,7 +42,15 @@ __csinl (__complex__ long double x)
 	  const int t = (int) ((LDBL_MAX_EXP - 1) * M_LN2l);
 	  long double sinix, cosix;
 
-	  __sincosl (__real__ x, &sinix, &cosix);
+	  if (__builtin_expect (rcls != FP_SUBNORMAL, 1))
+	    {
+	      __sincosl (__real__ x, &sinix, &cosix);
+	    }
+	  else
+	    {
+	      sinix = __real__ x;
+	      cosix = 1.0;
+	    }
 
 	  if (fabsl (__imag__ x) > t)
 	    {
@@ -80,6 +88,19 @@ __csinl (__complex__ long double x)
 
 	  if (negate)
 	    __real__ retval = -__real__ retval;
+
+	  if (fabsl (__real__ retval) < LDBL_MIN)
+	    {
+	      volatile long double force_underflow
+		= __real__ retval * __real__ retval;
+	      (void) force_underflow;
+	    }
+	  if (fabsl (__imag__ retval) < LDBL_MIN)
+	    {
+	      volatile long double force_underflow
+		= __imag__ retval * __imag__ retval;
+	      (void) force_underflow;
+	    }
 	}
       else
 	{
@@ -115,7 +136,15 @@ __csinl (__complex__ long double x)
 	  /* Real part is finite.  */
 	  long double sinix, cosix;
 
-	  __sincosl (__real__ x, &sinix, &cosix);
+	  if (__builtin_expect (rcls != FP_SUBNORMAL, 1))
+	    {
+	      __sincosl (__real__ x, &sinix, &cosix);
+	    }
+	  else
+	    {
+	      sinix = __real__ x;
+	      cosix = 1.0;
+	    }
 
 	  __real__ retval = __copysignl (HUGE_VALL, sinix);
 	  __imag__ retval = __copysignl (HUGE_VALL, cosix);

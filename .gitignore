@@ -36,7 +36,10 @@ TODO.html
 
 autom4te*.cache
 
+core
+.gdb_history
+.gdbinit
+
 /linuxthreads
 /linuxthreads_db
-/ports
 /rtkaio

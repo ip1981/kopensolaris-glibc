@@ -1,4 +1,4 @@
-/* Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -47,4 +47,3 @@ __fxstatat64 (int vers, int fd, const char *filename, struct stat64 *buf,
 }
 libc_hidden_def (__fxstatat64)
 stub_warning (fstatat64)
-#include <stub-tag.h>

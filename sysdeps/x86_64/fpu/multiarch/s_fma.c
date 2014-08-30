@@ -1,5 +1,5 @@
 /* FMA version of fma.
-   Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2009-2014 Free Software Foundation, Inc.
    Contributed by Intel Corporation.
    This file is part of the GNU C Library.
 
@@ -38,7 +38,7 @@ __fma_fma3 (double x, double y, double z)
 static double
 __fma_fma4 (double x, double y, double z)
 {
-  asm ("vfmaddsd %3, %2, %1, %0" : "=x" (x) : "x" (x), "xm" (y), "xm" (z));
+  asm ("vfmaddsd %3, %2, %1, %0" : "=x" (x) : "x" (x), "x" (y), "x" (z));
   return x;
 }
 # else

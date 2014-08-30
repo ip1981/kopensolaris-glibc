@@ -1,5 +1,4 @@
-/* Copyright (C) 2000, 2001, 2002, 2003, 2005, 2007
-   Free Software Foundation, Inc.
+/* Copyright (C) 2000-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    This program is free software; you can redistribute it and/or modify
@@ -122,9 +121,9 @@ charmap_readdir (CHARMAP_DIR *cdir)
       else
 #endif
         {
-          struct stat statbuf;
+          struct stat64 statbuf;
 
-          if (stat (cdir->pathname, &statbuf) < 0)
+          if (stat64 (cdir->pathname, &statbuf) < 0)
             continue;
 
           mode = statbuf.st_mode;
@@ -168,10 +167,10 @@ fopen_uncompressed (const char *pathname, const char *compressor)
   pfd = open (pathname, O_RDONLY);
   if (pfd >= 0)
     {
-      struct stat statbuf;
+      struct stat64 statbuf;
       int fd[2];
 
-      if (fstat (pfd, &statbuf) >= 0
+      if (fstat64 (pfd, &statbuf) >= 0
           && S_ISREG (statbuf.st_mode)
           && pipe (fd) >= 0)
         {

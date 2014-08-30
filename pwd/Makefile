@@ -1,4 +1,4 @@
-# Copyright (C) 1991,1996-1999,2003,2004 Free Software Foundation, Inc.
+# Copyright (C) 1991-2014 Free Software Foundation, Inc.
 # This file is part of the GNU C Library.
 
 # The GNU C Library is free software; you can redistribute it and/or
@@ -31,11 +31,9 @@ include ../Rules
 
 ifeq ($(have-thread-library),yes)
 
-CFLAGS-getpwuid_r.c = -DUSE_NSCD=1
-CFLAGS-getpwnam_r.c = -DUSE_NSCD=1
 CFLAGS-getpwent_r.c = -fexceptions
 CFLAGS-getpwent.c = -fexceptions
 CFLAGS-getpw.c = -fexceptions
-CFLAGS-fgetpwent_r.c = -D_IO_MTSAFE_IO
+CFLAGS-fgetpwent_r.c = $(libio-mtsafe)
 
 endif

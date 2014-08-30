@@ -1,4 +1,4 @@
-/* Copyright (c) 1998, 1999, 2000, 2004, 2005 Free Software Foundation, Inc.
+/* Copyright (c) 1998-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Thorsten Kukuk <kukuk@vt.uni-paderborn.de>, 1998.
 
@@ -21,6 +21,7 @@
 /* We play dirty tricks with aliases.  */
 #include <rpc/xdr.h>
 
+#include <stdint.h>
 
 /* XDR 64bit integers */
 bool_t

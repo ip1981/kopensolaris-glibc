@@ -1,5 +1,5 @@
 /* sigwait - implementation of sigwait function from POSIX.1c.
-   Copyright (C) 1996 Free Software Foundation, Inc.
+   Copyright (C) 1996-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -28,4 +28,3 @@ __sigwait (const sigset_t *set, int *sig)
 weak_alias (__sigwait, sigwait)
 
 stub_warning (sigwait)
-#include <stub-tag.h>

@@ -1,5 +1,4 @@
-/* Copyright (C) 1991, 1995, 1996, 1997, 1999, 2000, 2002, 2007
-   Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -54,17 +53,6 @@ weak_alias (__libc_open64, open64)
 
 stub_warning (open64)
 
-
-int
-__open64_2 (file, oflag)
-     const char *file;
-     int oflag;
-{
-  if (oflag & O_CREAT)
-    __fortify_fail ("invalid open64 call: O_CREAT without mode");
-
-  return __open64 (file, oflag);
-}
+/* __open64_2 is a generic wrapper that calls __open64.
+   So give a stub warning for that symbol too.  */
 stub_warning (__open64_2)
-
-#include <stub-tag.h>

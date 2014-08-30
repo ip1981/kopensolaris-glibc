@@ -1,4 +1,4 @@
-/* Copyright (C) 1991, 1995, 1996, 1997 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -35,4 +35,3 @@ __sigvec (sig, vec, ovec)
 stub_warning (sigvec)
 
 weak_alias (__sigvec, sigvec)
-#include <stub-tag.h>

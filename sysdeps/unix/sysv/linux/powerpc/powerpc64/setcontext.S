@@ -1,6 +1,5 @@
 /* Switch to context.
-   Copyright (C) 2002, 2004, 2005, 2006, 2008, 2009
-   Free Software Foundation, Inc.
+   Copyright (C) 2002-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -39,7 +38,6 @@
 #if SHLIB_COMPAT (libc, GLIBC_2_3, GLIBC_2_3_4)
 ENTRY(__novec_setcontext)
 	CALL_MCOUNT 1
-#ifdef __ASSUME_NEW_RT_SIGRETURN_SYSCALL
   mflr  r0
   std   r31,-8(1)
   cfi_offset(r31,-8)
@@ -131,6 +129,10 @@ ENTRY(__novec_setcontext)
   lfd  fp1,(SIGCONTEXT_FP_REGS+(PT_R1*8))(r31)
   lfd  fp0,(SIGCONTEXT_FP_REGS+(PT_R0*8))(r31)
 
+  /* End FDE now, because the unwind info would be wrong while
+     we're reloading registers to switch to the new context.  */
+  cfi_endproc
+
   ld   r0,(SIGCONTEXT_GP_REGS+(PT_LNK*8))(r31)
   ld   r1,(SIGCONTEXT_GP_REGS+(PT_R1*8))(r31)
   mtlr r0
@@ -179,6 +181,11 @@ ENTRY(__novec_setcontext)
   ld   r31,(SIGCONTEXT_GP_REGS+(PT_R31*8))(r31)
   bctr
 
+  /* Re-establish FDE for the rest of the actual setcontext routine.  */
+  cfi_startproc
+  cfi_offset (lr, FRAME_LR_SAVE)
+  cfi_adjust_cfa_offset (128)
+
 L(nv_error_exit):
   ld   r0,128+FRAME_LR_SAVE(r1)
   addi r1,r1,128
@@ -200,22 +207,6 @@ L(nv_do_sigret):
   li   r0,SYS_ify(rt_sigreturn)
   sc
   /* No return.  */
-#else
-  /* If the kernel is not at least 2.4.21 then generate a ENOSYS stub.  */
-  mflr r0
-  std  r0,FRAME_LR_SAVE(r1)
-  cfi_offset(lr,FRAME_LR_SAVE)
-  stdu r1,-128(r1)
-  cfi_adjust_cfa_offset(128)
-  li   r3,ENOSYS
-  bl   JUMPTARGET(__syscall_error)
-  nop
-  li   r3,-1
-  ld   r0,128+FRAME_LR_SAVE(r1)
-  addi r1,r1,128
-  mtlr r0
-  blr
-#endif
 
 PSEUDO_END(__novec_setcontext)
 
@@ -227,7 +218,6 @@ compat_symbol (libc, __novec_setcontext, setcontext, GLIBC_2_3)
 	.machine	"altivec"
 ENTRY(__setcontext)
 	CALL_MCOUNT 1
-#ifdef __ASSUME_NEW_RT_SIGRETURN_SYSCALL
   mflr  r0
   std   r31,-8(1)
   cfi_offset(r31,-8)
@@ -422,6 +412,10 @@ L(has_no_vec):
   lfd  fp1,(SIGCONTEXT_FP_REGS+(PT_R1*8))(r31)
   lfd  fp0,(SIGCONTEXT_FP_REGS+(PT_R0*8))(r31)
 
+  /* End FDE now, because the unwind info would be wrong while
+     we're reloading registers to switch to the new context.  */
+  cfi_endproc
+
   ld   r0,(SIGCONTEXT_GP_REGS+(PT_LNK*8))(r31)
   ld   r1,(SIGCONTEXT_GP_REGS+(PT_R1*8))(r31)
   mtlr r0
@@ -470,6 +464,11 @@ L(has_no_vec):
   ld   r31,(SIGCONTEXT_GP_REGS+(PT_R31*8))(r31)
   bctr
 
+  /* Re-establish FDE for the rest of the actual setcontext routine.  */
+  cfi_startproc
+  cfi_offset (lr, FRAME_LR_SAVE)
+  cfi_adjust_cfa_offset (128)
+
 L(error_exit):
   ld   r0,128+FRAME_LR_SAVE(r1)
   addi r1,r1,128
@@ -491,22 +490,6 @@ L(do_sigret):
   li   r0,SYS_ify(rt_sigreturn)
   sc
   /* No return.  */
-#else
-  /* If the kernel is not at least 2.4.21 then generate a ENOSYS stub.  */
-  mflr r0
-  std  r0,FRAME_LR_SAVE(r1)
-  cfi_offset (lr, FRAME_LR_SAVE)
-  stdu r1,-128(r1)
-  cfi_adjust_cfa_offset (128)
-  li   r3,ENOSYS
-  bl   JUMPTARGET(__syscall_error)
-  nop
-  li   r3,-1
-  ld   r0,128+FRAME_LR_SAVE(r1)
-  addi r1,r1,128
-  mtlr r0
-  blr
-#endif
 
 PSEUDO_END(__setcontext)
 

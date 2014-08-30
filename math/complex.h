@@ -1,4 +1,4 @@
-/* Copyright (C) 1997-2000, 2006, 2011, 2012 Free Software Foundation, Inc.
+/* Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -52,9 +52,7 @@ __BEGIN_DECLS
 /* Macros to expand into expression of specified complex type.  */
 # define CMPLX(x, y) __builtin_complex ((double) (x), (double) (y))
 # define CMPLXF(x, y) __builtin_complex ((float) (x), (float) (y))
-# ifndef __NO_LONG_DOUBLE_MATH
-#  define CMPLXL(x, y) __builtin_complex ((long double) (x), (long double) (y))
-# endif
+# define CMPLXL(x, y) __builtin_complex ((long double) (x), (long double) (y))
 #endif
 
 /* The file <bits/cmathcalls.h> contains the prototypes for all the

@@ -1,5 +1,6 @@
 /* Multiple versions of strcmp
-   Copyright (C) 2010-2012 Free Software Foundation, Inc.
+   All versions must be listed in ifunc-impl-list.c.
+   Copyright (C) 2010-2014 Free Software Foundation, Inc.
    Contributed by Intel Corporation.
    This file is part of the GNU C Library.
 
@@ -67,6 +68,8 @@ ENTRY(STRCMP)
 	leal	__STRCMP_SSSE3@GOTOFF(%ebx), %eax
 	testl	$bit_SSE4_2, CPUID_OFFSET+index_SSE4_2+__cpu_features@GOTOFF(%ebx)
 	jz	2f
+	testl	$bit_Slow_SSE4_2, CPUID_OFFSET+index_Slow_SSE4_2+__cpu_features@GOTOFF(%ebx)
+	jnz	2f
 	leal	__STRCMP_SSE4_2@GOTOFF(%ebx), %eax
 2:	popl	%ebx
 	cfi_adjust_cfa_offset (-4)
@@ -86,6 +89,8 @@ ENTRY(STRCMP)
 	leal	__STRCMP_SSSE3, %eax
 	testl	$bit_SSE4_2, CPUID_OFFSET+index_SSE4_2+__cpu_features
 	jz	2f
+	testl	$bit_Slow_SSE4_2, CPUID_OFFSET+index_Slow_SSE4_2+__cpu_features
+	jnz	2f
 	leal	__STRCMP_SSE4_2, %eax
 2:	ret
 END(STRCMP)
@@ -95,6 +100,8 @@ END(STRCMP)
 # define ENTRY(name) \
 	.type __STRCMP_IA32, @function; \
 	.p2align 4; \
+	.globl __STRCMP_IA32; \
+	.hidden __STRCMP_IA32; \
 	__STRCMP_IA32: cfi_startproc; \
 	CALL_MCOUNT
 # undef END

@@ -1,6 +1,6 @@
 /* Software floating-point emulation.
    Return 1 if (*a) > (*b)
-   Copyright (C) 1997,1999 Free Software Foundation, Inc.
+   Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Richard Henderson (rth@cygnus.com) and
 		  Jakub Jelinek (jj@ultra.linux.cz).
@@ -36,7 +36,7 @@ int _Qp_fgt(const long double *a, const long double *b)
     FP_SET_EXCEPTION(FP_EX_INVALID);
 
   QP_HANDLE_EXCEPTIONS(
-  	__asm (
+	__asm (
 "	ldd [%0], %%f52\n"
 "	ldd [%0+8], %%f54\n"
 "	ldd [%1], %%f56\n"

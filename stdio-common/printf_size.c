@@ -1,5 +1,5 @@
 /* Print size value using units for orders of magnitude.
-   Copyright (C) 1997-2012 Free Software Foundation, Inc.
+   Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997.
    Based on a proposal by Larry McVoy <lm@sgi.com>.
@@ -42,7 +42,7 @@
 #define outchar(ch)							      \
   do									      \
     {									      \
-      register const int outc = (ch);					      \
+      const int outc = (ch);						      \
       if (putc (outc, fp) == EOF)					      \
 	return -1;							      \
       ++done;								      \
@@ -51,7 +51,7 @@
 #define PRINT(ptr, wptr, len)						      \
   do									      \
     {									      \
-      register size_t outlen = (len);					      \
+      size_t outlen = (len);						      \
       if (len > 20)							      \
 	{								      \
 	  if (PUT (fp, wide ? (const char *) wptr : ptr, outlen) != outlen)   \
@@ -103,7 +103,7 @@ __printf_size (FILE *fp, const struct printf_info *info,
   union
     {
       union ieee754_double dbl;
-      union ieee854_long_double ldbl;
+      long double ldbl;
     }
   fpnum;
   const void *ptr = &fpnum;
@@ -123,25 +123,25 @@ __printf_size (FILE *fp, const struct printf_info *info,
 #ifndef __NO_LONG_DOUBLE_MATH
   if (info->is_long_double && sizeof (long double) > sizeof (double))
     {
-      fpnum.ldbl.d = *(const long double *) args[0];
+      fpnum.ldbl = *(const long double *) args[0];
 
       /* Check for special values: not a number or infinity.  */
-      if (__isnanl (fpnum.ldbl.d))
+      if (__isnanl (fpnum.ldbl))
 	{
 	  special = "nan";
 	  wspecial = L"nan";
 	  // fpnum_sign = 0;	Already zero
 	}
-      else if ((res = __isinfl (fpnum.ldbl.d)))
+      else if ((res = __isinfl (fpnum.ldbl)))
 	{
 	  fpnum_sign = res;
 	  special = "inf";
 	  wspecial = L"inf";
 	}
       else
-	while (fpnum.ldbl.d >= divisor && tag[1] != '\0')
+	while (fpnum.ldbl >= divisor && tag[1] != '\0')
 	  {
-	    fpnum.ldbl.d /= divisor;
+	    fpnum.ldbl /= divisor;
 	    ++tag;
 	  }
     }

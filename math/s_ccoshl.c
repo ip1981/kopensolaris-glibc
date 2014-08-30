@@ -1,5 +1,5 @@
 /* Complex cosine hyperbole function for long double.
-   Copyright (C) 1997-2012 Free Software Foundation, Inc.
+   Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997.
 
@@ -39,7 +39,15 @@ __ccoshl (__complex__ long double x)
 	  const int t = (int) ((LDBL_MAX_EXP - 1) * M_LN2l);
 	  long double sinix, cosix;
 
-	  __sincosl (__imag__ x, &sinix, &cosix);
+	  if (__builtin_expect (icls != FP_SUBNORMAL, 1))
+	    {
+	      __sincosl (__imag__ x, &sinix, &cosix);
+	    }
+	  else
+	    {
+	      sinix = __imag__ x;
+	      cosix = 1.0;
+	    }
 
 	  if (fabsl (__real__ x) > t)
 	    {
@@ -74,6 +82,19 @@ __ccoshl (__complex__ long double x)
 	      __real__ retval = __ieee754_coshl (__real__ x) * cosix;
 	      __imag__ retval = __ieee754_sinhl (__real__ x) * sinix;
 	    }
+
+	  if (fabsl (__real__ retval) < LDBL_MIN)
+	    {
+	      volatile long double force_underflow
+		= __real__ retval * __real__ retval;
+	      (void) force_underflow;
+	    }
+	  if (fabsl (__imag__ retval) < LDBL_MIN)
+	    {
+	      volatile long double force_underflow
+		= __imag__ retval * __imag__ retval;
+	      (void) force_underflow;
+	    }
 	}
       else
 	{
@@ -92,7 +113,15 @@ __ccoshl (__complex__ long double x)
 	  /* Imaginary part is finite.  */
 	  long double sinix, cosix;
 
-	  __sincosl (__imag__ x, &sinix, &cosix);
+	  if (__builtin_expect (icls != FP_SUBNORMAL, 1))
+	    {
+	      __sincosl (__imag__ x, &sinix, &cosix);
+	    }
+	  else
+	    {
+	      sinix = __imag__ x;
+	      cosix = 1.0;
+	    }
 
 	  __real__ retval = __copysignl (HUGE_VALL, cosix);
 	  __imag__ retval = (__copysignl (HUGE_VALL, sinix)

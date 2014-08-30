@@ -1,4 +1,4 @@
-/* Copyright (C) 1999, 2000, 2002, 2003 Free Software Foundation, Inc.
+/* Copyright (C) 1999-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Kazumoto Kojima <kkojima@rr.iij4u.or.jp>
    Optimized by Toshiyasu Morita <toshiyasu.morita@hsa.hitachi.com>
@@ -38,7 +38,7 @@ ENTRY(memset)
 	bt	L_wordalign
 
 	mov.b	r5,@r4
-	add	#-1,r6	
+	add	#-1,r6
 	add	#1,r4
 	mov	r4,r0
 

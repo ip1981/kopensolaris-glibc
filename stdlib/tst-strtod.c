@@ -1,4 +1,4 @@
-/* Copyright (C) 1991-2012 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -60,10 +60,10 @@ static const struct ltest tests[] =
     { "0x00.0014p19", 160.0, '\0', 0 },
     { "0x1p-1023",
       1.11253692925360069154511635866620203210960799023116591527666e-308,
-      '\0', ERANGE },
+      '\0', 0 },
     { "0x0.8p-1022",
       1.11253692925360069154511635866620203210960799023116591527666e-308,
-      '\0', ERANGE },
+      '\0', 0 },
     { "Inf", HUGE_VAL, '\0', 0 },
     { "-Inf", -HUGE_VAL, '\0', 0 },
     { "+InFiNiTy", HUGE_VAL, '\0', 0 },
@@ -85,7 +85,7 @@ int
 main (int argc, char ** argv)
 {
   char buf[100];
-  register const struct ltest *lt;
+  const struct ltest *lt;
   char *ep;
   int status = 0;
   int save_errno;
@@ -184,7 +184,7 @@ main (int argc, char ** argv)
 static void
 expand (dst, c)
      char *dst;
-     register int c;
+     int c;
 {
   if (isprint (c))
     {

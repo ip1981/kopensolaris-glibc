@@ -1,4 +1,4 @@
-/* Copyright (C) 1991, 1995, 1996, 1997 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -30,4 +30,3 @@ __getrlimit (enum __rlimit_resource resource, struct rlimit *rlimits)
 weak_alias (__getrlimit, getrlimit)
 
 stub_warning (getrlimit)
-#include <stub-tag.h>

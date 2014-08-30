@@ -1,4 +1,4 @@
-/* Copyright (C) 2004 Free Software Foundation, Inc.
+/* Copyright (C) 2004-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -20,13 +20,12 @@
 #include <tls.h>
 #include <unistd.h>
 
-/* Default stack size.  */
-size_t __default_stacksize attribute_hidden
-#ifdef SHARED
-;
-#else
-  = PTHREAD_STACK_MIN;
-#endif
+/* Default thread attributes for the case when the user does not
+   provide any.  */
+struct pthread_attr __default_pthread_attr attribute_hidden;
+
+/* Mutex protecting __default_pthread_attr.  */
+int __default_pthread_attr_lock = LLL_LOCK_INITIALIZER;
 
 /* Flag whether the machine is SMP or not.  */
 int __is_smp attribute_hidden;

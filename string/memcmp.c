@@ -1,5 +1,4 @@
-/* Copyright (C) 1991,1993,1995,1997,1998,2003,2004,2012
-   Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Torbjorn Granlund (tege@sics.se).
 
@@ -29,6 +28,10 @@
 #endif
 
 #undef memcmp
+
+#ifndef MEMCMP
+# define MEMCMP memcmp
+#endif
 
 #ifdef _LIBC
 
@@ -89,9 +92,6 @@ typedef unsigned char byte;
 
 static int memcmp_bytes (op_t, op_t) __THROW;
 
-# ifdef  __GNUC__
-__inline
-# endif
 static int
 memcmp_bytes (a, b)
      op_t a, b;
@@ -308,7 +308,7 @@ memcmp_not_common_alignment (srcp1, srcp2, len)
 }
 
 int
-memcmp (s1, s2, len)
+MEMCMP (s1, s2, len)
      const __ptr_t s1;
      const __ptr_t s2;
      size_t len;

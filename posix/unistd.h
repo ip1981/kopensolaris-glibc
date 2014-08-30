@@ -1,4 +1,4 @@
-/* Copyright (C) 1991-2009, 2010, 2011, 2012 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -630,17 +630,8 @@ extern __pid_t getpid (void) __THROW;
 /* Get the process ID of the calling process's parent.  */
 extern __pid_t getppid (void) __THROW;
 
-/* Get the process group ID of the calling process.
-   This function is different on old BSD. */
-#ifndef __FAVOR_BSD
+/* Get the process group ID of the calling process.  */
 extern __pid_t getpgrp (void) __THROW;
-#else
-# ifdef __REDIRECT_NTH
-extern __pid_t __REDIRECT_NTH (getpgrp, (__pid_t __pid), __getpgid);
-# else
-#  define getpgrp __getpgid
-# endif
-#endif
 
 /* Get the process group ID of process PID.  */
 extern __pid_t __getpgid (__pid_t __pid) __THROW;
@@ -662,25 +653,12 @@ extern int setpgid (__pid_t __pid, __pid_t __pgid) __THROW;
 
    New programs should always use `setpgid' instead.
 
-   The default in GNU is to provide the System V function.  The BSD
-   function is available under -D_BSD_SOURCE.  */
-
-# ifndef __FAVOR_BSD
+   GNU provides the POSIX.1 function.  */
 
 /* Set the process group ID of the calling process to its own PID.
    This is exactly the same as `setpgid (0, 0)'.  */
 extern int setpgrp (void) __THROW;
 
-# else
-
-/* Another name for `setpgid' (above).  */
-#  ifdef __REDIRECT_NTH
-extern int __REDIRECT_NTH (setpgrp, (__pid_t __pid, __pid_t __pgrp), setpgid);
-#  else
-#   define setpgrp setpgid
-#  endif
-
-# endif	/* Favor BSD.  */
 #endif	/* Use SVID or BSD.  */
 
 /* Create a new session with the calling process as its leader.
@@ -719,34 +697,34 @@ extern int group_member (__gid_t __gid) __THROW;
    If the calling process is the super-user, set the real
    and effective user IDs, and the saved set-user-ID to UID;
    if not, the effective user ID is set to UID.  */
-extern int setuid (__uid_t __uid) __THROW;
+extern int setuid (__uid_t __uid) __THROW __wur;
 
 #if defined __USE_BSD || defined __USE_XOPEN_EXTENDED
 /* Set the real user ID of the calling process to RUID,
    and the effective user ID of the calling process to EUID.  */
-extern int setreuid (__uid_t __ruid, __uid_t __euid) __THROW;
+extern int setreuid (__uid_t __ruid, __uid_t __euid) __THROW __wur;
 #endif
 
 #if defined __USE_BSD || defined __USE_XOPEN2K
 /* Set the effective user ID of the calling process to UID.  */
-extern int seteuid (__uid_t __uid) __THROW;
+extern int seteuid (__uid_t __uid) __THROW __wur;
 #endif /* Use BSD.  */
 
 /* Set the group ID of the calling process to GID.
    If the calling process is the super-user, set the real
    and effective group IDs, and the saved set-group-ID to GID;
    if not, the effective group ID is set to GID.  */
-extern int setgid (__gid_t __gid) __THROW;
+extern int setgid (__gid_t __gid) __THROW __wur;
 
 #if defined __USE_BSD || defined __USE_XOPEN_EXTENDED
 /* Set the real group ID of the calling process to RGID,
    and the effective group ID of the calling process to EGID.  */
-extern int setregid (__gid_t __rgid, __gid_t __egid) __THROW;
+extern int setregid (__gid_t __rgid, __gid_t __egid) __THROW __wur;
 #endif
 
 #if defined __USE_BSD || defined __USE_XOPEN2K
 /* Set the effective group ID of the calling process to GID.  */
-extern int setegid (__gid_t __gid) __THROW;
+extern int setegid (__gid_t __gid) __THROW __wur;
 #endif /* Use BSD.  */
 
 #ifdef __USE_GNU
@@ -763,12 +741,12 @@ extern int getresgid (__gid_t *__rgid, __gid_t *__egid, __gid_t *__sgid)
 /* Set the real user ID, effective user ID, and saved-set user ID,
    of the calling process to RUID, EUID, and SUID, respectively.  */
 extern int setresuid (__uid_t __ruid, __uid_t __euid, __uid_t __suid)
-     __THROW;
+     __THROW __wur;
 
 /* Set the real group ID, effective group ID, and saved-set group ID,
    of the calling process to RGID, EGID, and SGID, respectively.  */
 extern int setresgid (__gid_t __rgid, __gid_t __egid, __gid_t __sgid)
-     __THROW;
+     __THROW __wur;
 #endif
 
 
@@ -1144,7 +1122,8 @@ extern char *crypt (const char *__key, const char *__salt)
 
 /* Encrypt data in BLOCK in place if EDFLAG is zero; otherwise decrypt
    block in place.  */
-extern void encrypt (char *__block, int __edflag) __THROW __nonnull ((1));
+extern void encrypt (char *__glibc_block, int __edflag)
+     __THROW __nonnull ((1));
 
 
 /* Swab pairs bytes in the first N bytes of the area pointed to by

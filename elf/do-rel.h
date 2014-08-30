@@ -1,5 +1,5 @@
 /* Do relocations for ELF dynamic linking.
-   Copyright (C) 1995-2003, 2004, 2011 Free Software Foundation, Inc.
+   Copyright (C) 1995-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -30,14 +30,6 @@
 # define DO_ELF_MACHINE_REL_RELATIVE(map, l_addr, relative) \
   elf_machine_rel_relative (l_addr, relative,				      \
 			    (void *) (l_addr + relative->r_offset))
-#endif
-
-#ifndef VERSYMIDX
-# define VERSYMIDX(sym)	(DT_NUM + DT_THISPROCNUM + DT_VERSIONTAGIDX (sym))
-#endif
-#ifndef VALIDX
-# define VALIDX(tag) (DT_NUM + DT_THISPROCNUM + DT_VERSIONTAGNUM \
-		      + DT_EXTRANUM + DT_VALTAGIDX (tag))
 #endif
 
 /* Perform the relocations in MAP on the running program image as specified

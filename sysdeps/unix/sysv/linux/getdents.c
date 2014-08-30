@@ -1,4 +1,4 @@
-/* Copyright (C) 19932-2012 Free Software Foundation, Inc.
+/* Copyright (C) 1993-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -28,7 +28,6 @@
 
 #include <sysdep.h>
 #include <sys/syscall.h>
-#include <bp-checks.h>
 
 #include <linux/posix_types.h>
 
@@ -101,7 +100,6 @@ __GETDENTS (int fd, char *buf, size_t nbytes)
 {
   ssize_t retval;
 
-#ifdef __ASSUME_GETDENTS32_D_TYPE
   /* The d_ino and d_off fields in kernel_dirent and dirent must have
      the same sizes and alignments.  */
   if (sizeof (DIRENT_TYPE) == sizeof (struct dirent)
@@ -114,7 +112,7 @@ __GETDENTS (int fd, char *buf, size_t nbytes)
       && (offsetof (struct kernel_dirent, d_reclen)
 	  == offsetof (struct dirent, d_reclen)))
     {
-      retval = INLINE_SYSCALL (getdents, 3, fd, CHECK_N(buf, nbytes), nbytes);
+      retval = INLINE_SYSCALL (getdents, 3, fd, buf, nbytes);
 
       /* The kernel added the d_type value after the name.  Change
 	 this now.  */
@@ -139,7 +137,6 @@ __GETDENTS (int fd, char *buf, size_t nbytes)
 
       return retval;
     }
-#endif
 
   off64_t last_offset = -1;
 
@@ -164,8 +161,7 @@ __GETDENTS (int fd, char *buf, size_t nbytes)
 		   - offsetof (DIRENT_TYPE, d_name);
 	  kbuf = __alloca(kbytes);
 	}
-      retval = INLINE_SYSCALL (getdents64, 3, fd, CHECK_N(kbuf, kbytes),
-			       kbytes);
+      retval = INLINE_SYSCALL (getdents64, 3, fd, kbuf, kbytes);
 # ifndef __ASSUME_GETDENTS64_SYSCALL
       if (retval != -1 || (errno != EINVAL && errno != ENOSYS))
 # endif
@@ -261,8 +257,7 @@ __GETDENTS (int fd, char *buf, size_t nbytes)
 
     skdp = kdp = __alloca (red_nbytes);
 
-    retval = INLINE_SYSCALL (getdents, 3, fd,
-			     CHECK_N ((char *) kdp, red_nbytes), red_nbytes);
+    retval = INLINE_SYSCALL (getdents, 3, fd, (char *) kdp, red_nbytes);
 
     if (retval == -1)
       return -1;
@@ -297,11 +292,7 @@ __GETDENTS (int fd, char *buf, size_t nbytes)
 	DIRENT_SET_DP_INO(dp, kdp->d_ino);
 	dp->d_off = kdp->d_off;
 	dp->d_reclen = new_reclen;
-#ifdef __ASSUME_GETDENTS32_D_TYPE
 	dp->d_type = *((char *) kdp + kdp->d_reclen - 1);
-#else
-	dp->d_type = DT_UNKNOWN;
-#endif
 	memcpy (dp->d_name, kdp->d_name,
 		kdp->d_reclen - offsetof (struct kernel_dirent, d_name));
 

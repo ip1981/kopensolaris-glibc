@@ -1,4 +1,4 @@
-# Copyright (C) 1998-2000,2002,2005,2007,2012 Free Software Foundation, Inc.
+# Copyright (C) 1998-2014 Free Software Foundation, Inc.
 # This file is part of the GNU C Library.
 
 # The GNU C Library is free software; you can redistribute it and/or
@@ -54,6 +54,13 @@ include ../Rules
 
 $(objpfx)zic: $(objpfx)scheck.o $(objpfx)ialloc.o
 
+$(objpfx)zic.o $(objpfx)zdump.o: $(objpfx)version.h
+
+$(objpfx)version.h: $(common-objpfx)config.make
+	echo 'static char const TZVERSION[]="$(version)";' \
+	    > $@.new
+	mv -f $@.new $@
+
 tz-cflags = -DTZDIR='"$(zonedir)"' \
 	    -DTZDEFAULT='"$(localtime-file)"' \
 	    -DTZDEFRULES='"$(posixrules-file)"' \
@@ -106,7 +113,11 @@ $(testdata)/Asia/Tokyo: asia $(zic-deps)
 
 
 $(objpfx)tzselect: tzselect.ksh $(common-objpfx)config.make
-	sed -e 's%@KSH@%$(KSH)%g' \
-	    -e 's%@TZDIR@%$(zonedir)%g' < $< > $@.new
+	sed -e 's|/bin/bash|$(KSH)|g' \
+	    -e 's|TZDIR=[^}]*|TZDIR=$(zonedir)|' \
+	    -e '/TZVERSION=/s|see_Makefile|"$(version)"|' \
+	    -e '/PKGVERSION=/s|=.*|="$(PKGVERSION)"|' \
+	    -e '/REPORT_BUGS_TO=/s|=.*|="$(REPORT_BUGS_TO)"|' \
+	    < $< > $@.new
 	chmod 555 $@.new
 	mv -f $@.new $@

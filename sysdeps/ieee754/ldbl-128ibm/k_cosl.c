@@ -1,5 +1,5 @@
 /* Quad-precision floating point cosine on <-pi/4,pi/4>.
-   Copyright (C) 1999,2004,2006 Free Software Foundation, Inc.
+   Copyright (C) 1999-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Jakub Jelinek <jj@ultra.linux.cz>
 
@@ -81,8 +81,11 @@ __kernel_cosl(long double x, long double y)
 {
   long double h, l, z, sin_l, cos_l_m1;
   int64_t ix;
-  u_int32_t tix, hix, index;
-  GET_LDOUBLE_MSW64 (ix, x);
+  uint32_t tix, hix, index;
+  double xhi, hhi;
+
+  xhi = ldbl_high (x);
+  EXTRACT_WORDS64 (ix, xhi);
   tix = ((u_int64_t)ix) >> 32;
   tix &= ~0x80000000;			/* tix = |x|'s high 32 bits */
   if (tix < 0x3fc30000)			/* |x| < 0.1484375 */
@@ -120,7 +123,7 @@ __kernel_cosl(long double x, long double y)
     The following should work for double but generates the wrong index.
     For now the code above converts double to ieee extended to compute
     the index back to double for the h value.
-    
+
       index = 0x3fe - (tix >> 20);
       hix = (tix + (0x200 << index)) & (0xfffffc00 << index);
       if (signbit (x))
@@ -136,7 +139,8 @@ __kernel_cosl(long double x, long double y)
 	case 2: index = (hix - 0x3fc30000) >> 14; break;
 	}
 */
-      SET_LDOUBLE_WORDS64(h, ((u_int64_t)hix) << 32, 0);
+      INSERT_WORDS64 (hhi, ((uint64_t)hix) << 32);
+      h = hhi;
       l = y - (h - x);
       z = l * l;
       sin_l = l*(ONE+z*(SSIN1+z*(SSIN2+z*(SSIN3+z*(SSIN4+z*SSIN5)))));

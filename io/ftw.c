@@ -1,5 +1,5 @@
 /* File tree walker functions.
-   Copyright (C) 1996-2004, 2006-2008, 2010 Free Software Foundation, Inc.
+   Copyright (C) 1996-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1996.
 
@@ -542,11 +542,11 @@ fail:
 
   while (dir.stream != NULL && (d = __readdir64 (dir.stream)) != NULL)
     {
+      int d_type = DT_UNKNOWN;
 #ifdef _DIRENT_HAVE_D_TYPE
-      result = process_entry (data, &dir, d->d_name, NAMLEN (d), d->d_type);
-#else
-      result = process_entry (data, &dir, d->d_name, NAMLEN (d), DT_UNKNOWN);
+      d_type = d->d_type;
 #endif
+      result = process_entry (data, &dir, d->d_name, NAMLEN (d), d_type);
       if (result != 0)
 	break;
     }

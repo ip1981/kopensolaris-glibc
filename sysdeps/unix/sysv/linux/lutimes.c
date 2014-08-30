@@ -1,6 +1,6 @@
 /* Change access and/or modification date of file.  Do not follow symbolic
    links.
-   Copyright (C) 2007 Free Software Foundation, Inc.
+   Copyright (C) 2007-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -45,7 +45,7 @@ lutimes (const char *file, const struct timeval tvp[2])
     }
 
   return INLINE_SYSCALL (utimensat, 4, AT_FDCWD, file, tvp ? ts : NULL,
-  			 AT_SYMLINK_NOFOLLOW);
+			 AT_SYMLINK_NOFOLLOW);
 #else
   __set_errno (ENOSYS);
   return -1;
@@ -54,5 +54,4 @@ lutimes (const char *file, const struct timeval tvp[2])
 
 #ifndef __NR_utimensat
 stub_warning (lutimes)
-# include <stub-tag.h>
 #endif

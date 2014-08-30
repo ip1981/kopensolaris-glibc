@@ -1,6 +1,5 @@
 /* Get file-specific information about descriptor FD.  Linux version.
-   Copyright (C) 1991,1995,1996,1998-2003,2008,2010,2011
-   Free Software Foundation, Inc.
+   Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -34,7 +33,6 @@ __fpathconf (fd, name)
      int name;
 {
   struct statfs fsbuf;
-  int r;
 
   switch (name)
     {
@@ -49,12 +47,6 @@ __fpathconf (fd, name)
 
     case _PC_CHOWN_RESTRICTED:
       return __statfs_chown_restricted (__fstatfs (fd, &fsbuf), &fsbuf);
-
-    case _PC_PIPE_BUF:
-      r = __fcntl (fd, F_GETPIPE_SZ);
-      if (r > 0)
-	return r;
-      /* FALLTHROUGH */
 
     default:
       return posix_fpathconf (fd, name);

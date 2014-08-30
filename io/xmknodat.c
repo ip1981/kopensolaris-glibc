@@ -1,4 +1,4 @@
-/* Copyright (C) 2005 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -60,4 +60,3 @@ __xmknodat (int vers, int fd, const char *path, mode_t mode, dev_t *dev)
 stub_warning (__xmknodat)
 
 libc_hidden_def (__xmknodat)
-#include <stub-tag.h>

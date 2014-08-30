@@ -1,4 +1,4 @@
-/* Copyright (C) 1998,99,2002,2004 Free Software Foundation, Inc.
+/* Copyright (C) 1998-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -50,4 +50,3 @@ globfree64 (glob64_t *pglob)
 libc_hidden_def (globfree64)
 
 stub_warning (glob64)
-#include <stub-tag.h>

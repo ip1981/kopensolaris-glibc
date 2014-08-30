@@ -1,5 +1,5 @@
 /* Enable floating-point exceptions.
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Andreas Jaeger <aj@suse.de>, 1999.
 
@@ -22,8 +22,10 @@
 int
 feenableexcept (int excepts)
 {
-  /* Signal failure.  */
-  return -1;
+  /* Signal failure if any exception traps are to be enabled.  */
+  if (excepts != 0)
+    return -1;
+  else
+    return 0;
 }
 stub_warning (feenableexcept)
-#include <stub-tag.h>

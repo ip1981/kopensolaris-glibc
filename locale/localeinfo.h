@@ -1,6 +1,5 @@
 /* Declarations for internal libc locale interfaces
-   Copyright (C) 1995-2003, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
-   Free Software Foundation, Inc.
+   Copyright (C) 1995-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -87,6 +86,16 @@ struct __locale_data
   }
   values __flexarr;	/* Items, usually pointers into `filedata'.  */
 };
+
+/* This alignment is used for 32-bit integers in locale files, both
+   those that are explicitly int32_t or uint32_t and those that are
+   wchar_t, regardless of the (possibly smaller) alignment required
+   for such integers on a particular host.  */
+#define LOCFILE_ALIGN		sizeof (int32_t)
+#define LOCFILE_ALIGN_MASK	(LOCFILE_ALIGN - 1)
+#define LOCFILE_ALIGN_UP(x)	(((x) + LOCFILE_ALIGN - 1)	\
+				 & ~LOCFILE_ALIGN_MASK)
+#define LOCFILE_ALIGNED_P(x)	(((x) & LOCFILE_ALIGN_MASK) == 0)
 
 /* We know three kinds of collation sorting rules.  */
 enum coll_sort_rule
@@ -255,11 +264,8 @@ extern __thread struct __locale_data *const *_nl_current_##category \
 #define _NL_CURRENT_DEFINE(category) \
   __thread struct __locale_data *const *_nl_current_##category \
     attribute_hidden = &_nl_global_locale.__locales[category]; \
-  asm (_NL_CURRENT_DEFINE_STRINGIFY (ASM_GLOBAL_DIRECTIVE) \
-       " " __SYMBOL_PREFIX "_nl_current_" #category "_used\n" \
+  asm (".globl " __SYMBOL_PREFIX "_nl_current_" #category "_used\n" \
        _NL_CURRENT_DEFINE_ABS (_nl_current_##category##_used, 1));
-#define _NL_CURRENT_DEFINE_STRINGIFY(x) _NL_CURRENT_DEFINE_STRINGIFY_1 (x)
-#define _NL_CURRENT_DEFINE_STRINGIFY_1(x) #x
 #ifdef HAVE_ASM_SET_DIRECTIVE
 # define _NL_CURRENT_DEFINE_ABS(sym, val) ".set " #sym ", " #val
 #else

@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2012 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@redhat.com>, 2002.
 
@@ -225,17 +225,18 @@ LLL_STUB_UNWIND_INFO_END
 
 
 #define lll_futex_wake(futex, nr, private) \
-  do {									      \
-    int __ignore;							      \
+  ({									      \
+    int __status;							      \
     register __typeof (nr) _nr __asm ("edx") = (nr);			      \
     LIBC_PROBE (lll_futex_wake, 3, futex, nr, private);                       \
     __asm __volatile ("syscall"						      \
-		      : "=a" (__ignore)					      \
+		      : "=a" (__status)					      \
 		      : "0" (SYS_futex), "D" (futex),			      \
 			"S" (__lll_private_flag (FUTEX_WAKE, private)),	      \
 			"d" (_nr)					      \
 		      : "memory", "cc", "r10", "r11", "cx");		      \
-  } while (0)
+    __status;								      \
+  })
 
 
 /* NB: in the lll_trylock macro we simply return the value in %eax
@@ -426,6 +427,13 @@ LLL_STUB_UNWIND_INFO_END
 		       : "memory", "cx", "cc", "r10", "r11");		      \
      result; })
 
+extern int __lll_timedlock_elision (int *futex, short *adapt_count,
+					 const struct timespec *timeout,
+					 int private) attribute_hidden;
+
+#define lll_timedlock_elision(futex, adapt_count, timeout, private)	\
+  __lll_timedlock_elision(&(futex), &(adapt_count), timeout, private)
+
 #define lll_robust_timedlock(futex, timeout, id, private) \
   ({ int result, ignore1, ignore2, ignore3;				      \
      __asm __volatile (LOCK_INSTR "cmpxchgl %1, %4\n\t"			      \
@@ -560,7 +568,7 @@ LLL_STUB_UNWIND_INFO_END
   (futex != LLL_LOCK_INITIALIZER)
 
 
-/* The kernel notifies a process with uses CLONE_CLEARTID via futex
+/* The kernel notifies a process which uses CLONE_CHILD_CLEARTID via futex
    wakeup when the clone terminates.  The memory location contains the
    thread ID while the clone is running and is reset to zero
    afterwards.
@@ -595,6 +603,22 @@ extern int __lll_timedwait_tid (int *tid, const struct timespec *abstime)
 	  __result = __lll_timedwait_tid (&tid, abstime);		      \
       }									      \
     __result; })
+
+extern int __lll_lock_elision (int *futex, short *adapt_count, int private)
+  attribute_hidden;
+
+extern int __lll_unlock_elision (int *lock, int private)
+  attribute_hidden;
+
+extern int __lll_trylock_elision (int *lock, short *adapt_count)
+  attribute_hidden;
+
+#define lll_lock_elision(futex, adapt_count, private) \
+  __lll_lock_elision (&(futex), &(adapt_count), private)
+#define lll_unlock_elision(futex, private) \
+  __lll_unlock_elision (&(futex), private)
+#define lll_trylock_elision(futex, adapt_count) \
+  __lll_trylock_elision (&(futex), &(adapt_count))
 
 #endif  /* !__ASSEMBLER__ */
 

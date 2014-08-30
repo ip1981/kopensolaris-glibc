@@ -1,4 +1,4 @@
-/* Copyright (C) 2003 Free Software Foundation, Inc.
+/* Copyright (C) 2003-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@redhat.com>, 2003.
 
@@ -65,7 +65,7 @@ work (const char *fname, int mask)
       if ((st.st_mode & mask) != 0)
 	{
 	  printf ("mask not successful after %s: %x still set\n",
-	      	  fcts[i].name, (unsigned int) (st.st_mode & mask));
+		  fcts[i].name, (unsigned int) (st.st_mode & mask));
 	  result = 1;
 	}
     }

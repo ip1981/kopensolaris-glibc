@@ -39,6 +39,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <libintl.h>
+#include <locale.h>
 #include <ctype.h>
 #include <sys/types.h>
 #include <sys/param.h>
@@ -75,12 +76,9 @@ struct commandline
 
 static const char *cmdname;
 
-#define SVR4_CPP "/usr/ccs/lib/cpp"
-#define SUNOS_CPP "/lib/cpp"
-
 static const char *svcclosetime = "120";
 static int cppDefined;	/* explicit path for C preprocessor */
-static const char *CPP = SUNOS_CPP;
+static const char *CPP = "/lib/cpp";
 static const char CPPFLAGS[] = "-C";
 static char *pathbuf;
 static int cpp_pid;
@@ -175,6 +173,9 @@ int
 main (int argc, const char *argv[])
 {
   struct commandline cmd;
+
+  setlocale (LC_ALL, "");
+  textdomain (_libc_intl_domainname);
 
   (void) memset ((char *) &cmd, 0, sizeof (struct commandline));
   clear_args ();
@@ -325,25 +326,19 @@ clear_args (void)
 static void
 find_cpp (void)
 {
-  struct stat buf;
+  struct stat64 buf;
 
-  if (stat (CPP, &buf) < 0)
-    {				/* /lib/cpp or explicit cpp does not exist */
-      if (cppDefined)
-	{
-	  fprintf (stderr, _ ("cannot find C preprocessor: %s \n"), CPP);
-	  crash ();
-	}
-      else
-	{			/* try the other one */
-	  CPP = SVR4_CPP;
-	  if (stat (CPP, &buf) < 0)
-	    {			/* can't find any cpp */
-	      fputs (_ ("cannot find any C preprocessor (cpp)\n"), stdout);
-	      crash ();
-	    }
-	}
+  if (stat64 (CPP, &buf) == 0)
+    return;
+
+  if (cppDefined) /* user specified cpp but it does not exist */
+    {
+      fprintf (stderr, _ ("cannot find C preprocessor: %s\n"), CPP);
+      crash ();
     }
+
+  /* fall back to system CPP */
+  CPP = "cpp";
 }
 
 /*
@@ -374,8 +369,13 @@ open_input (const char *infile, const char *define)
       close (1);
       dup2 (pd[1], 1);
       close (pd[0]);
-      execv (arglist[0], (char **) arglist);
-      perror ("execv");
+      execvp (arglist[0], (char **) arglist);
+      if (errno == ENOENT)
+        {
+          fprintf (stderr, _ ("cannot find C preprocessor: %s\n"), CPP);
+          exit (1);
+        }
+      perror ("execvp");
       exit (1);
     case -1:
       perror ("fork");
@@ -643,7 +643,7 @@ h_output (const char *infile, const char *define, int extend,
     }
   else if (tblflag)
     {
-      fprintf (fout, rpcgen_table_dcl);
+      fprintf (fout, "%s", rpcgen_table_dcl);
     }
 
   if (Cflag)
@@ -1114,17 +1114,17 @@ putarg (int whereto, const char *cp)
 static void
 checkfiles (const char *infile, const char *outfile)
 {
-  struct stat buf;
+  struct stat64 buf;
 
   if (infile)			/* infile ! = NULL */
-    if (stat (infile, &buf) < 0)
+    if (stat64 (infile, &buf) < 0)
       {
 	perror (infile);
 	crash ();
       }
   if (outfile)
     {
-      if (stat (outfile, &buf) < 0)
+      if (stat64 (outfile, &buf) < 0)
 	return;			/* file does not exist */
       else
 	{
@@ -1442,16 +1442,19 @@ options_usage (FILE *stream, int status)
   f_print (stream, _("-t\t\tgenerate RPC dispatch table\n"));
   f_print (stream, _("-T\t\tgenerate code to support RPC dispatch tables\n"));
   f_print (stream, _("-Y path\t\tdirectory name to find C preprocessor (cpp)\n"));
+  f_print (stream, _("-5\t\tSysVr4 compatibility mode\n"));
+  f_print (stream, _("--help\t\tgive this help list\n"));
+  f_print (stream, _("--version\tprint program version\n"));
 
-  f_print (stream, "\n%s", _("\
+  f_print (stream, _("\n\
 For bug reporting instructions, please see:\n\
-<http://www.gnu.org/software/libc/bugs.html>.\n"));
+%s.\n"), REPORT_BUGS_TO);
   exit (status);
 }
 
 static void
 print_version (void)
 {
-  printf ("rpcgen (GNU %s) %s\n", PACKAGE, VERSION);
+  printf ("rpcgen %s%s\n", PKGVERSION, VERSION);
   exit (0);
 }

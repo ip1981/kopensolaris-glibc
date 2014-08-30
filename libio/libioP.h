@@ -1,5 +1,4 @@
-/* Copyright (C) 1993, 1997-2003,2004,2005,2006,2007,2012
-	Free Software Foundation, Inc.
+/* Copyright (C) 1993-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -24,6 +23,14 @@
    might be covered by the GNU Lesser General Public License.
    This exception applies to code released by its copyright holders
    in files containing the exception.  */
+
+/* NOTE: libio is now exclusively used only by glibc since libstdc++ has its
+   own implementation.  As a result, functions that were implemented for C++
+   (like *sputn) may no longer have C++ semantics.  This is of course only
+   relevant for internal callers of these functions since these functions are
+   not intended for external use otherwise.
+
+   FIXME: All of the C++ cruft eventually needs to go away.  */
 
 #include <errno.h>
 #ifndef __set_errno
@@ -66,7 +73,7 @@ extern "C" {
  * These are all the same, just used differently.
  * An _IO_FILE (or FILE) object is allows followed by a pointer to
  * a jump table (of pointers to functions).  The pointer is accessed
- * with the _IO_JUMPS macro.  The jump table has a eccentric format,
+ * with the _IO_JUMPS macro.  The jump table has an eccentric format,
  * so as to be compatible with the layout of a C++ virtual function table.
  * (as implemented by g++).  When a pointer to a streambuf object is
  * coerced to an (_IO_FILE*), then _IO_JUMPS on the result just
@@ -109,34 +116,18 @@ extern "C" {
 # define _IO_vtable_offset(THIS) 0
 #endif
 #define _IO_WIDE_JUMPS_FUNC(THIS) _IO_WIDE_JUMPS(THIS)
-#ifdef _G_USING_THUNKS
-# define JUMP_FIELD(TYPE, NAME) TYPE NAME
-# define JUMP0(FUNC, THIS) (_IO_JUMPS_FUNC(THIS)->FUNC) (THIS)
-# define JUMP1(FUNC, THIS, X1) (_IO_JUMPS_FUNC(THIS)->FUNC) (THIS, X1)
-# define JUMP2(FUNC, THIS, X1, X2) (_IO_JUMPS_FUNC(THIS)->FUNC) (THIS, X1, X2)
-# define JUMP3(FUNC, THIS, X1,X2,X3) (_IO_JUMPS_FUNC(THIS)->FUNC) (THIS, X1,X2, X3)
-# define JUMP_INIT(NAME, VALUE) VALUE
-# define JUMP_INIT_DUMMY JUMP_INIT(dummy, 0), JUMP_INIT (dummy2, 0)
+#define JUMP_FIELD(TYPE, NAME) TYPE NAME
+#define JUMP0(FUNC, THIS) (_IO_JUMPS_FUNC(THIS)->FUNC) (THIS)
+#define JUMP1(FUNC, THIS, X1) (_IO_JUMPS_FUNC(THIS)->FUNC) (THIS, X1)
+#define JUMP2(FUNC, THIS, X1, X2) (_IO_JUMPS_FUNC(THIS)->FUNC) (THIS, X1, X2)
+#define JUMP3(FUNC, THIS, X1,X2,X3) (_IO_JUMPS_FUNC(THIS)->FUNC) (THIS, X1,X2, X3)
+#define JUMP_INIT(NAME, VALUE) VALUE
+#define JUMP_INIT_DUMMY JUMP_INIT(dummy, 0), JUMP_INIT (dummy2, 0)
 
-# define WJUMP0(FUNC, THIS) (_IO_WIDE_JUMPS_FUNC(THIS)->FUNC) (THIS)
-# define WJUMP1(FUNC, THIS, X1) (_IO_WIDE_JUMPS_FUNC(THIS)->FUNC) (THIS, X1)
-# define WJUMP2(FUNC, THIS, X1, X2) (_IO_WIDE_JUMPS_FUNC(THIS)->FUNC) (THIS, X1, X2)
-# define WJUMP3(FUNC, THIS, X1,X2,X3) (_IO_WIDE_JUMPS_FUNC(THIS)->FUNC) (THIS, X1,X2, X3)
-#else
-/* These macros will change when we re-implement vtables to use "thunks"! */
-# define JUMP_FIELD(TYPE, NAME) struct { short delta1, delta2; TYPE pfn; } NAME
-# define JUMP0(FUNC, THIS) _IO_JUMPS_FUNC(THIS)->FUNC.pfn (THIS)
-# define JUMP1(FUNC, THIS, X1) _IO_JUMPS_FUNC(THIS)->FUNC.pfn (THIS, X1)
-# define JUMP2(FUNC, THIS, X1, X2) _IO_JUMPS_FUNC(THIS)->FUNC.pfn (THIS, X1, X2)
-# define JUMP3(FUNC, THIS, X1,X2,X3) _IO_JUMPS_FUNC(THIS)->FUNC.pfn (THIS, X1,X2,X3)
-# define JUMP_INIT(NAME, VALUE) {0, 0, VALUE}
-# define JUMP_INIT_DUMMY JUMP_INIT(dummy, 0)
-
-# define WJUMP0(FUNC, THIS) _IO_WIDE_JUMPS_FUNC(THIS)->FUNC.pfn (THIS)
-# define WJUMP1(FUNC, THIS, X1) _IO_WIDE_JUMPS_FUNC(THIS)->FUNC.pfn (THIS, X1)
-# define WJUMP2(FUNC, THIS, X1, X2) _IO_WIDE_JUMPS_FUNC(THIS)->FUNC.pfn (THIS, X1, X2)
-# define WJUMP3(FUNC, THIS, X1,X2,X3) _IO_WIDE_JUMPS_FUNC(THIS)->FUNC.pfn (THIS, X1,X2,X3)
-#endif
+#define WJUMP0(FUNC, THIS) (_IO_WIDE_JUMPS_FUNC(THIS)->FUNC) (THIS)
+#define WJUMP1(FUNC, THIS, X1) (_IO_WIDE_JUMPS_FUNC(THIS)->FUNC) (THIS, X1)
+#define WJUMP2(FUNC, THIS, X1, X2) (_IO_WIDE_JUMPS_FUNC(THIS)->FUNC) (THIS, X1, X2)
+#define WJUMP3(FUNC, THIS, X1,X2,X3) (_IO_WIDE_JUMPS_FUNC(THIS)->FUNC) (THIS, X1,X2, X3)
 
 /* The 'finish' function does any final cleaning up of an _IO_FILE object.
    It does not delete (free) it, but does everything else to finalize it.
@@ -175,7 +166,7 @@ typedef int (*_IO_pbackfail_t) (_IO_FILE *, int);
 #define _IO_WPBACKFAIL(FP, CH) WJUMP1 (__pbackfail, FP, CH)
 
 /* The 'xsputn' hook writes upto N characters from buffer DATA.
-   Returns the number of character actually written.
+   Returns EOF or the number of character actually written.
    It matches the streambuf::xsputn virtual function. */
 typedef _IO_size_t (*_IO_xsputn_t) (_IO_FILE *FP, const void *DATA,
 				    _IO_size_t N);
@@ -233,7 +224,7 @@ typedef int (*_IO_doallocate_t) (_IO_FILE *);
    There is no correspondence in the ANSI/ISO C++ standard library.
    The hooks basically correspond to the Unix system functions
    (read, write, close, lseek, and stat) except that a _IO_FILE*
-   parameter is used instead of a integer file descriptor;  the default
+   parameter is used instead of an integer file descriptor;  the default
    implementation used for normal files just calls those functions.
    The advantage of overriding these functions instead of the higher-level
    ones (underflow, overflow etc) is that you can leave all the buffering
@@ -298,10 +289,8 @@ typedef void (*_IO_imbue_t) (_IO_FILE *, void *);
 
 struct _IO_jump_t
 {
-    JUMP_FIELD(_G_size_t, __dummy);
-#ifdef _G_USING_THUNKS
-    JUMP_FIELD(_G_size_t, __dummy2);
-#endif
+    JUMP_FIELD(size_t, __dummy);
+    JUMP_FIELD(size_t, __dummy2);
     JUMP_FIELD(_IO_finish_t, __finish);
     JUMP_FIELD(_IO_overflow_t, __overflow);
     JUMP_FIELD(_IO_underflow_t, __underflow);
@@ -862,30 +851,6 @@ extern int _IO_vscanf (const char *, _IO_va_list) __THROW;
 # endif
 #endif
 
-/* VTABLE_LABEL defines NAME as of the CLASS class.
-   CNLENGTH is strlen(#CLASS).  */
-#ifdef __GNUC__
-# if _G_VTABLE_LABEL_HAS_LENGTH
-#  define VTABLE_LABEL(NAME, CLASS, CNLENGTH) \
-  extern char NAME[] asm (_G_VTABLE_LABEL_PREFIX #CNLENGTH #CLASS);
-# else
-#  define VTABLE_LABEL(NAME, CLASS, CNLENGTH) \
-  extern char NAME[] asm (_G_VTABLE_LABEL_PREFIX #CLASS);
-# endif
-#endif /* __GNUC__ */
-
-#if !defined(builtinbuf_vtable) && defined(__cplusplus)
-# ifdef __GNUC__
-VTABLE_LABEL(builtinbuf_vtable, builtinbuf, 10)
-# else
-#  if _G_VTABLE_LABEL_HAS_LENGTH
-#   define builtinbuf_vtable _G_VTABLE_LABEL_PREFIX_ID##10builtinbuf
-#  else
-#   define builtinbuf_vtable _G_VTABLE_LABEL_PREFIX_ID##builtinbuf
-#  endif
-# endif
-#endif /* !defined(builtinbuf_vtable) && defined(__cplusplus) */
-
 #define _IO_va_start(args, last) va_start(args, last)
 
 extern struct _IO_fake_stdiobuf _IO_stdin_buf, _IO_stdout_buf, _IO_stderr_buf;
@@ -933,3 +898,17 @@ _IO_acquire_lock_clear_flags2_fct (_IO_FILE **p)
   if ((fp->_flags & _IO_USER_LOCK) == 0)
     _IO_funlockfile (fp);
 }
+
+#if !defined _IO_MTSAFE_IO && !defined NOT_IN_libc
+# define _IO_acquire_lock(_fp)						      \
+  do {									      \
+    _IO_FILE *_IO_acquire_lock_file = NULL
+# define _IO_acquire_lock_clear_flags2(_fp)				      \
+  do {									      \
+    _IO_FILE *_IO_acquire_lock_file = (_fp)
+# define _IO_release_lock(_fp)						      \
+    if (_IO_acquire_lock_file != NULL)					      \
+      _IO_acquire_lock_file->_flags2 &= ~(_IO_FLAGS2_FORTIFY		      \
+                                          | _IO_FLAGS2_SCANF_STD);	      \
+  } while (0)
+#endif

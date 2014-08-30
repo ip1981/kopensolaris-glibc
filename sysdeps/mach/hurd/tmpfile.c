@@ -1,5 +1,5 @@
 /* Open a stdio stream on an anonymous temporary file.  Hurd version.
-   Copyright (C) 2001-2012 Free Software Foundation, Inc.
+   Copyright (C) 2001-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -37,7 +37,7 @@ __tmpfile (void)
   FILE *f;
 
   /* Get a port to the directory that will contain the file.  */
-  const char *dirname = __secure_getenv ("TMPDIR") ?: P_tmpdir;
+  const char *dirname = __libc_secure_getenv ("TMPDIR") ?: P_tmpdir;
   file_t dir = __file_name_lookup (dirname, 0, 0);
   if (dir == MACH_PORT_NULL)
     return NULL;

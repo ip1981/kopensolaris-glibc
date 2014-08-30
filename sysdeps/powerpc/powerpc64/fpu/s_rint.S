@@ -1,5 +1,5 @@
 /* Round to int floating-point values.  PowerPC64 version.
-   Copyright (C) 2004, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2004-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -34,14 +34,14 @@ EALIGN (__rint, 4, 0)
 	fsub	fp12,fp13,fp13	/* generate 0.0  */
 	fcmpu	cr7,fp0,fp13	/* if (fabs(x) > TWO52)  */
 	fcmpu	cr6,fp1,fp12	/* if (x > 0.0)  */
-	bnllr-	cr7
-	bng-	cr6,.L4
+	bnllr	cr7
+	bng	cr6,.L4
 	fadd	fp1,fp1,fp13	/* x+= TWO52;  */
 	fsub	fp1,fp1,fp13	/* x-= TWO52;  */
 	fabs	fp1,fp1		/* if (x == 0.0)  */
 	blr			/* x = 0.0; */
 .L4:
-	bnllr-	cr6		/* if (x < 0.0)  */
+	bnllr	cr6		/* if (x < 0.0)  */
 	fsub	fp1,fp1,fp13	/* x-= TWO52;  */
 	fadd	fp1,fp1,fp13	/* x+= TWO52;  */
 	fnabs	fp1,fp1		/* if (x == 0.0)  */

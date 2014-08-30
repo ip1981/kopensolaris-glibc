@@ -1,5 +1,5 @@
 /* Implementation of the locale program according to POSIX 9945-2.
-   Copyright (C) 1995-1997, 1999-2011, 2012 Free Software Foundation, Inc.
+   Copyright (C) 1995-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1995.
 
@@ -36,16 +36,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdint.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 
 #include "localeinfo.h"
 #include "charmap-dir.h"
 #include "../locarchive.h"
-
-extern void *xmalloc (size_t n)
-  __attribute_malloc__ __attribute_alloc_size (1);
-extern char *xstrdup (const char *) __attribute_malloc__;
+#include <programs/xmalloc.h>
 
 #define ARCHIVE_NAME LOCALEDIR "/locale-archive"
 
@@ -271,13 +269,16 @@ parse_opt (int key, char *arg, struct argp_state *state)
 static char *
 more_help (int key, const char *text, void *input)
 {
+  char *tp = NULL;
   switch (key)
     {
     case ARGP_KEY_HELP_EXTRA:
       /* We print some extra information.  */
-      return strdup (gettext ("\
+      if (asprintf (&tp, gettext ("\
 For bug reporting instructions, please see:\n\
-<http://www.gnu.org/software/libc/bugs.html>.\n"));
+%s.\n"), REPORT_BUGS_TO) < 0)
+	return NULL;
+      return tp;
     default:
       break;
     }
@@ -289,12 +290,12 @@ For bug reporting instructions, please see:\n\
 static void
 print_version (FILE *stream, struct argp_state *state)
 {
-  fprintf (stream, "locale (GNU %s) %s\n", PACKAGE, VERSION);
+  fprintf (stream, "locale %s%s\n", PKGVERSION, VERSION);
   fprintf (stream, gettext ("\
 Copyright (C) %s Free Software Foundation, Inc.\n\
 This is free software; see the source for copying conditions.  There is NO\n\
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
-"), "2012");
+"), "2014");
   fprintf (stream, gettext ("Written by %s.\n"), "Ulrich Drepper");
 }
 
@@ -894,7 +895,7 @@ show_info (const char *name)
 	      printf ("%s=", item->name);
 
 	    if (val != NULL)
-	      printf ("%d", *val == '\177' ? -1 : *val);
+	      printf ("%d", *val == '\377' ? -1 : *val);
 	    putchar ('\n');
 	  }
 	  break;
@@ -924,6 +925,24 @@ show_info (const char *name)
 	      printf ("%s=", item->name);
 
 	    printf ("%d\n", val.word);
+	  }
+	  break;
+	case wordarray:
+	  {
+	    int first = 1;
+	    union { unsigned int *wordarray; char *string; } val;
+	    int cnt;
+
+	    val.string = nl_langinfo (item->item_id);
+	    if (show_keyword_name)
+	      printf ("%s=", item->name);
+
+	    for (cnt = 0; cnt < item->max; ++cnt)
+	      {
+		printf ("%s%d", first ? "" : ";", val.wordarray[cnt]);
+		first = 0;
+	      }
+	    putchar ('\n');
 	  }
 	  break;
 	case wstring:

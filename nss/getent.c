@@ -1,4 +1,4 @@
-/* Copyright (c) 1998-2011, 2012 Free Software Foundation, Inc.
+/* Copyright (c) 1998-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Thorsten Kukuk <kukuk@suse.de>, 1998.
 
@@ -55,7 +55,7 @@ static const char args_doc[] = N_("database [key ...]");
 /* Supported options. */
 static const struct argp_option args_options[] =
   {
-    { "service", 's', "CONFIG", 0, N_("Service configuration to be used") },
+    { "service", 's', N_("CONFIG"), 0, N_("Service configuration to be used") },
     { "no-idn", 'i', NULL, 0, N_("disable IDN encoding") },
     { NULL, 0, NULL, 0, NULL },
   };
@@ -82,17 +82,17 @@ static int idn_flags = AI_IDN | AI_CANONIDN;
 static void
 print_version (FILE *stream, struct argp_state *state)
 {
-  fprintf (stream, "getent (GNU %s) %s\n", PACKAGE, VERSION);
+  fprintf (stream, "getent %s%s\n", PKGVERSION, VERSION);
   fprintf (stream, gettext ("\
 Copyright (C) %s Free Software Foundation, Inc.\n\
 This is free software; see the source for copying conditions.  There is NO\n\
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
-"), "2012");
+"), "2014");
   fprintf (stream, gettext ("Written by %s.\n"), "Thorsten Kukuk");
 }
 
 /* This is for aliases */
-static inline void
+static void
 print_aliases (struct aliasent *alias)
 {
   unsigned int i = 0;
@@ -181,7 +181,7 @@ ethers_keys (int number, char *key[])
 }
 
 /* This is for group */
-static inline void
+static void
 print_group (struct group *grp)
 {
   unsigned int i = 0;
@@ -600,7 +600,7 @@ networks_keys (int number, char *key[])
 }
 
 /* Now is all for passwd */
-static inline void
+static void
 print_passwd (struct passwd *pwd)
 {
   printf ("%s:%s:%lu:%lu:%s:%s:%s\n",
@@ -651,7 +651,7 @@ passwd_keys (int number, char *key[])
 }
 
 /* This is for protocols */
-static inline void
+static void
 print_protocols (struct protoent *proto)
 {
   unsigned int i;
@@ -701,7 +701,7 @@ protocols_keys (int number, char *key[])
 }
 
 /* Now is all for rpc */
-static inline void
+static void
 print_rpc (struct rpcent *rpc)
 {
   int i;
@@ -788,8 +788,12 @@ services_keys (int number, char *key[])
       if (proto != NULL)
 	*proto++ = '\0';
 
-      if (isdigit (key[i][0]))
-	serv = getservbyport (htons (atol (key[i])), proto);
+      char *endptr;
+      long port = strtol (key[i], &endptr, 10);
+
+      if (isdigit (key[i][0]) && *endptr == '\0'
+	  && 0 <= port && port <= 65535)
+	serv = getservbyport (htons (port), proto);
       else
 	serv = getservbyname (key[i], proto);
 
@@ -841,7 +845,7 @@ shadow_keys (int number, char *key[])
       setspent ();
       while ((sp = getspent ()) != NULL)
 	print_shadow (sp);
-      endpwent ();
+      endspent ();
       return result;
     }
 
@@ -962,9 +966,9 @@ more_help (int key, const char *text, void *input)
 
 	  fputs ("\n\n", fp);
 
-	  fputs (gettext ("\
+	  fprintf (fp, gettext ("\
 For bug reporting instructions, please see:\n\
-<http://www.gnu.org/software/libc/bugs.html>.\n"), fp);
+%s.\n"), REPORT_BUGS_TO);
 
 	  if (fclose (fp) == 0)
 	    return doc;

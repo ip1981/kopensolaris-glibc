@@ -1,4 +1,4 @@
-/* Copyright (C) 1995,1997,1998,1999,2000,2002 Free Software Foundation, Inc.
+/* Copyright (C) 1995-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, August 1995.
 
@@ -23,8 +23,6 @@
 #include <sysdep-cancel.h>
 #include <sys/syscall.h>
 
-#include <bp-checks.h>
-
 int
 __libc_msgsnd (msqid, msgp, msgsz, msgflg)
      int msqid;
@@ -34,12 +32,12 @@ __libc_msgsnd (msqid, msgp, msgsz, msgflg)
 {
   if (SINGLE_THREAD_P)
     return INLINE_SYSCALL (ipc, 5, IPCOP_msgsnd, msqid, msgsz,
-			   msgflg, (void *) CHECK_N (msgp, msgsz));
+			   msgflg, (void *) msgp);
 
   int oldtype = LIBC_CANCEL_ASYNC ();
 
   int result = INLINE_SYSCALL (ipc, 5, IPCOP_msgsnd, msqid, msgsz,
-			       msgflg, (void *) CHECK_N (msgp, msgsz));
+			       msgflg, (void *) msgp);
 
   LIBC_CANCEL_RESET (oldtype);
 

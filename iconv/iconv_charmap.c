@@ -1,5 +1,5 @@
 /* Convert using charmaps and possibly iconv().
-   Copyright (C) 2001, 2005, 2006, 2008, 2012 Free Software Foundation, Inc.
+   Copyright (C) 2001-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@redhat.com>, 2001.
 
@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <stdint.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 
@@ -32,10 +33,7 @@
 
 
 /* Prototypes for a few program-wide used functions.  */
-extern void *xmalloc (size_t n)
-  __attribute_malloc__ __attribute_alloc_size (1);
-extern void *xcalloc (size_t n, size_t s)
-  __attribute_malloc__ __attribute_alloc_size (1, 2);
+#include <programs/xmalloc.h>
 
 
 struct convtable
@@ -154,8 +152,6 @@ charmap_conversion (const char *from_code, struct charmap_t *from_charmap,
   else
     do
       {
-	struct stat st;
-	char *addr;
 	int fd;
 
 	if (verbose)
@@ -176,9 +172,11 @@ charmap_conversion (const char *from_code, struct charmap_t *from_charmap,
 	  }
 
 #ifdef _POSIX_MAPPED_FILES
+	struct stat64 st;
+	char *addr;
 	/* We have possibilities for reading the input file.  First try
 	   to mmap() it since this will provide the fastest solution.  */
-	if (fstat (fd, &st) == 0
+	if (fstat64 (fd, &st) == 0
 	    && ((addr = mmap (NULL, st.st_size, PROT_READ, MAP_PRIVATE,
 			      fd, 0)) != MAP_FAILED))
 	  {
@@ -456,7 +454,7 @@ process_block (struct convtable *tbl, char *addr, size_t len, FILE *output)
       while (! is_term (cur, byte))
 	if (cur->val[byte].sub == NULL)
 	  {
-	    /* This is a invalid sequence.  Skip the first byte if we are
+	    /* This is an invalid sequence.  Skip the first byte if we are
 	       ignoring errors.  Otherwise punt.  */
 	    if (! omit_invalid)
 	      {

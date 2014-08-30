@@ -1,5 +1,6 @@
 /* Multiple versions of strcat
-   Copyright (C) 2011-2012 Free Software Foundation, Inc.
+   All versions must be listed in ifunc-impl-list.c.
+   Copyright (C) 2011-2014 Free Software Foundation, Inc.
    Contributed by Intel Corporation.
    This file is part of the GNU C Library.
 
@@ -94,6 +95,8 @@ END(STRCAT)
 # define ENTRY(name) \
 	.type STRCAT_IA32, @function; \
 	.align 16; \
+	.globl STRCAT_IA32; \
+	.hidden STRCAT_IA32; \
 	STRCAT_IA32: cfi_startproc; \
 	CALL_MCOUNT
 # undef END

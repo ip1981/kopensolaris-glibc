@@ -1,6 +1,5 @@
 /* ix87 specific implementation of pow function.
-   Copyright (C) 1996-1999, 2001, 2004-2005, 2007, 2011-2012
-   Free Software Foundation, Inc.
+   Copyright (C) 1996-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1996.
 
@@ -23,34 +22,37 @@
 	.section .rodata.cst8,"aM",@progbits,8
 
 	.p2align 3
-	ASM_TYPE_DIRECTIVE(one,@object)
+	.type one,@object
 one:	.double 1.0
 	ASM_SIZE_DIRECTIVE(one)
-	ASM_TYPE_DIRECTIVE(limit,@object)
-limit:	.double 0.29
-	ASM_SIZE_DIRECTIVE(limit)
-	ASM_TYPE_DIRECTIVE(p63,@object)
+	.type p3,@object
+p3:	.byte 0, 0, 0, 0, 0, 0, 0x20, 0x40
+	ASM_SIZE_DIRECTIVE(p3)
+	.type p63,@object
 p63:	.byte 0, 0, 0, 0, 0, 0, 0xe0, 0x43
 	ASM_SIZE_DIRECTIVE(p63)
-	ASM_TYPE_DIRECTIVE(p64,@object)
+	.type p64,@object
 p64:	.byte 0, 0, 0, 0, 0, 0, 0xf0, 0x43
 	ASM_SIZE_DIRECTIVE(p64)
-	ASM_TYPE_DIRECTIVE(p78,@object)
+	.type p78,@object
 p78:	.byte 0, 0, 0, 0, 0, 0, 0xd0, 0x44
 	ASM_SIZE_DIRECTIVE(p78)
+	.type pm79,@object
+pm79:	.byte 0, 0, 0, 0, 0, 0, 0, 0x3b
+	ASM_SIZE_DIRECTIVE(pm79)
 
 	.section .rodata.cst16,"aM",@progbits,16
 
 	.p2align 3
-	ASM_TYPE_DIRECTIVE(infinity,@object)
+	.type infinity,@object
 inf_zero:
 infinity:
 	.byte 0, 0, 0, 0, 0, 0, 0xf0, 0x7f
 	ASM_SIZE_DIRECTIVE(infinity)
-	ASM_TYPE_DIRECTIVE(zero,@object)
+	.type zero,@object
 zero:	.double 0.0
 	ASM_SIZE_DIRECTIVE(zero)
-	ASM_TYPE_DIRECTIVE(minf_mzero,@object)
+	.type minf_mzero,@object
 minf_mzero:
 minfinity:
 	.byte 0, 0, 0, 0, 0, 0, 0xf0, 0xff
@@ -102,6 +104,9 @@ ENTRY(__ieee754_powl)
 	cmpb	$0x05, %ah
 	je	15f		// x is ±inf
 
+	cmpb	$0x01, %ah
+	je	32f		// x is NaN
+
 	fxch			// y : x
 
 	/* fistpll raises invalid exception for |y| >= 1L<<63.  */
@@ -120,9 +125,33 @@ ENTRY(__ieee754_powl)
 	fucomp	%st(1)		// y : x
 	fnstsw
 	sahf
-	jne	3f
+	je	9f
 
-	/* OK, we have an integer value for y.  */
+	// If y has absolute value at most 0x1p-79, then any finite
+	// nonzero x will result in 1.  Saturate y to those bounds to
+	// avoid underflow in the calculation of y*log2(x).
+	fld	%st		// y : y : x
+	fabs			// |y| : y : x
+	fcompl	MO(pm79)	// y : x
+	fnstsw
+	sahf
+	jnc	3f
+	fstp	%st(0)		// pop y
+	fldl	MO(pm79)	// 0x1p-79 : x
+	testb	$2, %dl
+	jnz	3f		// y > 0
+	fchs			// -0x1p-79 : x
+	jmp	3f
+
+9:	/* OK, we have an integer value for y.  Unless very small
+	   (we use < 8), use the algorithm for real exponent to avoid
+	   accumulation of errors.  */
+	fld	%st		// y : y : x
+	fabs			// |y| : y : x
+	fcompl	MO(p3)		// y : x
+	fnstsw
+	sahf
+	jnc	2f
 	popl	%eax
 	cfi_adjust_cfa_offset (-4)
 	popl	%edx
@@ -162,8 +191,14 @@ ENTRY(__ieee754_powl)
 	ret
 
 	cfi_adjust_cfa_offset (8)
+32:	addl	$8, %esp
+	cfi_adjust_cfa_offset (-8)
+	fstp	%st(1)
+	ret
+
+	cfi_adjust_cfa_offset (8)
 	.align ALIGNARG(4)
-2:	// y is a large integer (absolute value at least 1L<<63), but
+2:	// y is a large integer (absolute value at least 8), but
 	// may be odd unless at least 1L<<64.  So it may be necessary
 	// to adjust the sign of a negative result afterwards.
 	fxch			// x : y
@@ -186,34 +221,21 @@ ENTRY(__ieee754_powl)
 	fchs			// -(1L<<78) : |x|
 	.align ALIGNARG(4)
 3:	/* y is a real number.  */
-	fxch			// x : y
-	fldl	MO(one)		// 1.0 : x : y
-	fldl	MO(limit)	// 0.29 : 1.0 : x : y
-	fld	%st(2)		// x : 0.29 : 1.0 : x : y
-	fsub	%st(2)		// x-1 : 0.29 : 1.0 : x : y
-	fabs			// |x-1| : 0.29 : 1.0 : x : y
-	fucompp			// 1.0 : x : y
-	fnstsw
-	fxch			// x : 1.0 : y
-	sahf
-	ja	7f
-	fsub	%st(1)		// x-1 : 1.0 : y
-	fyl2xp1			// log2(x) : y
-	jmp	8f
-
-7:	fyl2x			// log2(x) : y
-8:	fmul	%st(1)		// y*log2(x) : y
-	fst	%st(1)		// y*log2(x) : y*log2(x)
-	frndint			// int(y*log2(x)) : y*log2(x)
-	fsubr	%st, %st(1)	// int(y*log2(x)) : fract(y*log2(x))
-	fxch			// fract(y*log2(x)) : int(y*log2(x))
-	f2xm1			// 2^fract(y*log2(x))-1 : int(y*log2(x))
-	faddl	MO(one)		// 2^fract(y*log2(x)) : int(y*log2(x))
-	fscale			// 2^fract(y*log2(x))*2^int(y*log2(x)) : int(y*log2(x))
-	fstp	%st(1)		// 2^fract(y*log2(x))*2^int(y*log2(x))
+	subl	$28, %esp
+	cfi_adjust_cfa_offset (28)
+	fstpt	12(%esp)	// x
+	fstpt	(%esp)		// <empty>
+	mov	%edx, 24(%esp)
+	call	HIDDEN_JUMPTARGET (__powl_helper)	// <result>
+	mov	24(%esp), %edx
+	addl	$28, %esp
+	cfi_adjust_cfa_offset (-28)
 	testb	$2, %dh
 	jz	292f
 	// x is negative.  If y is an odd integer, negate the result.
+#ifdef	PIC
+	LOAD_PIC_REG (cx)
+#endif
 	fldt	24(%esp)	// y : abs(result)
 	fld	%st		// y : y : abs(result)
 	fabs			// |y| : y : abs(result)

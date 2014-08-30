@@ -1,4 +1,4 @@
-/* Copyright (C) 2003-2012 Free Software Foundation, Inc.
+/* Copyright (C) 2003-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -192,7 +192,7 @@ __pthread_rwlock_rdlock:
 
 .Ltidoff:
 	.word	TID - TLS_PRE_TCB_SIZE
-	
+
 6:
 	mov	r8, r4
 #if MUTEX != 0

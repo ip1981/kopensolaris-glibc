@@ -36,7 +36,7 @@
  *    IEEE      -1, 8       100000      1.9e-34     4.3e-35
  */
 
-/* Copyright 2001 by Stephen L. Moshier 
+/* Copyright 2001 by Stephen L. Moshier
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -137,6 +137,12 @@ __log1pl (long double xm1)
   if (((hx & 0x7fffffff) == 0)
       && (u.parts32.w1 | u.parts32.w2 | u.parts32.w3) == 0)
     return xm1;
+
+  if ((hx & 0x7fffffff) < 0x3f8e0000)
+    {
+      if ((int) xm1 == 0)
+	return xm1;
+    }
 
   x = xm1 + 1.0L;
 

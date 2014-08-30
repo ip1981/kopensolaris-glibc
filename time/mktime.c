@@ -1,5 +1,5 @@
 /* Convert a 'struct tm' to a time_t value.
-   Copyright (C) 1993-2012 Free Software Foundation, Inc.
+   Copyright (C) 1993-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Paul Eggert <eggert@twinsun.com>.
 
@@ -196,7 +196,7 @@ isdst_differ (int a, int b)
    The result may overflow.  It is the caller's responsibility to
    detect overflow.  */
 
-static inline time_t
+static time_t
 ydhms_diff (long_int year1, long_int yday1, int hour1, int min1, int sec1,
 	    int year0, int yday0, int hour0, int min0, int sec0)
 {

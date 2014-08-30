@@ -85,10 +85,21 @@ long double __ieee754_hypotl(long double x, long double y)
 		u_int32_t high,low;
 		GET_LDOUBLE_WORDS(exp,high,low,b);
 		if((high|low)==0) return a;
-		SET_LDOUBLE_WORDS(t1, 0x7ffd, 0, 0);	/* t1=2^16382 */
+		SET_LDOUBLE_WORDS(t1, 0x7ffd, 0x80000000, 0); /* t1=2^16382 */
 		b *= t1;
 		a *= t1;
 		k -= 16382;
+		GET_LDOUBLE_EXP (ea, a);
+		GET_LDOUBLE_EXP (eb, b);
+		if (eb > ea)
+		  {
+		    t1 = a;
+		    a = b;
+		    b = t1;
+		    j = ea;
+		    ea = eb;
+		    eb = j;
+		  }
 	    } else {		/* scale a and b by 2^9600 */
 		ea += 0x2580;	/* a *= 2^9600 */
 		eb += 0x2580;	/* b *= 2^9600 */

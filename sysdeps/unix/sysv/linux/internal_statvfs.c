@@ -1,4 +1,4 @@
-/* Copyright (C) 1998-2006, 2010, 2011 Free Software Foundation, Inc.
+/* Copyright (C) 1998-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1998.
 
@@ -116,6 +116,12 @@ __statvfs_getflags (const char *name, int fstype, struct stat64 *st)
       break;
     case LUSTRE_SUPER_MAGIC:
       fsname = "lustre";
+      break;
+    case F2FS_SUPER_MAGIC:
+      fsname = "f2fs";
+      break;
+    case EFIVARFS_MAGIC:
+      fsname = "efivarfs";
       break;
     }
 

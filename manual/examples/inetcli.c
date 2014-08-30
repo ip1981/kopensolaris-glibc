@@ -1,5 +1,5 @@
 /* Byte Stream Socket Example
-   Copyright (C) 1991-2012 Free Software Foundation, Inc.
+   Copyright (C) 1991-2014 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License
@@ -26,7 +26,7 @@
 
 #define PORT		5555
 #define MESSAGE		"Yow!!! Are we having fun yet?!?"
-#define SERVERHOST 	"mescaline.gnu.org"
+#define SERVERHOST 	"www.gnu.org"
 
 void
 write_to_server (int filedes)

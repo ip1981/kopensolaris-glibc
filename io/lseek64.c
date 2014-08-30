@@ -1,4 +1,4 @@
-/* Copyright (C) 1991,95,96,97,98,2000 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -45,4 +45,3 @@ __libc_lseek64 (int fd, off64_t offset, int whence)
 weak_alias (__libc_lseek64, __lseek64)
 weak_alias (__libc_lseek64, lseek64)
 stub_warning (lseek64)
-#include <stub-tag.h>

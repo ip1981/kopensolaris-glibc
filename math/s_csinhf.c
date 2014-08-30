@@ -1,5 +1,5 @@
 /* Complex sine hyperbole function for float.
-   Copyright (C) 1997-2012 Free Software Foundation, Inc.
+   Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997.
 
@@ -42,7 +42,15 @@ __csinhf (__complex__ float x)
 	  const int t = (int) ((FLT_MAX_EXP - 1) * M_LN2);
 	  float sinix, cosix;
 
-	  __sincosf (__imag__ x, &sinix, &cosix);
+	  if (__builtin_expect (icls != FP_SUBNORMAL, 1))
+	    {
+	      __sincosf (__imag__ x, &sinix, &cosix);
+	    }
+	  else
+	    {
+	      sinix = __imag__ x;
+	      cosix = 1.0f;
+	    }
 
 	  if (fabsf (__real__ x) > t)
 	    {
@@ -80,6 +88,19 @@ __csinhf (__complex__ float x)
 
 	  if (negate)
 	    __real__ retval = -__real__ retval;
+
+	  if (fabsf (__real__ retval) < FLT_MIN)
+	    {
+	      volatile float force_underflow
+		= __real__ retval * __real__ retval;
+	      (void) force_underflow;
+	    }
+	  if (fabsf (__imag__ retval) < FLT_MIN)
+	    {
+	      volatile float force_underflow
+		= __imag__ retval * __imag__ retval;
+	      (void) force_underflow;
+	    }
 	}
       else
 	{
@@ -109,7 +130,15 @@ __csinhf (__complex__ float x)
 	  /* Imaginary part is finite.  */
 	  float sinix, cosix;
 
-	  __sincosf (__imag__ x, &sinix, &cosix);
+	  if (__builtin_expect (icls != FP_SUBNORMAL, 1))
+	    {
+	      __sincosf (__imag__ x, &sinix, &cosix);
+	    }
+	  else
+	    {
+	      sinix = __imag__ x;
+	      cosix = 1.0f;
+	    }
 
 	  __real__ retval = __copysignf (HUGE_VALF, cosix);
 	  __imag__ retval = __copysignf (HUGE_VALF, sinix);

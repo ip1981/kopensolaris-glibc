@@ -1,4 +1,4 @@
-/* Copyright (C) 2000 Free Software Foundation, Inc.
+/* Copyright (C) 2000-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -42,7 +42,7 @@ check_one_fd (int fd, int mode)
     {
       /* This descriptor hasn't been opened.  We try to allocate the
          descriptor and open /dev/null on it so that the SUID program
-         we are about to start does not accidently use this
+         we are about to start does not accidentally use this
          descriptor.  */
       d = _hurd_alloc_fd (NULL, fd);
       if (d != NULL)
@@ -61,7 +61,7 @@ check_one_fd (int fd, int mode)
 	      return;
 	    }
 	}
-      
+
       /* We cannot even give an error message here since it would run
 	 into the same problems.  */
       while (1)
@@ -100,7 +100,7 @@ __libc_check_standard_fds (void)
   /* We don't check the standard file descriptors here.  They will be
      checked when we initialize the file descriptor table, as part of
      the _hurd_fd_subinit hook.
-     
+
      This function is only present to make sure that this module gets
      linked in when part of the static libc.  */
 }

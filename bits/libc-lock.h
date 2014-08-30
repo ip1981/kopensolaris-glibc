@@ -1,5 +1,5 @@
 /* libc-internal interface for mutex locks.  Stub version.
-   Copyright (C) 1996-2012 Free Software Foundation, Inc.
+   Copyright (C) 1996-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -44,11 +44,11 @@
 /* Initialize the named lock variable, leaving it in a consistent, unlocked
    state.  */
 #define __libc_lock_init(NAME)
+#define __rtld_lock_initialize(NAME)
 #define __libc_rwlock_init(NAME)
 
 /* Same as last but this time we initialize a recursive mutex.  */
 #define __libc_lock_init_recursive(NAME)
-#define __rtld_lock_init_recursive(NAME)
 
 /* Finalize the named lock variable, which must be locked.  It cannot be
    used again until __libc_lock_init is called again on it.  This must be
@@ -129,12 +129,12 @@
 typedef int __libc_key_t;
 
 /* Create key for thread specific data.  */
-#define __libc_key_create(KEY,DEST) -1
+#define __libc_key_create(KEY,DEST)	((void) (KEY), (void) (DEST), -1)
 
 /* Set thread-specific data associated with KEY to VAL.  */
-#define __libc_setspecific(KEY,VAL) ((void)0)
+#define __libc_setspecific(KEY,VAL)	((void) (KEY), (void) (VAL))
 
 /* Get thread-specific data associated with KEY.  */
-#define __libc_getspecific(KEY) 0
+#define __libc_getspecific(KEY)		((void) (KEY), (void *) 0)
 
 #endif	/* bits/libc-lock.h */

@@ -1,5 +1,5 @@
 /* Tests for UTMP functions.
-   Copyright (C) 1998, 2001-2003 Free Software Foundation, Inc.
+   Copyright (C) 1998-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Mark Kettenis <kettenis@phys.uva.nl>, 1998.
 
@@ -395,7 +395,7 @@ do_test (int argc, char *argv[])
 
 /* No field 'ut_type' in struct utmp.  */
 int
-main ()
+main (void)
 {
   return 0;
 }

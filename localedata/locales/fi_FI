@@ -16,7 +16,7 @@ comment_char    %
 % Date: 1996-10-15
 % Application: general
 % Users: general
-% Charset: ISO-8859-1
+% Charset: UTF-8, ISO-8859-15
 % Distribution and use is free, also
 % for commercial purposes.
 %
@@ -212,6 +212,8 @@ END LC_TIME
 LC_MESSAGES
 yesexpr  "<U005E><U005B><U004B><U006B><U0059><U0079><U005D><U002E><U002A>"
 noexpr   "<U005E><U005B><U0045><U0065><U004E><U006E><U005D><U002E><U002A>"
+yesstr   "<U004B><U0079><U006C><U006C><U00E4>"
+nostr    "<U0045><U0069>"
 END LC_MESSAGES
 
 LC_PAPER
@@ -228,7 +230,8 @@ int_select     "<U0030><U0030>"
 END LC_TELEPHONE
 
 LC_MEASUREMENT
-measurement    1
+% metric
+measurement 1
 END LC_MEASUREMENT
 
 LC_NAME
@@ -251,6 +254,7 @@ country_name "<U0053><U0075><U006F><U006D><U0069>"
 country_post "<U0046><U0049>"
 country_car  "<U0046><U0049><U004E>"
 country_isbn 952
+% suomi
 lang_name    "<U0073><U0075><U006F><U006D><U0069>"
 lang_ab      "<U0066><U0069>"
 lang_term    "<U0066><U0069><U006E>"

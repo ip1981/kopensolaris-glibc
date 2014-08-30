@@ -1,5 +1,5 @@
 /* POSIX.1 sigaction call for Linux/SPARC64.
-   Copyright (C) 1997-2000,2002,2003,2005,2012 Free Software Foundation, Inc.
+   Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Miguel de Icaza <miguel@nuclecu.unam.mx> and
 		  Jakub Jelinek <jj@ultra.linux.cz>.
@@ -48,8 +48,8 @@ __libc_sigaction (int sig, const struct sigaction *act, struct sigaction *oact)
   /* XXX The size argument hopefully will have to be changed to the
      real size of the user-level sigset_t.  */
   ret = INLINE_SYSCALL (rt_sigaction, 5, sig,
-			act ? __ptrvalue (&kact) : 0,
-			oact ? __ptrvalue (&koact) : 0, stub, _NSIG / 8);
+			act ? &kact : 0,
+			oact ? &koact : 0, stub, _NSIG / 8);
 
   if (oact && ret >= 0)
     {

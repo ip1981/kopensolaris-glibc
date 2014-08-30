@@ -1,7 +1,7 @@
 /*
  * IBM Accurate Mathematical Library
  * written by International Business Machines Corp.
- * Copyright (C) 2001, 2011 Free Software Foundation
+ * Copyright (C) 2001-2014 Free Software Foundation, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -40,25 +40,24 @@
 # define SECTION
 #endif
 
-int __mpranred(double, mp_no *, int);
-void __c32(mp_no *, mp_no *, mp_no *, int);
-
 void
 SECTION
-__mptan(double x, mp_no *mpy, int p) {
-
-  static const double MONE = -1.0;
-
+__mptan (double x, mp_no *mpy, int p)
+{
   int n;
   mp_no mpw, mpc, mps;
 
-  n = __mpranred(x, &mpw, p) & 0x00000001; /* negative or positive result */
-  __c32(&mpw, &mpc, &mps, p);              /* computing sin(x) and cos(x) */
-  if (n)                     /* second or fourth quarter of unit circle */
-  { __dvd(&mpc,&mps,mpy,p);
-    mpy->d[0] *= MONE;
-  }                          /* tan is negative in this area */
-  else  __dvd(&mps,&mpc,mpy,p);
-
-  return;
+  /* Negative or positive result.  */
+  n = __mpranred (x, &mpw, p) & 0x00000001;
+  /* Computing sin(x) and cos(x).  */
+  __c32 (&mpw, &mpc, &mps, p);
+  /* Second or fourth quarter of unit circle.  */
+  if (n)
+    {
+      __dvd (&mpc, &mps, mpy, p);
+      mpy->d[0] *= -1;
+    }
+  /* tan is negative in this area.  */
+  else
+    __dvd (&mps, &mpc, mpy, p);
 }

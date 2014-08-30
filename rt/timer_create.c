@@ -1,4 +1,4 @@
-/* Copyright (C) 1999 Free Software Foundation, Inc.
+/* Copyright (C) 1999-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -26,4 +26,3 @@ timer_create (clockid_t clock_id, struct sigevent *evp, timer_t *timerid)
   return -1;
 }
 stub_warning (timer_create)
-#include <stub-tag.h>

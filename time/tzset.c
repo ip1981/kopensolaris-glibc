@@ -1,4 +1,4 @@
-/* Copyright (C) 1991-2012 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -54,7 +54,7 @@ typedef struct
     /* When to change.  */
     enum { J0, J1, M } type;	/* Interpretation of:  */
     unsigned short int m, n, d;	/* Month, week, day.  */
-    unsigned int secs;		/* Time of day.  */
+    int secs;			/* Time of day.  */
 
     long int offset;		/* Seconds east of GMT (west if < 0).  */
 
@@ -125,7 +125,7 @@ __tzstring (const char *s)
 size_t __tzname_cur_max;
 
 long int
-__tzname_max ()
+__tzname_max (void)
 {
   __libc_lock_lock (tzset_lock);
 
@@ -300,7 +300,7 @@ __tzset_parse_tz (tz)
   /* Figure out the standard <-> DST rules.  */
   for (unsigned int whichrule = 0; whichrule < 2; ++whichrule)
     {
-      register tz_rule *tzr = &tz_rules[whichrule];
+      tz_rule *tzr = &tz_rules[whichrule];
 
       /* Ignore comma to support string following the incorrect
 	 specification in early POSIX.1 printings.  */
@@ -362,9 +362,12 @@ __tzset_parse_tz (tz)
       else if (*tz == '/')
 	{
 	  /* Get the time of day of the change.  */
+	  int negative;
 	  ++tz;
 	  if (*tz == '\0')
 	    goto out;
+	  negative = *tz == '-';
+	  tz += negative;
 	  consumed = 0;
 	  switch (sscanf (tz, "%hu%n:%hu%n:%hu%n",
 			  &hh, &consumed, &mm, &consumed, &ss, &consumed))
@@ -379,7 +382,7 @@ __tzset_parse_tz (tz)
 	      break;
 	    }
 	  tz += consumed;
-	  tzr->secs = (hh * 60 * 60) + (mm * 60) + ss;
+	  tzr->secs = (negative ? -1 : 1) * ((hh * 60 * 60) + (mm * 60) + ss);
 	}
       else
 	/* Default to 2:00 AM.  */
@@ -400,7 +403,7 @@ tzset_internal (always, explicit)
      int explicit;
 {
   static int is_initialized;
-  register const char *tz;
+  const char *tz;
 
   if (is_initialized && !always)
     return;
@@ -471,7 +474,7 @@ compute_change (rule, year)
      tz_rule *rule;
      int year;
 {
-  register time_t t;
+  time_t t;
 
   if (year != -1 && rule->computed_for == year)
     /* Operations on times in 2 BC will be slower.  Oh well.  */

@@ -1,5 +1,5 @@
 /* strlen(str) -- determine the length of the string STR.
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2002-2014 Free Software Foundation, Inc.
    Based on i486 version contributed by Ulrich Drepper <drepper@redhat.com>.
    This file is part of the GNU C Library.
 
@@ -19,8 +19,6 @@
 
 #include <sysdep.h>
 #include "asm-syntax.h"
-#include "bp-sym.h"
-#include "bp-asm.h"
 
 
 	.text

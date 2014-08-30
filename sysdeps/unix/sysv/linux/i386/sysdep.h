@@ -1,5 +1,4 @@
-/* Copyright (C) 1992,1993,1995-2000,2002-2006,2007,2011-2012
-	Free Software Foundation, Inc.
+/* Copyright (C) 1992-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper, <drepper@gnu.org>, August 1995.
 
@@ -22,8 +21,6 @@
 
 /* There is some commonality.  */
 #include <sysdeps/unix/i386/sysdep.h>
-#include <bp-sym.h>
-#include <bp-asm.h>
 /* Defines RTLD_PRIVATE_ERRNO and USE_DL_SYSINFO.  */
 #include <dl-sysdep.h>
 #include <tls.h>
@@ -70,8 +67,7 @@
   ENTRY (name)								      \
     DO_CALL (syscall_name, args);					      \
     cmpl $-4095, %eax;							      \
-    jae SYSCALL_ERROR_LABEL;						      \
-  L(pseudo_end):
+    jae SYSCALL_ERROR_LABEL
 
 #undef	PSEUDO_END
 #define	PSEUDO_END(name)						      \

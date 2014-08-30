@@ -1,5 +1,5 @@
 /* Tables for conversion from and to IBM1399.
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Masahide Washizawa <washi@jp.ibm.com>, 2005.
 
@@ -19,6 +19,8 @@
 
 #ifndef _IBM1399_H
 #define _IBM1399_H 1
+
+#include <stdint.h>
 
 struct gap
 {

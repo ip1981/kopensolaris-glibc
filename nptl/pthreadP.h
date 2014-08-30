@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2012 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@redhat.com>, 2002.
 
@@ -31,7 +31,7 @@
 #include <pthread-functions.h>
 #include <atomic.h>
 #include <kernel-features.h>
-
+#include <errno.h>
 
 /* Atomic operations on TLS memory.  */
 #ifndef THREAD_ATOMIC_CMPXCHG_VAL
@@ -61,6 +61,10 @@
 enum
 {
   PTHREAD_MUTEX_KIND_MASK_NP = 3,
+
+  PTHREAD_MUTEX_ELISION_NP    = 256,
+  PTHREAD_MUTEX_NO_ELISION_NP = 512,
+
   PTHREAD_MUTEX_ROBUST_NORMAL_NP = 16,
   PTHREAD_MUTEX_ROBUST_RECURSIVE_NP
   = PTHREAD_MUTEX_ROBUST_NORMAL_NP | PTHREAD_MUTEX_RECURSIVE_NP,
@@ -93,12 +97,23 @@ enum
   PTHREAD_MUTEX_PP_ERRORCHECK_NP
   = PTHREAD_MUTEX_PRIO_PROTECT_NP | PTHREAD_MUTEX_ERRORCHECK_NP,
   PTHREAD_MUTEX_PP_ADAPTIVE_NP
-  = PTHREAD_MUTEX_PRIO_PROTECT_NP | PTHREAD_MUTEX_ADAPTIVE_NP
+  = PTHREAD_MUTEX_PRIO_PROTECT_NP | PTHREAD_MUTEX_ADAPTIVE_NP,
+  PTHREAD_MUTEX_ELISION_FLAGS_NP
+  = PTHREAD_MUTEX_ELISION_NP | PTHREAD_MUTEX_NO_ELISION_NP,
+
+  PTHREAD_MUTEX_TIMED_ELISION_NP =
+	  PTHREAD_MUTEX_TIMED_NP | PTHREAD_MUTEX_ELISION_NP,
+  PTHREAD_MUTEX_TIMED_NO_ELISION_NP =
+	  PTHREAD_MUTEX_TIMED_NP | PTHREAD_MUTEX_NO_ELISION_NP,
 };
 #define PTHREAD_MUTEX_PSHARED_BIT 128
 
 #define PTHREAD_MUTEX_TYPE(m) \
   ((m)->__data.__kind & 127)
+/* Don't include NO_ELISION, as that type is always the same
+   as the underlying lock type.  */
+#define PTHREAD_MUTEX_TYPE_ELISION(m) \
+  ((m)->__data.__kind & (127|PTHREAD_MUTEX_ELISION_NP))
 
 #if LLL_PRIVATE == 0 && LLL_SHARED == 128
 # define PTHREAD_MUTEX_PSHARED(m) \
@@ -147,8 +162,9 @@ enum
 /* Internal variables.  */
 
 
-/* Default stack size.  */
-extern size_t __default_stacksize attribute_hidden;
+/* Default pthread attributes.  */
+extern struct pthread_attr __default_pthread_attr attribute_hidden;
+extern int __default_pthread_attr_lock attribute_hidden;
 
 /* Size and alignment of static TLS block.  */
 extern size_t __static_tls_size attribute_hidden;
@@ -595,5 +611,79 @@ extern void __wait_lookup_done (void) attribute_hidden;
 #else
 # define PTHREAD_STATIC_FN_REQUIRE(name) __asm (".globl " #name);
 #endif
+
+/* Test if the mutex is suitable for the FUTEX_WAIT_REQUEUE_PI operation.  */
+#if (defined lll_futex_wait_requeue_pi \
+     && defined __ASSUME_REQUEUE_PI)
+# define USE_REQUEUE_PI(mut) \
+   ((mut) && (mut) != (void *) ~0l \
+    && (((mut)->__data.__kind \
+	 & (PTHREAD_MUTEX_PRIO_INHERIT_NP | PTHREAD_MUTEX_ROBUST_NORMAL_NP)) \
+	== PTHREAD_MUTEX_PRIO_INHERIT_NP))
+#else
+# define USE_REQUEUE_PI(mut) 0
+#endif
+
+/* Returns 0 if POL is a valid scheduling policy.  */
+static inline int
+check_sched_policy_attr (int pol)
+{
+  if (pol == SCHED_OTHER || pol == SCHED_FIFO || pol == SCHED_RR)
+    return 0;
+
+  return EINVAL;
+}
+
+/* Returns 0 if PR is within the accepted range of priority values for
+   the scheduling policy POL or EINVAL otherwise.  */
+static inline int
+check_sched_priority_attr (int pr, int pol)
+{
+  int min = __sched_get_priority_min (pol);
+  int max = __sched_get_priority_max (pol);
+
+  if (min >= 0 && max >= 0 && pr >= min && pr <= max)
+    return 0;
+
+  return EINVAL;
+}
+
+/* Returns 0 if ST is a valid stack size for a thread stack and EINVAL
+   otherwise.  */
+static inline int
+check_stacksize_attr (size_t st)
+{
+  if (st >= PTHREAD_STACK_MIN)
+    return 0;
+
+  return EINVAL;
+}
+
+/* Defined in pthread_setaffinity.c.  */
+extern size_t __kernel_cpumask_size attribute_hidden;
+extern int __determine_cpumask_size (pid_t tid);
+
+/* Returns 0 if CS and SZ are valid values for the cpuset and cpuset size
+   respectively.  Otherwise it returns an error number.  */
+static inline int
+check_cpuset_attr (const cpu_set_t *cs, const size_t sz)
+{
+  if (__kernel_cpumask_size == 0)
+    {
+      int res = __determine_cpumask_size (THREAD_SELF->tid);
+      if (res)
+	return res;
+    }
+
+  /* Check whether the new bitmask has any bit set beyond the
+     last one the kernel accepts.  */
+  for (size_t cnt = __kernel_cpumask_size; cnt < sz; ++cnt)
+    if (((char *) cs)[cnt] != '\0')
+      /* Found a nonzero byte.  This means the user request cannot be
+	 fulfilled.  */
+      return EINVAL;
+
+  return 0;
+}
 
 #endif	/* pthreadP.h */

@@ -1,5 +1,4 @@
-/* Copyright (C) 1991-2002, 2003, 2004, 2005, 2006, 2007, 2008, 2010, 2011
-   Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -194,7 +193,7 @@
 # define GET_LOGIN_NAME_MAX()	(-1)
 #endif
 
-static const char *next_brace_sub (const char *begin, int flags) __THROW;
+static const char *next_brace_sub (const char *begin, int flags) __THROWNL;
 
 #endif /* !defined _LIBC || !defined GLOB_ONLY_P */
 
@@ -209,15 +208,15 @@ extern int __glob_pattern_type (const char *pattern, int quote)
     attribute_hidden;
 
 #if !defined _LIBC || !defined GLOB_ONLY_P
-static int prefix_array (const char *prefix, char **array, size_t n) __THROW;
-static int collated_compare (const void *, const void *) __THROW;
+static int prefix_array (const char *prefix, char **array, size_t n) __THROWNL;
+static int collated_compare (const void *, const void *) __THROWNL;
 
 
 /* Find the end of the sub-pattern in a brace expression.  */
 static const char *
 next_brace_sub (const char *cp, int flags)
 {
-  unsigned int depth = 0;
+  size_t depth = 0;
   while (*cp != '\0')
     if ((flags & GLOB_NOESCAPE) == 0 && *cp == '\\')
       {
@@ -276,6 +275,11 @@ glob (pattern, flags, errfunc, pglob)
       __set_errno (EINVAL);
       return -1;
     }
+
+  /* POSIX requires all slashes to be matched.  This means that with
+     a trailing slash we must match only directories.  */
+  if (pattern[0] && pattern[strlen (pattern) - 1] == '/')
+    flags |= GLOB_ONLYDIR;
 
   if (!(flags & GLOB_DOOFFS))
     /* Have to do this so `globfree' knows where to start freeing.  It
@@ -960,7 +964,7 @@ glob (pattern, flags, errfunc, pglob)
 		  && S_ISDIR (st.st_mode))
 	       : (__stat64 (dirname, &st64) == 0 && S_ISDIR (st64.st_mode)))))
 	{
-	  int newcount = pglob->gl_pathc + pglob->gl_offs;
+	  size_t newcount = pglob->gl_pathc + pglob->gl_offs;
 	  char **new_gl_pathv;
 
 	  if (newcount > UINTPTR_MAX - (1 + 1)
@@ -1059,7 +1063,7 @@ glob (pattern, flags, errfunc, pglob)
 	 appending the results to PGLOB.  */
       for (i = 0; i < dirs.gl_pathc; ++i)
 	{
-	  int old_pathc;
+	  size_t old_pathc;
 
 #ifdef	SHELL
 	  {
@@ -1114,7 +1118,7 @@ glob (pattern, flags, errfunc, pglob)
 	  /* No matches.  */
 	  if (flags & GLOB_NOCHECK)
 	    {
-	      int newcount = pglob->gl_pathc + pglob->gl_offs;
+	      size_t newcount = pglob->gl_pathc + pglob->gl_offs;
 	      char **new_gl_pathv;
 
 	      if (newcount > UINTPTR_MAX - 2
@@ -1158,7 +1162,7 @@ glob (pattern, flags, errfunc, pglob)
     }
   else
     {
-      int old_pathc = pglob->gl_pathc;
+      size_t old_pathc = pglob->gl_pathc;
       int orig_flags = flags;
 
       if (meta & 2)
@@ -1264,7 +1268,7 @@ libc_hidden_def (glob)
 /* Free storage allocated in PGLOB by a previous `glob' call.  */
 void
 globfree (pglob)
-     register glob_t *pglob;
+     glob_t *pglob;
 {
   if (pglob->gl_pathv != NULL)
     {
@@ -1304,7 +1308,7 @@ collated_compare (const void *a, const void *b)
 static int
 prefix_array (const char *dirname, char **array, size_t n)
 {
-  register size_t i;
+  size_t i;
   size_t dirlen = strlen (dirname);
 #if defined __MSDOS__ || defined WINDOWS32
   int sep_char = '/';
@@ -1363,7 +1367,7 @@ __glob_pattern_type (pattern, quote)
      const char *pattern;
      int quote;
 {
-  register const char *p;
+  const char *p;
   int ret = 0;
 
   for (p = pattern; *p != '\0'; ++p)

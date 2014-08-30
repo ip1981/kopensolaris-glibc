@@ -1,5 +1,5 @@
 /* trunc function.  PowerPC32 version.
-   Copyright (C) 2004, 2006, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2004-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -26,7 +26,7 @@
 
 /* double [fp1] trunc (double x [fp1])
    IEEE 1003.1 trunc function.  IEEE specifies "trunc to the integer
-   value, in floating format, nearest to but no larger in magnitude 
+   value, in floating format, nearest to but no larger in magnitude
    then the argument."
    We set "round toward Zero" mode and trunc by adding +-2**52 then
    subtracting +-2**52.  */

@@ -1,4 +1,4 @@
-/* Copyright (C) 2000-2012 Free Software Foundation, Inc.
+/* Copyright (C) 2000-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -21,7 +21,6 @@
 #include <sysdep.h>
 #include <sys/syscall.h>
 #include <shlib-compat.h>
-#include <bp-checks.h>
 
 #include <linux/posix_types.h>
 
@@ -42,12 +41,12 @@
 int
 __real_chown (const char *file, uid_t owner, gid_t group)
 {
-  return INLINE_SYSCALL (chown32, 3, CHECK_STRING (file), owner, group);
+  return INLINE_SYSCALL (chown32, 3, file, owner, group);
 }
 
 
 #if SHLIB_COMPAT (libc, GLIBC_2_0, GLIBC_2_1)
-/* Compiling for compatibiity.  */
+/* Compiling for compatibility.  */
 int
 attribute_compat_text_section
 __chown_is_lchown (const char *file, uid_t owner, gid_t group)

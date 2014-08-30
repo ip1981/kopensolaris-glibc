@@ -1,5 +1,5 @@
 /* Access functions for JISX0201 conversion.
-   Copyright (C) 1997, 1998, 1999, 2003, 2007 Free Software Foundation, Inc.
+   Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997.
 
@@ -19,6 +19,8 @@
 
 #ifndef _JIS0201_H
 #define _JIS0201_H	1
+
+#include <stdint.h>
 
 /* Conversion table.  */
 extern const uint32_t __jisx0201_to_ucs4[];

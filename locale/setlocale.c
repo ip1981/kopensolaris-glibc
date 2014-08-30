@@ -1,5 +1,4 @@
-/* Copyright (C) 1991, 1992, 1995-2000, 2002, 2003, 2004, 2006, 2008, 2010, 2011
-   Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -205,7 +204,7 @@ setname (int category, const char *name)
 }
 
 /* Put DATA in *_nl_current[CATEGORY].  */
-static inline void
+static void
 setdata (int category, struct __locale_data *data)
 {
   if (CATEGORY_USED (category))
@@ -413,7 +412,7 @@ setlocale (int category, const char *locale)
 	  /* We must not simply free a global locale since we have no
 	     control over the usage.  So we mark it as un-deletable.
 
-	     Note: do not remove the `if', it's necessary to copy with
+	     Note: do not remove the `if', it's necessary to cope with
 	     the builtin locale data.  */
 	  if (newdata->usage_count != UNDELETABLE)
 	    newdata->usage_count = UNDELETABLE;

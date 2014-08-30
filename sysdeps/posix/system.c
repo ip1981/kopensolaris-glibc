@@ -1,4 +1,4 @@
-/* Copyright (C) 1991-2000,2002,2003,2005,2007 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -70,13 +70,13 @@ do_system (const char *line)
     {
       if (__sigaction (SIGINT, &sa, &intr) < 0)
 	{
-	  SUB_REF ();
+	  (void) SUB_REF ();
 	  goto out;
 	}
       if (__sigaction (SIGQUIT, &sa, &quit) < 0)
 	{
 	  save = errno;
-	  SUB_REF ();
+	  (void) SUB_REF ();
 	  goto out_restore_sigint;
 	}
     }
@@ -181,15 +181,6 @@ __libc_system (const char *line)
        not be available after a chroot(), for example.  */
     return do_system ("exit 0") == 0;
 
-  if (SINGLE_THREAD_P)
-    return do_system (line);
-
-  int oldtype = LIBC_CANCEL_ASYNC ();
-
-  int result = do_system (line);
-
-  LIBC_CANCEL_RESET (oldtype);
-
-  return result;
+  return do_system (line);
 }
 weak_alias (__libc_system, system)

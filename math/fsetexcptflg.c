@@ -1,5 +1,5 @@
 /* Set floating-point environment exception handling.
-   Copyright (C) 1997-2012 Free Software Foundation, Inc.
+   Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997.
 
@@ -33,4 +33,3 @@ compat_symbol (libm, __old_fesetexceptflag, fesetexceptflag, GLIBC_2_1);
 versioned_symbol (libm, __fesetexceptflag, fesetexceptflag, GLIBC_2_2);
 
 stub_warning (fesetexceptflag)
-#include <stub-tag.h>

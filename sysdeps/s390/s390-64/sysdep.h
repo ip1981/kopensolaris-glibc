@@ -1,5 +1,5 @@
 /* Assembler macros for 64 bit S/390.
-   Copyright (C) 2001, 2003, 2012 Free Software Foundation, Inc.
+   Copyright (C) 2001-2014 Free Software Foundation, Inc.
    Contributed by Martin Schwidefsky (schwidefsky@de.ibm.com).
    This file is part of the GNU C Library.
 
@@ -25,15 +25,13 @@
 
 /* ELF uses byte-counts for .align, most others use log2 of count of bytes.  */
 #define ALIGNARG(log2) 1<<log2
-/* For ELF we need the `.type' directive to make shared libs work right.  */
-#define ASM_TYPE_DIRECTIVE(name,typearg) .type name,typearg;
 #define ASM_SIZE_DIRECTIVE(name) .size name,.-name;
 
 
 /* Define an entry point visible from C. */
 #define	ENTRY(name)							      \
-  ASM_GLOBAL_DIRECTIVE C_SYMBOL_NAME(name);				      \
-  ASM_TYPE_DIRECTIVE (C_SYMBOL_NAME(name),@function)			      \
+  .globl C_SYMBOL_NAME(name);						      \
+  .type C_SYMBOL_NAME(name),@function;					      \
   .align ALIGNARG(2);							      \
   C_LABEL(name)								      \
   cfi_startproc;							      \
@@ -65,6 +63,7 @@
 #define	syscall_error	__syscall_error
 #define mcount		_mcount
 
+#undef PSEUDO
 #define	PSEUDO(name, syscall_name, args) \
 lose: SYSCALL_PIC_SETUP			\
   jg JUMPTARGET(syscall_error);		\

@@ -1,5 +1,5 @@
 /* One way encryption based on SHA512 sum.
-   Copyright (C) 2007, 2009, 2012 Free Software Foundation, Inc.
+   Copyright (C) 2007-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@redhat.com>, 2007.
 
@@ -22,6 +22,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #include <sys/param.h>
 
 #include "sha512.h"

@@ -1,5 +1,4 @@
-# Copyright (C) 1991-2003, 2005, 2006, 2007, 2009, 2011, 2012
-# Free Software Foundation, Inc.
+# Copyright (C) 1991-2014 Free Software Foundation, Inc.
 # This file is part of the GNU C Library.
 
 # The GNU C Library is free software; you can redistribute it and/or
@@ -26,7 +25,9 @@ all:
 dist-headers := malloc.h
 headers := $(dist-headers) obstack.h mcheck.h
 tests := mallocbug tst-malloc tst-valloc tst-calloc tst-obstack \
-	 tst-mallocstate tst-mcheck tst-mallocfork tst-trim1
+	 tst-mallocstate tst-mcheck tst-mallocfork tst-trim1 \
+	 tst-malloc-usable tst-realloc tst-posix_memalign \
+	 tst-pvalloc tst-memalign
 test-srcs = tst-mtrace
 
 routines = malloc morecore mcheck mtrace obstack
@@ -77,7 +78,7 @@ install-bin-script += memusage
 generated += memusagestat memusage
 extra-objs += memusagestat.o
 
-# The configure.in check for libgd and its headers did not use $SYSINCLUDES.
+# The configure.ac check for libgd and its headers did not use $SYSINCLUDES.
 # The directory specified by --with-headers usually contains only the basic
 # kernel interface headers, not something like libgd.  So the simplest thing
 # is to presume that the standard system headers will be ok for this file.
@@ -105,19 +106,19 @@ $(objpfx)libmcheck.a: $(objpfx)mcheck-init.o
 
 lib: $(objpfx)libmcheck.a
 
-ifeq (no,$(cross-compiling))
+ifeq ($(run-built-tests),yes)
 ifeq (yes,$(build-shared))
 ifneq ($(PERL),no)
 tests: $(objpfx)tst-mtrace.out
 $(objpfx)tst-mtrace.out: tst-mtrace.sh $(objpfx)tst-mtrace
-	$(SHELL) -e $< $(common-objpfx)
+	$(SHELL) $< $(common-objpfx) '$(test-program-prefix)'
 endif
 endif
 endif
 
 tst-mcheck-ENV = MALLOC_CHECK_=3
+tst-malloc-usable-ENV = MALLOC_CHECK_=3
 
-CPPFLAGS-malloc.c += -DPER_THREAD
 # Uncomment this for test releases.  For public releases it is too expensive.
 #CPPFLAGS-malloc.o += -DMALLOC_DEBUG=1
 
@@ -126,18 +127,22 @@ sLIBdir := $(shell echo $(slibdir) | sed 's,lib\(\|64\)$$,\\\\$$LIB,')
 $(objpfx)mtrace: mtrace.pl
 	rm -f $@.new
 	sed -e 's|@PERL@|$(PERL)|' -e 's|@XXX@|$(address-width)|' \
-	    -e 's|@VERSION@|$(version)|' $^ > $@.new \
+	    -e 's|@VERSION@|$(version)|' \
+	    -e 's|@PKGVERSION@|$(PKGVERSION)|' \
+	    -e 's|@REPORT_BUGS_TO@|$(REPORT_BUGS_TO)|' $^ > $@.new \
 	&& rm -f $@ && mv $@.new $@ && chmod +x $@
 
 $(objpfx)memusage: memusage.sh
 	rm -f $@.new
 	sed -e 's|@BASH@|$(BASH)|' -e 's|@VERSION@|$(version)|' \
-	    -e 's|@SLIBDIR@|$(sLIBdir)|' -e 's|@BINDIR@|$(bindir)|' $^ > $@.new \
+	    -e 's|@SLIBDIR@|$(sLIBdir)|' -e 's|@BINDIR@|$(bindir)|' \
+	    -e 's|@PKGVERSION@|$(PKGVERSION)|' \
+	    -e 's|@REPORT_BUGS_TO@|$(REPORT_BUGS_TO)|' $^ > $@.new \
 	&& rm -f $@ && mv $@.new $@ && chmod +x $@
 
 
 # The implementation uses `dlsym'
-$(objpfx)libmemusage.so: $(common-objpfx)dlfcn/libdl.so $(elfobjdir)/ld.so
+$(objpfx)libmemusage.so: $(common-objpfx)dlfcn/libdl.so
 
 # Extra dependencies
 $(foreach o,$(all-object-suffixes),$(objpfx)malloc$(o)): arena.c hooks.c

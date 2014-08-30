@@ -1,5 +1,5 @@
 /* roundf  function.  PowerPC32 version.
-   Copyright (C) 2004, 2006, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2004-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -19,18 +19,18 @@
 #include <sysdep.h>
 
 	.section	.rodata.cst8,"aM",@progbits,8
-	.align	2
+	.align	3
 .LC0:	/* 2**23 */
 	.long 0x4b000000
 .LC1:	/* 0.5 */
 	.long 0x3f000000
 
 /* float [fp1] roundf  (float x [fp1])
-   IEEE 1003.1 round function.  IEEE specifies "round to the nearest 
+   IEEE 1003.1 round function.  IEEE specifies "round to the nearest
    integer value, rounding halfway cases away from zero, regardless of
    the current rounding mode."  However PowerPC Architecture defines
-   "Round to Nearest" as "Choose the best approximation. In case of a 
-   tie, choose the one that is even (least significant bit o).". 
+   "Round to Nearest" as "Choose the best approximation. In case of a
+   tie, choose the one that is even (least significant bit o).".
    So we can't use the PowerPC "Round to Nearest" mode. Instead we set
    "Round toward Zero" mode and round by adding +-0.5 before rounding
    to the integer value.  */
@@ -60,7 +60,6 @@ ENTRY (__roundf )
 #ifdef SHARED
 	lfs	fp10,.LC1-.LC0(r9)
 #else
-	lis	r9,.LC1@ha
 	lfs	fp10,.LC1@l(r9)
 #endif
 	ble-	cr6,.L4

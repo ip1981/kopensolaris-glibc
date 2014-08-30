@@ -1,5 +1,5 @@
 /* Run initializers for newly loaded objects.
-   Copyright (C) 1995,1996,1998-2002, 2004,2012 Free Software Foundation, Inc.
+   Copyright (C) 1995-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -57,20 +57,14 @@ call_init (struct link_map *l, int argc, char **argv, char **env)
   /* Print a debug message if wanted.  */
   if (__builtin_expect (GLRO(dl_debug_mask) & DL_DEBUG_IMPCALLS, 0))
     _dl_debug_printf ("\ncalling init: %s\n\n",
-		      l->l_name[0] ? l->l_name : rtld_progname);
+		      DSO_FILENAME (l->l_name));
 
   /* Now run the local constructors.  There are two forms of them:
      - the one named by DT_INIT
      - the others in the DT_INIT_ARRAY.
   */
   if (l->l_info[DT_INIT] != NULL)
-    {
-      init_t init = (init_t) DL_DT_INIT_ADDRESS
-	(l, l->l_addr + l->l_info[DT_INIT]->d_un.d_ptr);
-
-      /* Call the function.  */
-      init (argc, argv, env);
-    }
+    DL_CALL_DT_INIT(l, l->l_addr + l->l_info[DT_INIT]->d_un.d_ptr, argc, argv, env);
 
   /* Next see whether there is an array with initialization functions.  */
   ElfW(Dyn) *init_array = l->l_info[DT_INIT_ARRAY];
@@ -117,8 +111,7 @@ _dl_init (struct link_map *main_map, int argc, char **argv, char **env)
 
       if (__builtin_expect (GLRO(dl_debug_mask) & DL_DEBUG_IMPCALLS, 0))
 	_dl_debug_printf ("\ncalling preinit: %s\n\n",
-			  main_map->l_name[0]
-			  ? main_map->l_name : rtld_progname);
+			  DSO_FILENAME (main_map->l_name));
 
       addrs = (ElfW(Addr) *) (preinit_array->d_un.d_ptr + main_map->l_addr);
       for (cnt = 0; cnt < i; ++cnt)

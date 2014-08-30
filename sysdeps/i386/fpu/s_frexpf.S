@@ -1,5 +1,5 @@
 /* ix87 specific frexp implementation for float.
-   Copyright (C) 1997, 2000, 2005, 2012 Free Software Foundation, Inc.
+   Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997.
 
@@ -18,13 +18,11 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include <machine/asm.h>
-#include "bp-sym.h"
-#include "bp-asm.h"
 
 	.section .rodata
 
 	.align ALIGNARG(4)
-	ASM_TYPE_DIRECTIVE(two25,@object)
+	.type two25,@object
 two25:	.byte 0, 0, 0, 0x4c
 	ASM_SIZE_DIRECTIVE(two25)
 
@@ -34,13 +32,12 @@ two25:	.byte 0, 0, 0, 0x4c
 #define MO(op) op
 #endif
 
-#define PARMS	LINKAGE		/* no space for saved regs */
+#define PARMS	4		/* no space for saved regs */
 #define VAL	PARMS
 #define EXPP	VAL+4
 
 	.text
-ENTRY (BP_SYM (__frexpf))
-	ENTER
+ENTRY (__frexpf)
 
 	movl	VAL(%esp), %eax
 	xorl	%ecx, %ecx
@@ -75,11 +72,9 @@ ENTRY (BP_SYM (__frexpf))
 	/* Store %ecx in the variable pointed to by the second argument,
 	   get the factor from the stack and return.  */
 1:	movl	EXPP(%esp), %eax
-	CHECK_BOUNDS_BOTH_WIDE (%eax, EXPP(%esp), $4)
 	flds	VAL(%esp)
 	movl	%ecx, (%eax)
 
-	LEAVE
 	ret
-END (BP_SYM (__frexpf))
-weak_alias (BP_SYM (__frexpf), BP_SYM (frexpf))
+END (__frexpf)
+weak_alias (__frexpf, frexpf)

@@ -1,5 +1,5 @@
 /* Suspend until termination of a requests.  Stub version.
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -42,4 +42,3 @@ weak_alias (aio_suspend, aio_suspend64)
 
 stub_warning (aio_suspend)
 stub_warning (aio_suspend64)
-#include <stub-tag.h>

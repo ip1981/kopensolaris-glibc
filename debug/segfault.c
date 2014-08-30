@@ -1,6 +1,5 @@
 /* Catch segmentation faults and print backtrace.
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2007
-   Free Software Foundation, Inc.
+   Copyright (C) 1998-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1998.
 
@@ -31,8 +30,6 @@
 #include <unistd.h>
 #include <_itoa.h>
 #include <ldsodefs.h>
-
-#include <bp-checks.h>
 
 /* This file defines macros to access the content of the sigcontext element
    passed up by the signal handler.  */

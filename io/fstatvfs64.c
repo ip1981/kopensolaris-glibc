@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 2001 Free Software Foundation, Inc.
+/* Copyright (C) 1998-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -28,4 +28,3 @@ __fstatvfs64 (int fd, struct statvfs64 *buf)
 weak_alias (__fstatvfs64, fstatvfs64)
 
 stub_warning (fstatvfs64)
-#include <stub-tag.h>

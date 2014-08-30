@@ -1,4 +1,4 @@
-/* Copyright (C) 1997, 1998, 2000, 2006 Free Software Foundation, Inc.
+/* Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Geoffrey Keating <Geoff.Keating@anu.edu.au>, 1997.
 
@@ -61,7 +61,7 @@ exp_mpn (mp1 ex, mp1 x)
    unsigned n;
    mp1 xp;
    mp2 tmp;
-   mp_limb_t chk, round;
+   mp_limb_t chk;
    mp1 tol;
 
    memset (xp, 0, sizeof (mp1));
@@ -79,7 +79,7 @@ exp_mpn (mp1 ex, mp1 x)
        mpn_mul_n (tmp, xp, x, SZ);
        assert (tmp[SZ * 2 - 1] == 0);
        if (n > 0)
-	 round = mpn_divmod_1 (xp, tmp + FRAC / mpbpl, SZ, n);
+	 mpn_divmod_1 (xp, tmp + FRAC / mpbpl, SZ, n);
        chk = mpn_add_n (ex, ex, xp, SZ);
        assert (chk == 0);
        n++;

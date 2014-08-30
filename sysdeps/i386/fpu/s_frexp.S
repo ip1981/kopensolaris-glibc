@@ -1,5 +1,5 @@
 /* ix87 specific frexp implementation for double.
-   Copyright (C) 1997, 2000, 2005, 2012 Free Software Foundation, Inc.
+   Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997.
 
@@ -18,13 +18,11 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include <machine/asm.h>
-#include "bp-sym.h"
-#include "bp-asm.h"
 
 	.section .rodata
 
 	.align ALIGNARG(4)
-	ASM_TYPE_DIRECTIVE(two54,@object)
+	.type two54,@object
 two54:	.byte 0, 0, 0, 0, 0, 0, 0x50, 0x43
 	ASM_SIZE_DIRECTIVE(two54)
 
@@ -34,14 +32,13 @@ two54:	.byte 0, 0, 0, 0, 0, 0, 0x50, 0x43
 #define MO(op) op
 #endif
 
-#define PARMS	LINKAGE		/* no space for saved regs */
+#define PARMS	4		/* no space for saved regs */
 #define VAL0	PARMS
 #define VAL1	VAL0+4
 #define EXPP	VAL1+4
 
 	.text
-ENTRY (BP_SYM (__frexp))
-	ENTER
+ENTRY (__frexp)
 
 	movl	VAL0(%esp), %ecx
 	movl	VAL1(%esp), %eax
@@ -78,11 +75,9 @@ ENTRY (BP_SYM (__frexp))
 	/* Store %ecx in the variable pointed to by the second argument,
 	   get the factor from the stack and return.  */
 1:	movl	EXPP(%esp), %eax
-	CHECK_BOUNDS_BOTH_WIDE (%eax, EXPP(%esp), $4)
 	fldl	VAL0(%esp)
 	movl	%ecx, (%eax)
 
-	LEAVE
 	ret
-END (BP_SYM (__frexp))
-weak_alias (BP_SYM (__frexp), BP_SYM (frexp))
+END (__frexp)
+weak_alias (__frexp, frexp)

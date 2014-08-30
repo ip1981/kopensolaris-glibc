@@ -1,4 +1,4 @@
-/* Copyright (C) 2003-2012 Free Software Foundation, Inc.
+/* Copyright (C) 2003-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -162,7 +162,7 @@ __pthread_cond_signal:
 	bf/s	99f
 	 mov	#LLL_PRIVATE, r5
 	mov	#LLL_SHARED, r5
-99:	
+99:
 	mov.l	.Lwake4, r1
 	bsrf	r1
 	 extu.b	r5, r5
@@ -181,7 +181,7 @@ __pthread_cond_signal:
 	bf/s	99f
 	 mov	#LLL_PRIVATE, r6
 	mov	#LLL_SHARED, r6
-99:	
+99:
 	extu.b	r6, r6
 	mov.l	.Lwait4, r1
 	bsrf	r1

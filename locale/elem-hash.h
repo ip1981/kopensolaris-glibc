@@ -1,4 +1,4 @@
-/* Copyright (C) 1999, 2001 Free Software Foundation, Inc.
+/* Copyright (C) 1999-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Written by Ulrich Drepper, <drepper@cygnus.com>.
 
@@ -18,7 +18,7 @@
 
 
 /* The hashing function used for the table with collation symbols.  */
-static inline int32_t
+static int32_t __attribute__ ((pure, unused))
 elem_hash (const char *str, int_fast32_t n)
 {
   int32_t result = n;

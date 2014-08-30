@@ -1,4 +1,4 @@
-/* Copyright (C) 1991, 92, 93, 94, 96, 97 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -21,7 +21,7 @@
 
 /* Return the current machine's Internet number.  */
 long int
-gethostid ()
+gethostid (void)
 {
   /* The hostid is just the contents of the file /etc/hostid,
      kept as text of hexadecimal digits.  */

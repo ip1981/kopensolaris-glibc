@@ -1,5 +1,5 @@
 /* Extended regular expression matching and search library.
-   Copyright (C) 2002-2005,2007,2009,2010,2011 Free Software Foundation, Inc.
+   Copyright (C) 2002-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Isamu Hasegawa <isamu@yamato.ibm.com>.
 
@@ -16,6 +16,8 @@
    You should have received a copy of the GNU Lesser General Public
    License along with the GNU C Library; if not, see
    <http://www.gnu.org/licenses/>.  */
+
+#include <stdint.h>
 
 static reg_errcode_t match_ctx_init (re_match_context_t *cache, int eflags,
 				     int n) internal_function;
@@ -197,7 +199,7 @@ static int group_nodes_into_DFAstates (const re_dfa_t *dfa,
 static int check_node_accept (const re_match_context_t *mctx,
 			      const re_token_t *node, int idx)
      internal_function;
-static reg_errcode_t extend_buffers (re_match_context_t *mctx)
+static reg_errcode_t extend_buffers (re_match_context_t *mctx, int min_len)
      internal_function;
 
 /* Entry point for POSIX code.  */
@@ -1160,7 +1162,7 @@ check_matching (re_match_context_t *mctx, int fl_longest_match,
 	  || (BE (next_char_idx >= mctx->input.valid_len, 0)
 	      && mctx->input.valid_len < mctx->input.len))
 	{
-	  err = extend_buffers (mctx);
+	  err = extend_buffers (mctx, next_char_idx + 1);
 	  if (BE (err != REG_NOERROR, 0))
 	    {
 	      assert (err == REG_ESPACE);
@@ -1738,7 +1740,7 @@ clean_state_log_if_needed (re_match_context_t *mctx, int next_state_log_idx)
 	  && mctx->input.valid_len < mctx->input.len))
     {
       reg_errcode_t err;
-      err = extend_buffers (mctx);
+      err = extend_buffers (mctx, next_state_log_idx + 1);
       if (BE (err != REG_NOERROR, 0))
 	return err;
     }
@@ -2792,7 +2794,7 @@ get_subexp (re_match_context_t *mctx, int bkref_node, int bkref_str_idx)
 		  if (bkref_str_off >= mctx->input.len)
 		    break;
 
-		  err = extend_buffers (mctx);
+		  err = extend_buffers (mctx, bkref_str_off + 1);
 		  if (BE (err != REG_NOERROR, 0))
 		    return err;
 
@@ -4102,7 +4104,7 @@ check_node_accept (const re_match_context_t *mctx, const re_token_t *node,
 
 static reg_errcode_t
 internal_function __attribute_warn_unused_result__
-extend_buffers (re_match_context_t *mctx)
+extend_buffers (re_match_context_t *mctx, int min_len)
 {
   reg_errcode_t ret;
   re_string_t *pstr = &mctx->input;
@@ -4111,8 +4113,10 @@ extend_buffers (re_match_context_t *mctx)
   if (BE (INT_MAX / 2 / sizeof (re_dfastate_t *) <= pstr->bufs_len, 0))
     return REG_ESPACE;
 
-  /* Double the lengthes of the buffers.  */
-  ret = re_string_realloc_buffers (pstr, MIN (pstr->len, pstr->bufs_len * 2));
+  /* Double the lengthes of the buffers, but allocate at least MIN_LEN.  */
+  ret = re_string_realloc_buffers (pstr,
+				   MAX (min_len,
+					MIN (pstr->len, pstr->bufs_len * 2)));
   if (BE (ret != REG_NOERROR, 0))
     return ret;
 

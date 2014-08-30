@@ -1,4 +1,4 @@
-/* Copyright (C) 1992, 1995, 1996, 1997 Free Software Foundation, Inc.
+/* Copyright (C) 1992-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -32,4 +32,3 @@ __flock (fd, operation)
 weak_alias (__flock, flock)
 
 stub_warning (flock)
-#include <stub-tag.h>

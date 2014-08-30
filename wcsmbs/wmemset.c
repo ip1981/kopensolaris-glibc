@@ -1,4 +1,4 @@
-/* Copyright (C) 1996,97,99,2002 Free Software Foundation, Inc.
+/* Copyright (C) 1996-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@gnu.org>, 1996.
 
@@ -25,7 +25,7 @@ wmemset (s, c, n)
      wchar_t c;
      size_t n;
 {
-  register wchar_t *wp = s;
+  wchar_t *wp = s;
 
   while (n >= 4)
     {

@@ -1,4 +1,4 @@
-/* Copyright (C) 2001, 2003 Free Software Foundation, Inc.
+/* Copyright (C) 2001-2014 Free Software Foundation, Inc.
    Contributed by Martin Schwidefsky (schwidefsky@de.ibm.com).
    This file is part of the GNU C Library.
 
@@ -100,10 +100,10 @@ ENTRY(__socket)
         lmg     %r6,15,48(%r15)         /* Load registers.  */
 
 	/* gpr2 is < 0 if there was an error.  */
-        lghi    %r0,-125 
+        lghi    %r0,-125
         clgr    %r2,%r0
         jgnl    SYSCALL_ERROR_LABEL
- 
+
 	/* Successful; return the syscall's value.  */
 	br      %r14
 

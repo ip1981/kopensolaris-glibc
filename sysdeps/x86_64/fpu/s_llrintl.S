@@ -1,6 +1,6 @@
 /* Round argument to nearest integral value according to current rounding
    direction.
-   Copyright (C) 1997, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -30,4 +30,4 @@ END(__llrintl)
 weak_alias (__llrintl, llrintl)
 strong_alias (__llrintl, __lrintl)
 weak_alias (__llrintl, lrintl)
-	
+

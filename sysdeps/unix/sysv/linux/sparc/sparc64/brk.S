@@ -1,4 +1,4 @@
-/* Copyright (C) 1997, 2008 Free Software Foundation, Inc.
+/* Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Richard Henderson <richard@gnu.ai.mit.edu>, 1997.
 
@@ -74,7 +74,7 @@ ENTRY (__brk)
 	/* Don't use "ret" cause the preprocessor will eat it.  */
 	jmpl	%i7+8, %g0
 	 restore
-	
+
 	/* What a horrible way to die.  */
 .Lerr0:	set	ENOMEM, %o0
 .Lerr1:

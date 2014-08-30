@@ -1,4 +1,4 @@
-/* Copyright (C) 1999, 2000, 2002, 2003 Free Software Foundation, Inc.
+/* Copyright (C) 1999-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -58,7 +58,7 @@ ENTRY (__vfork)
 	not	r1, r1			// r1=0 means r0 = -1 to -4095
 	tst	r1, r1			// i.e. error in linux
 	bf	.Lpseudo_end
-.Lsyscall_error:	
+.Lsyscall_error:
 	SYSCALL_ERROR_HANDLER
 .Lpseudo_end:
 	rts
