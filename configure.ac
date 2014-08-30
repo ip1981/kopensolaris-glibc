@@ -694,6 +694,8 @@ gnu*)
   base_os=mach/hurd ;;
 linux*)
   base_os=unix/sysv ;;
+kopensolaris*)
+  base_os=unix/sysv/solaris2/kopensolaris-gnu ;;
 esac
 
 # For sunos4.1.1, try sunos4.1.1, then sunos4.1, then sunos4, then sunos.
