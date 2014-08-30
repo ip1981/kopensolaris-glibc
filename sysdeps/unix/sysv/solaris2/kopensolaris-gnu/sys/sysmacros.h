@@ -70,8 +70,13 @@
 # define expdev(x)	(dev_t)(((dev_t)(((x) >> O_BITSMINOR) & O_MAXMAJ) << \
 	L_BITSMINOR) | ((x) & O_MAXMIN))
 
-# define howmany(x, y)	(((x)+((y)-1))/(y))
-# define roundup(x, y)	((((x)+((y)-1))/(y))*(y))
+# ifndef howmany
+#  define howmany(x, y)	(((x)+((y)-1))/(y))
+# endif
+
+# ifndef roundup
+#  define roundup(x, y) ((((x)+((y)-1))/(y))*(y))
+# endif
 
 # define IS_P2ALIGNED(v, a)	((((uintptr_t)(v)) & ((uintptr_t)(a) - 1)) == 0)
 # define ISP2(x)			(((x) & ((x) - 1)) == 0)

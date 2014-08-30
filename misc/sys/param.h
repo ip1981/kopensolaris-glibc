@@ -86,6 +86,8 @@
 #ifndef howmany
 # define howmany(x, y)  (((x) + ((y) - 1)) / (y))
 #endif
+
+#ifndef roundup
 #ifdef __GNUC__
 # define roundup(x, y)  (__builtin_constant_p (y) && powerof2 (y)             \
                          ? (((x) + (y) - 1) & ~((y) - 1))                     \
@@ -93,6 +95,8 @@
 #else
 # define roundup(x, y)  ((((x) + ((y) - 1)) / (y)) * (y))
 #endif
+#endif
+
 #define powerof2(x)     ((((x) - 1) & (x)) == 0)
 
 /* Macros for min/max.  */
