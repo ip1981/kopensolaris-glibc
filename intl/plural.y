@@ -40,10 +40,14 @@
 # define __gettextparse PLURAL_PARSE
 #endif
 
-#define YYLEX_PARAM	&((struct parse_args *) arg)->cp
-#define YYPARSE_PARAM	arg
+/* %lex-param takes a type and variable name, similar to %parse-param,
+   so you can't pass an arbitrary expression like state->scanner.
+   See http://osdir.com/ml/bug-bison-gnu/2014-02/msg00002.html  */
+#define YYLEX_PARAM &((struct parse_args *) arg)->cp
 %}
-%pure_parser
+%pure-parser
+%parse-param { void *arg }
+%lex-param { YYLEX_PARAM }
 %expect 7
 
 %union {
@@ -67,7 +71,7 @@ static inline struct expression *new_exp_3 PARAMS ((enum operator op,
 						   struct expression *tbranch,
 						   struct expression *fbranch));
 static int yylex PARAMS ((YYSTYPE *lval, const char **pexp));
-static void yyerror PARAMS ((const char *str));
+static void yyerror PARAMS ((void *arg, const char *str));
 
 /* Allocation of expressions.  */
 
@@ -402,8 +406,7 @@ yylex (lval, pexp)
 
 
 static void
-yyerror (str)
-     const char *str;
+yyerror (void *arg, const char *str)
 {
   /* Do nothing.  We don't print error messages here.  */
 }
