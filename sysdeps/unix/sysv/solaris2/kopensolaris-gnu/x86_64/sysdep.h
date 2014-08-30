@@ -30,8 +30,6 @@
 
 /* There is some commonality.  */
 #include <sysdeps/unix/x86_64/sysdep.h>
-#include <bp-sym.h>
-#include <bp-asm.h>
 #include <syscallP.h>
 
 /* XXX: This needs to come before #include <tls.h>.  */
