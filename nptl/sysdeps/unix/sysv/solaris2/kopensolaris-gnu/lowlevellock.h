@@ -13,7 +13,6 @@
 
 #include <stddef.h>
 #include <sys/syscall.h>
-#include <bits/libc-lock.h>
 
 #define lll_init(futex) \
     __libc_lock_init (futex)
