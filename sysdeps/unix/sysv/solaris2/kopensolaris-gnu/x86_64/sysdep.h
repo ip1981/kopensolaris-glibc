@@ -272,6 +272,8 @@
 # define DOARGS_4 movq %rcx, %r10;
 # define DOARGS_5 DOARGS_4
 # define DOARGS_6 DOARGS_5
+# define DOARGS_7 DOARGS_6
+# define DOARGS_8 DOARGS_7
 
 #else   /* !__ASSEMBLER__ */
 
