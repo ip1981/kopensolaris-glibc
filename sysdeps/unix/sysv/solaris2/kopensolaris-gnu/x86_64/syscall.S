@@ -48,35 +48,49 @@ ENTRY (__syscall)
     movq   24(%rbp), %rcx
     pushq  %rcx; cfi_adjust_cfa_offset(8)  /* arg #7.  */
 
-//    movq   8(%rbp), %rcx
-//    pushq  %rcx;
     subq $8, %rsp; cfi_adjust_cfa_offset(8)  /* return addr (intentionally ignored by syscall).  */
 
     syscall
 
-    /* Restore the stack frame. */
+    /* Restore the stack frame.  */
     leave; cfi_adjust_cfa_offset(-32) /* Watch out, we have 4 cfi_adjust_cfa_offset above!  */
 
-	jb SYSCALL_ERROR_LABEL;	/* Jump to error handler if error.  */
-
-L(pseudo_end):
-	ret			/* Return to caller.  */
 PSEUDO_END (__syscall)
 weak_alias (__syscall, syscall)
 
+
 	  .text;
+/* int __systemcall(sysret_t *, int, ...);  */
 ENTRY (__systemcall)
-	popl %rdx		/* Pop return address into %edx.  */
-	popl %rcx		/* Pop sysret_t into %rcx.  */
-	popl %eax		/* Pop syscall number into %eax.  */
-	pushl %rdx		/* Push return address onto stack.  */
-	syscall		/* Do the system call.  */
-	pushl %rcx		/* Restore sysret_t on stack.  */
-	movl 8(%rsp), %rdx	/* Save return address into %rdx.  */
-	pushl %rdx		/* Restore return address on stack.  */
-	jb 1f			/* Jump to error handler if error.  */
-	movl %rax, 0(%rcx)	/* Set sysret_t.  */
-	xorl %rax, %rax		/* Set return to 0.  */
-1:
-	ret
-PSEUDO_END (__syscall)
+    pushq   %rbp; cfi_adjust_cfa_offset(8)
+    movq    %rsp, %rbp
+    pushq   %rdi            /* save sysret_t pointer.  */
+    movq    %rsi,  %rax     /* syscall num.  */
+    movq    %rdx,  %rdi     /* arg #1.  */
+    movq    %rcx,  %rsi     /* arg #2.  */
+    movq    %r8,   %rdx     /* arg #3.  */
+    movq    %r9,   %rcx     /* save arg #4, it should be in %r10.  */
+    movq    16(%rbp), %r8   /* arg #5.  */
+    movq    24(%rbp), %r9   /* arg #6.  */
+    movq    40(%rbp), %r10
+    pushq   %r10; cfi_adjust_cfa_offset(8)   /* arg #8, on stack.  */
+    movq    32(%rbp), %r10
+    pushq   %r10; cfi_adjust_cfa_offset(8)   /* arg #7, on stack.  */
+    movq    %rcx, %r10      /* arg #4.  */
+    subq    $8,   %rsp; cfi_adjust_cfa_offset(8)  /* return addr (intentionally ignored by syscall).  */
+
+    syscall
+
+    movq    8(%rbp), %r10  /* sysret_t pointer.  */
+
+    /* Restore the stack frame.  */
+    leave; cfi_adjust_cfa_offset(-32) /* Watch out, we have 4 cfi_adjust_cfa_offset above!  */
+
+    jb      SYSCALL_ERROR_LABEL;	/* Jump to error handler if error.  */
+
+    movq    %rax, 0(%r10)   /* no error, save result into sysret_t.  */
+    movq    %rdx, 8(%r10)
+    xorq    %rax, %rax
+	ret			/* Return to caller.  */
+PSEUDO_END (__systemcall)
+
