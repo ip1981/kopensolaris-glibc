@@ -1,3 +1,3 @@
 ifeq ($(subdir),misc)
-sysdep_routines += sys_sysi86
+sysdep_routines += sysi86
 endif
