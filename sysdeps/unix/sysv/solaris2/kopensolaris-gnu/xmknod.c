@@ -26,7 +26,6 @@
 
 #include <sysdep.h>
 #include <syscallP.h>
-#include <bp-checks.h>
 
 DECLARE_INLINE_SYSCALL (int, mknod, const char *, mode_t, dev_t);
 

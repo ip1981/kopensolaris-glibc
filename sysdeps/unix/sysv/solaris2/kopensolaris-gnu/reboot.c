@@ -22,7 +22,6 @@
 #include <sys/types.h>
 #include <sys/reboot.h>
 #include <sys/uadmin.h>
-#include <bp-checks.h>
 
 int
 reboot (howto, bootargs)
@@ -51,5 +50,5 @@ reboot (howto, bootargs)
     else
       fcn = AD_BOOT;
 
-  return uadmin (cmd, fcn, (uintptr_t)CHECK_1 (bootargs));
+  return uadmin (cmd, fcn, (uintptr_t)bootargs);
 }

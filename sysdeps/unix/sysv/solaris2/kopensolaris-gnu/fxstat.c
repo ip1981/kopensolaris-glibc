@@ -20,7 +20,6 @@
 #include <inline-syscall.h>
 #include <sys/stat.h>
 #include <errno.h>
-#include <bp-checks.h>
 
 DECLARE_INLINE_SYSCALL (int, fstat, int filedes, struct stat *buf);
 
@@ -33,7 +32,7 @@ __fxstat (int vers, int fd, struct stat *buf)
       return -1;
     }
 
-  return INLINE_SYSCALL (fstat, 2, fd, CHECK_1 (buf));
+  return INLINE_SYSCALL (fstat, 2, fd, buf);
 }
 
 hidden_def (__fxstat)

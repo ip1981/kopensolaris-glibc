@@ -21,7 +21,6 @@
 #include <fcntl.h>
 #include <stddef.h>
 #include <sys/stat.h>
-#include <bp-checks.h>
 
 DECLARE_INLINE_SYSCALL (int, fstatat, int fd, const char *name,
     struct stat *sb, int flags);
@@ -35,6 +34,6 @@ __fxstatat (int vers, int fd, const char *filename, struct stat *buf, int flag)
       return -1;
     }
 
-  return INLINE_SYSCALL (fstatat, 2, fd, filename, CHECK_1 (buf), flag);
+  return INLINE_SYSCALL (fstatat, 2, fd, filename, buf, flag);
 }
 libc_hidden_def (__fxstatat)

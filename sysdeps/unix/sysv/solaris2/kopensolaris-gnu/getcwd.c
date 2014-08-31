@@ -27,7 +27,6 @@
 #include <stddef.h>
 #include <limits.h>
 #include <memory.h>
-#include <bp-checks.h>
 #include <signal.h>
 #include <assert.h>
 #include <bits/libc-lock.h>
