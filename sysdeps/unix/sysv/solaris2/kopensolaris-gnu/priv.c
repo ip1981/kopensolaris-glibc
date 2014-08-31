@@ -27,10 +27,8 @@
 DECLARE_INLINE_SYSCALL (int, privsys, int code, priv_op_t op,
     priv_ptype_t type, void *buf, size_t bufsize);
 
-/* Docs: http://docs.sun.com/app/docs/doc/816-5168/6mbb3hrjc
-         http://docs.sun.com/app/docs/doc/816-5168/6mbb3hrj7
-         http://docs.sun.com/app/docs/doc/816-5167/setppriv-2
-         http://docs.sun.com/app/docs/doc/816-5175/privileges-5  */
+/* Docs: http://illumos.org/man/2/setppriv
+         http://illumos.org/man/5/privileges */
 
 __libc_lock_define_initialized_recursive (, __priv_lock);
 libc_freeres_ptr (static priv_impl_info_t *__info);
