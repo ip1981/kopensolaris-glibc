@@ -43,10 +43,10 @@ ENTRY (__syscall)
     /* Construct a new call stack frame.  */
     /* XXX Only "mount" has more than 6 args - 8.  */
     movq   32(%rbp), %rcx
-    pushq  %rcx; cfi_adjust_cfa_offset(8)  /* arg #7.  */
+    pushq  %rcx; cfi_adjust_cfa_offset(8)  /* arg #8.  */
 
     movq   24(%rbp), %rcx
-    pushq  %rcx; cfi_adjust_cfa_offset(8)  /* arg #8.  */
+    pushq  %rcx; cfi_adjust_cfa_offset(8)  /* arg #7.  */
 
 //    movq   8(%rbp), %rcx
 //    pushq  %rcx;
