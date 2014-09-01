@@ -235,19 +235,11 @@ typedef __t_uscalar_t	t_uscalar_t;
 #endif
 typedef __t_scalar_t	t_scalar_t;
 
-#if defined(__USE_XOPEN_OR_POSIX)
 typedef enum
   {
 	_B_FALSE,
 	_B_TRUE
   } boolean_t;
-#else
-typedef enum
-  {
-	B_FALSE,
-	B_TRUE
-  } boolean_t;
-#endif
 
 typedef union
   {
