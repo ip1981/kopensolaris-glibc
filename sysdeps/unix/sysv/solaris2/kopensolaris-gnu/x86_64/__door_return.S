@@ -36,42 +36,47 @@
    create a new server thread whenever there are none in the thread pool.  */
 
 ENTRY (__door_return)
-L(restart):
     DO_CALL (door, 6)
+
+    /* syscall returns only in case of error (including EINTR)
+       or next door_call() is called.  */
 
     /* Check for error.  */
     jb SYSCALL_ERROR_LABEL;
 
-    /* TODO: adjust cfi.  */
+    /* After return, rsp points to struct door_resilts (e. i. it is on stack)
+       https://github.com/illumos/illumos-gate/blob/master/usr/src/uts/common/fs/doorfs/door_sys.c  */
 
-    /* Check nservers.  */
-    movl oDOOR_RESULTS_NSERVERS(%esp), %ecx
+    /* Check nservers. According to illumos kernel sources it is either 0 or 1.  */
+    movl oDOOR_RESULTS_NSERVERS(%rsp), %ecx
     andl %ecx, %ecx
     jg 1f
 
     /* Create another server thread.  */
-    movl oDOOR_RESULTS_DOOR_INFO(%esp), %ecx
-    pushl %ecx; cfi_adjust_cfa_offset (4);
+    movq oDOOR_RESULTS_DOOR_INFO(%rsp), %rdi /* the first arg to door_server_create_proc().  */
 #ifdef PIC
-    call __i686.get_pc_thunk.cx
-    addl $_GLOBAL_OFFSET_TABLE_, %ecx
-#endif
-
-#ifdef PIC
-    movl door_server_create_proc@GOTOFF(%ecx), %ecx
+    movq door_server_create_proc@GOTOFF(%rip), %rax
 #else
-    movl door_server_create_proc, %ecx
+    movq door_server_create_proc, %rax
 #endif
-    call *%ecx
-    addl $4, %esp; cfi_adjust_cfa_offset (-4);
+    call *%rax
 
 1:
-    /* Call server function.  */
-    movl oDOOR_RESULTS_PC(%esp), %ecx
-    call *%ecx
+    /* Call server function:
+       foo (void *cookie, void *data_ptr, size_t data_size,
+            door_desc_t *desc_ptr, uint_t desc_num).  */
+    movq oDOOR_RESULTS_COOKIE(%rsp), %rdi
+    movq oDOOR_RESULTS_DATA_PTR(%rsp), %rsi
+    movq oDOOR_RESULTS_DATA_SIZE(%rsp), %rdx
+    movq oDOOR_RESULTS_DESC_PTR(%rsp), %rcx
+    movq oDOOR_RESULTS_DESC_NUM(%rsp), %r8
 
-    /* The server function is supposed to call door_return...  */
-    pushl $0; cfi_adjust_cfa_offset (4);
+    movq oDOOR_RESULTS_PC(%rsp), %rax
+    call *%rax
+
+    /* pthread_exit(NULL):  */
+    xorq %rdi, %rdi
     call __pthread_exit
+
 L(pseudo_end):
 PSEUDO_END (__door_return)

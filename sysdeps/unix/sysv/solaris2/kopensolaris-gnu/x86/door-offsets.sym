@@ -1,6 +1,11 @@
 #include <sysdep.h>
 #include <sys/door.h>
 
-oDOOR_RESULTS_PC	offsetof (struct door_results, pc)
-oDOOR_RESULTS_NSERVERS	offsetof (struct door_results, nservers)
-oDOOR_RESULTS_DOOR_INFO	offsetof (struct door_results, door_info)
+oDOOR_RESULTS_COOKIE offsetof (struct door_results, cookie)
+oDOOR_RESULTS_DATA_PTR offsetof (struct door_results, data_ptr)
+oDOOR_RESULTS_DATA_SIZE offsetof (struct door_results, data_size)
+oDOOR_RESULTS_DESC_PTR offsetof (struct door_results, desc_ptr)
+oDOOR_RESULTS_DESC_NUM offsetof (struct door_results, desc_num)
+oDOOR_RESULTS_PC offsetof (struct door_results, pc)
+oDOOR_RESULTS_NSERVERS offsetof (struct door_results, nservers)
+oDOOR_RESULTS_DOOR_INFO offsetof (struct door_results, door_info)
