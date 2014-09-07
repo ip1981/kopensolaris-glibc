@@ -23,7 +23,7 @@
 int
 madvise (__ptr_t addr, size_t len, int advice)
 {
-  return memcntl (addr, len, MC_ADVISE, (caddr_t)advice, 0, 0);
+  return memcntl (addr, len, MC_ADVISE, (caddr_t)(intptr_t)advice, 0, 0);
 }
 
 libc_hidden_def (madvise)
