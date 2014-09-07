@@ -26,6 +26,8 @@
 #define ADD_VARIABLES	name
 #define BUFLEN		NSS_BUFLEN_PROFATTR
 
+//TODO: error: ‘__nss_not_use_nscd_prof_attr’
+#undef USE_NSCD
 #include <nss/getXXbyYY_r.c>
 
 extern int getprofnam_r (const char *, profstr_t *, char *, size_t,

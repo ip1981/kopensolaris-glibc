@@ -26,6 +26,8 @@
 #define ADD_VARIABLES	name
 #define BUFLEN		NSS_BUFLEN_USERATTR
 
+// TODO: error: ‘__nss_not_use_nscd_user_attr’ undeclared
+#undef USE_NSCD
 #include <nss/getXXbyYY_r.c>
 
 extern int getusernam_r (const char *, userstr_t *, char *, size_t,
