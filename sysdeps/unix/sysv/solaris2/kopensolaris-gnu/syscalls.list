@@ -6,7 +6,7 @@
 # these implement libc functions directly
 #
 
-autofssys           - autofssys             iip         _autofssys
+autofssys           - autofssys             i:ip         _autofssys
 acct                - acct                  i:s         acct
 acctctl             - acctctl               i:ipi       acctctl
 acl                 - acl                   i:siip      acl
