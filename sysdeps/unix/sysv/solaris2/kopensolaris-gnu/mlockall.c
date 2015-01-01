@@ -23,5 +23,5 @@
 int
 mlockall (int flags)
 {
-  return memcntl (0, 0, MC_LOCKAS, (caddr_t)flags, 0, 0);
+  return memcntl (0, 0, MC_LOCKAS, (caddr_t)(intptr_t)flags, 0, 0);
 }
